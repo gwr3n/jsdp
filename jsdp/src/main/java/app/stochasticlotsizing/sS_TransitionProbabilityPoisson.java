@@ -6,7 +6,6 @@ import java.util.Enumeration;
 
 import sdp.Action;
 import sdp.State;
-import sdp.StateSpace;
 import sdp.TransitionProbability;
 import umontreal.iro.lecuyer.probdist.PoissonDist;
 

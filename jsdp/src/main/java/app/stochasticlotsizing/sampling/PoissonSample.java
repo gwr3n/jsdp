@@ -18,8 +18,7 @@ public class PoissonSample {
     }
 	
 	public static double[][] getPoissonLHSSample(double[] lambda, int points, long seed){
-        LHSampling latin = new LHSampling();
-        double[][] sampledProbabilities = latin.latin_random(lambda.length, points, seed);
+        double[][] sampledProbabilities = LHSampling.latin_random(lambda.length, points, seed);
         double[][] poissonSample = new double[points][lambda.length];
         for(int i = 0; i < points; i++){
             for(int j = 0; j < lambda.length; j++){
