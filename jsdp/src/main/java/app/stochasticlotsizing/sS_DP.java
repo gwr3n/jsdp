@@ -130,7 +130,7 @@ public class sS_DP {
 			boolean printCostFunctionValues,
 			boolean latexOutput){
 		
-		sS_BackwardRecursionPoisson recursion = new sS_SequentialBackwardRecursionPoisson(demand,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
+		sS_BackwardRecursionPoisson recursion = new sS_BackwardRecursionPoisson(demand,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
 		if(orderAtPeriod0)
 			recursion.runBackwardRecursion();
 		else
