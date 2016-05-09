@@ -1,7 +1,7 @@
-package app.stochasticlotsizing;
+package jsdp.app.stochasticlotsizing;
 
-import sdp.Action;
-import sdp.State;
+import jsdp.sdp.Action;
+import jsdp.sdp.State;
 
 public class sS_Action extends Action {
 	

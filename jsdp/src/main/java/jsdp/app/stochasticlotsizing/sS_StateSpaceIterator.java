@@ -1,7 +1,7 @@
-package app.stochasticlotsizing;
+package jsdp.app.stochasticlotsizing;
 
-import sdp.State;
-import sdp.StateSpaceIterator;
+import jsdp.sdp.State;
+import jsdp.sdp.StateSpaceIterator;
 
 public class sS_StateSpaceIterator extends StateSpaceIterator {
 	

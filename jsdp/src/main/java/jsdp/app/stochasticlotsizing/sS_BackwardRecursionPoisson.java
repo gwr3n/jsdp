@@ -1,7 +1,7 @@
-package app.stochasticlotsizing;
+package jsdp.app.stochasticlotsizing;
 
-import sdp.Action;
-import sdp.BackwardRecursion;
+import jsdp.sdp.Action;
+import jsdp.sdp.BackwardRecursion;
 
 public class sS_BackwardRecursionPoisson extends BackwardRecursion{
 	

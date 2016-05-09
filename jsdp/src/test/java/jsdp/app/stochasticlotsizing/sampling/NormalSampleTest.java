@@ -1,4 +1,4 @@
-package jsdp;
+package jsdp.app.stochasticlotsizing.sampling;
 
 import static org.junit.Assert.*;
 
@@ -6,7 +6,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import app.stochasticlotsizing.sampling.NormalSample;
+import jsdp.app.stochasticlotsizing.sampling.NormalSample;
+
+/* 
+ * http://www.vogella.com/tutorials/JUnit/article.html
+ */
 
 public class NormalSampleTest {
 

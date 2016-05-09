@@ -1,9 +1,9 @@
-package app.stochasticlotsizing;
+package jsdp.app.stochasticlotsizing;
 
 import java.util.Iterator;
 
-import sdp.State;
-import sdp.StateSpace;
+import jsdp.sdp.State;
+import jsdp.sdp.StateSpace;
 
 public class sS_StateSpace extends StateSpace<sS_StateDescriptor>{
 	

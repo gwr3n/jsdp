@@ -1,6 +1,6 @@
-package app.stochasticlotsizing;
+package jsdp.app.stochasticlotsizing;
 
-import sdp.StateDescriptor;
+import jsdp.sdp.StateDescriptor;
 
 public class sS_StateDescriptor extends StateDescriptor{
 		

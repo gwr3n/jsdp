@@ -1,10 +1,11 @@
-package app.stochasticlotsizing;
+package jsdp.app.stochasticlotsizing;
 
 import java.util.Enumeration;
 
-import sdp.Action;
-
 import org.apache.logging.log4j.Logger;
+
+import jsdp.sdp.Action;
+
 import org.apache.logging.log4j.LogManager;
 
 public class sS_SequentialBackwardRecursionPoisson extends sS_BackwardRecursionPoisson {

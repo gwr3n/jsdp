@@ -1,4 +1,4 @@
-package app.stochasticlotsizing;
+package jsdp.app.stochasticlotsizing;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.commons.lang3.time.StopWatch;
@@ -20,8 +20,8 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import app.stochasticlotsizing.simulation.SimulatePolicies;
-import sdp.State;
+import jsdp.app.stochasticlotsizing.simulation.SimulatePolicies;
+import jsdp.sdp.State;
 import umontreal.iro.lecuyer.charts.XYLineChart;
 
 public class sS_DP {

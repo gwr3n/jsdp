@@ -1,11 +1,11 @@
-package app.stochasticlotsizing;
+package jsdp.app.stochasticlotsizing;
 
 import java.util.Enumeration;
 
-import sdp.Action;
-import sdp.CostRepository;
-import sdp.State;
-import sdp.TransitionProbability;
+import jsdp.sdp.Action;
+import jsdp.sdp.CostRepository;
+import jsdp.sdp.State;
+import jsdp.sdp.TransitionProbability;
 
 public class sS_CostRepository extends CostRepository {
 	double fixedOrderingCost;

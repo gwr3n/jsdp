@@ -1,4 +1,4 @@
-package sdp;
+package jsdp.sdp;
 
 public abstract class StateDescriptor{
 	

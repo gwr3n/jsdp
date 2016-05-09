@@ -1,12 +1,12 @@
-package app.stochasticlotsizing;
+package jsdp.app.stochasticlotsizing;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 
-import sdp.Action;
-import sdp.State;
-import sdp.TransitionProbability;
+import jsdp.sdp.Action;
+import jsdp.sdp.State;
+import jsdp.sdp.TransitionProbability;
 import umontreal.iro.lecuyer.probdist.PoissonDist;
 
 public class sS_TransitionProbabilityPoisson extends TransitionProbability {
