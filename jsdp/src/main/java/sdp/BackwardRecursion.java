@@ -58,7 +58,7 @@ public abstract class BackwardRecursion {
 		});
 	}
 	
-	protected void recurse(int period){
+	/*protected void recurse(int period){
 		this.getStateSpace(period).entrySet()
 			.parallelStream()
 			.forEach(entry -> {
@@ -77,6 +77,42 @@ public abstract class BackwardRecursion {
 				this.getCostRepository().setOptimalExpectedCost(state, bestCost);
 				this.getCostRepository().setOptimalAction(state, bestAction);
 				logger.trace(bestAction+"\tCost: "+bestCost);
+			});
+	}*/
+	
+	class BestActionRepository {
+		Action bestAction = null;
+		double bestCost = Double.MAX_VALUE;
+		
+		public synchronized void update(Action currentAction, double currentCost){
+			if(currentCost < bestCost){
+				bestCost = currentCost;
+				bestAction = currentAction;
+			}
+		}
+		
+		public Action getBestAction(){
+			return this.bestAction;
+		}
+		
+		public double getBestCost(){
+			return this.bestCost;
+		}
+	}
+	
+	protected void recurse(int period){
+		this.getStateSpace(period).entrySet()
+			.parallelStream()
+			.forEach(entry -> {
+				State state = entry.getValue();
+				BestActionRepository repository = new BestActionRepository();
+				state.getPermissibleActionsStream().forEach(action -> {
+					double currentCost = this.getCostRepository().getExpectedCost(state, action, this.getTransitionProbability());
+					repository.update(action, currentCost);
+				});
+				this.getCostRepository().setOptimalExpectedCost(state, repository.getBestCost());
+				this.getCostRepository().setOptimalAction(state, repository.getBestAction());
+				logger.trace(repository.getBestAction()+"\tCost: "+repository.getBestCost());
 			});
 	}
 	
