@@ -14,10 +14,16 @@ public abstract class BackwardRecursion {
 	protected TransitionProbability transitionProbability;
 	protected CostRepository costRepository;
 	
-	public abstract double expectedCost(State state);
+	public double expectedCost(State state){
+		return this.getCostRepository().getOptimalExpectedCost(state);
+	}
 	
 	public StateSpace<?> getStateSpace(int period){
 		return this.stateSpace[period];
+	}
+	
+	public StateSpace<?>[] getStateSpace(){
+		return this.stateSpace;
 	}
 	
 	public TransitionProbability getTransitionProbability(){

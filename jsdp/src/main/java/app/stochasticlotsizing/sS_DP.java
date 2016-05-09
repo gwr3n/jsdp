@@ -29,8 +29,8 @@ public class sS_DP {
 	static final Logger logger = LogManager.getLogger(sS_DP.class.getName());
 	
 	public static void main(String[] args) {
-		simpleTest();
-		//plotTest();
+		//simpleTest();
+		plotTest();
 	}
 	
 	public static void simpleTest(){

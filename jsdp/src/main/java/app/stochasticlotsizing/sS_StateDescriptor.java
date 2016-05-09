@@ -3,7 +3,7 @@ package app.stochasticlotsizing;
 import sdp.StateDescriptor;
 
 public class sS_StateDescriptor extends StateDescriptor{
-		int period;
+		
 		int initialInventory;
 		
 		public sS_StateDescriptor(int period, int initialInventory){
@@ -27,9 +27,5 @@ public class sS_StateDescriptor extends StateDescriptor{
 		
 		public int getInitialInventory(){
 			return initialInventory;
-		}
-		
-		public int getPeriod(){
-			return period;
 		}
 	}

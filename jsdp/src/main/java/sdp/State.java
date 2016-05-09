@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 public abstract class State implements Comparable<State>{
 	
+	protected int period;
 	protected ArrayList<Action> permissibleActions;
 	protected Action noAction;
 	
@@ -21,6 +22,10 @@ public abstract class State implements Comparable<State>{
 	
 	public Action getNoAction(){
 		return noAction;
+	}
+	
+	public int getPeriod(){
+		return this.period;
 	}
 	
 	public abstract int compareTo(State state);

@@ -57,21 +57,23 @@ public class SimulatePolicies {
 		}
 		
 		int minRuns = 1000;
-		int maxRuns = 100000;
-		double[][] demandRealizations = PoissonSample.getPoissonLHSSample(expDemand, maxRuns, System.currentTimeMillis());
+		int maxRuns = 1000000;
+		//double[][] demandRealizations = PoissonSample.getPoissonLHSSampleMatrix(expDemand, maxRuns, System.currentTimeMillis());
 		
 		double[] centerAndRadius = new double[2];
 		for(int i = 0; i < minRuns || (centerAndRadius[1]>=centerAndRadius[0]*error && i < maxRuns); i++){
+			double[] demandRealizations = PoissonSample.getNextPoissonSample(expDemand);
+			
 			double replicationCost = 0;
 			double inventory = initialStock;
 			for(int t = 0; t < Nbmonths; t++){
 				if(inventory <= s[t]){
 					replicationCost += orderCost;
 					replicationCost += Math.max(0, S[t]-inventory)*unitCost;
-					inventory = S[t]-demandRealizations[i][t];
+					inventory = S[t]-demandRealizations[t];
 					replicationCost += Math.max(inventory, 0)*holdingCost - Math.min(inventory, 0)*penaltyCost;
 				}else{
-					inventory = inventory-demandRealizations[i][t];
+					inventory = inventory-demandRealizations[t];
 					replicationCost += Math.max(inventory, 0)*holdingCost - Math.min(inventory, 0)*penaltyCost;
 				}
 				stockPTally[t].add(Math.max(inventory, 0));
@@ -106,21 +108,23 @@ public class SimulatePolicies {
 		}
 		
 		int minRuns = 1000;
-		int maxRuns = 100000;
-		double[][] demandRealizations = NormalSample.getNormalLHSSample(expDemand, stdDemand, maxRuns, System.currentTimeMillis());
+		int maxRuns = 1000000;
+		//double[][] demandRealizations = NormalSample.getNormalLHSSample(expDemand, stdDemand, maxRuns, System.currentTimeMillis());
 		
 		double[] centerAndRadius = new double[2];
 		for(int i = 0; i < minRuns || (centerAndRadius[1]>=centerAndRadius[0]*error && i < maxRuns); i++){
+			double[] demandRealizations = NormalSample.getNextNormalSample(expDemand, stdDemand);
+			
 			double replicationCost = 0;
 			double inventory = initialStock;
 			for(int t = 0; t < Nbmonths; t++){
 				if(inventory <= s[t]){
 					replicationCost += orderCost;
 					replicationCost += Math.max(0, S[t]-inventory)*unitCost;
-					inventory = S[t]-demandRealizations[i][t];
+					inventory = S[t]-demandRealizations[t];
 					replicationCost += Math.max(inventory, 0)*holdingCost - Math.min(inventory, 0)*penaltyCost;
 				}else{
-					inventory = inventory-demandRealizations[i][t];
+					inventory = inventory-demandRealizations[t];
 					replicationCost += Math.max(inventory, 0)*holdingCost - Math.min(inventory, 0)*penaltyCost;
 				}
 				stockPTally[t].add(Math.max(inventory, 0));

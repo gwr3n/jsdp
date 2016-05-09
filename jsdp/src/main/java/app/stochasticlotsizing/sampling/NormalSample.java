@@ -3,8 +3,54 @@ package app.stochasticlotsizing.sampling;
 import java.util.Random;
 
 import umontreal.iro.lecuyer.probdist.NormalDist;
+import umontreal.iro.lecuyer.probdist.PoissonDist;
+import umontreal.iro.lecuyer.randvar.UniformGen;
+import umontreal.iro.lecuyer.randvarmulti.IIDMultivariateGen;
+import umontreal.iro.lecuyer.randvarmulti.RandomMultivariateGen;
+import umontreal.iro.lecuyer.rng.MRG32k3aL;
+import umontreal.iro.lecuyer.rng.RandomStream;
 
 public class NormalSample {
+	
+	public static void main(String args[]){
+		stream.resetStartStream();
+		for(double e : NormalSample.getNextNormalSample(new double[]{30,20,30}, new double[]{10,20,30})){
+			System.out.print(e + " ");
+		}
+		System.out.println();
+		stream.resetNextSubstream();
+		for(double e : NormalSample.getNextNormalSample(new double[]{10,20,30}, new double[]{10,20,30})){
+			System.out.print(e + " ");
+		}
+	}
+	
+	static RandomStream stream;
+	
+	static {
+		stream = new MRG32k3aL();
+	}
+	
+	public static void resetNextSubstream(){
+		stream.resetNextSubstream();
+	}
+	
+	public static void resetStartStream(){
+		stream.resetStartStream();
+	}
+	
+	public static double[] getNextNormalSample(double[] mu, double[] sigma){
+		if(mu.length != sigma.length) 
+			throw new NullPointerException();
+		UniformGen uniform = new UniformGen(stream);
+		RandomMultivariateGen generator = new IIDMultivariateGen(uniform, mu.length);
+		double[] p = new double[mu.length];
+		generator.nextPoint(p);
+		double[] sample = new double[mu.length];
+		for(int i = 0; i < p.length; i++){
+			sample[i] = NormalDist.inverseF(mu[i], sigma[i], p[i]);
+		}
+		return sample;
+	}
 	
 	public static double[][] getNormalSample(double[] mu, double[] sigma, int points, long seed){
 		Random generator = new Random(seed);
@@ -67,9 +113,4 @@ public class NormalSample {
         }
 
     }
-
-    public static void main(String args[]){
-        NormalSample.test();
-    }
-
 }

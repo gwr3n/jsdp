@@ -7,7 +7,6 @@ import sdp.State;
 
 public class sS_State extends State {
 	
-	private int period;
 	private int initialInventory;
 	
 	//Factor must be 1 for discrete distributions
@@ -19,10 +18,6 @@ public class sS_State extends State {
 		this.period = descriptor.getPeriod();
 		this.initialInventory = descriptor.getInitialInventory();
 		this.buildActionList();
-	}
-	
-	public int getPeriod(){
-		return this.period;
 	}
 	
 	public int getInitialInventory(){

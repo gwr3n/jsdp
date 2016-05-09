@@ -2,8 +2,6 @@ package app.stochasticlotsizing;
 
 import sdp.Action;
 import sdp.BackwardRecursion;
-import sdp.State;
-import sdp.StateSpace;
 
 public class sS_BackwardRecursionPoisson extends BackwardRecursion{
 	
@@ -12,14 +10,6 @@ public class sS_BackwardRecursionPoisson extends BackwardRecursion{
 	double holdingCost;
 	double penaltyCost;
 	double[] demand;
-	
-	public StateSpace<?>[] getStateSpace(){
-		return this.stateSpace;
-	}
-	
-	public StateSpace<?> getStateSpace(int period){
-		return this.stateSpace[period];
-	}
 	
 	public sS_TransitionProbabilityPoisson getTransitionProbability(){
 		return (sS_TransitionProbabilityPoisson) this.transitionProbability; 
@@ -69,9 +59,5 @@ public class sS_BackwardRecursionPoisson extends BackwardRecursion{
 			}
 		}while(iterator.hasNext());
 		return state;
-	}
-	
-	public double expectedCost(State state){
-		return this.getCostRepository().getOptimalExpectedCost(state);
 	}
 }
