@@ -29,8 +29,8 @@ public class sS_DP {
 	static final Logger logger = LogManager.getLogger(sS_DP.class.getName());
 	
 	public static void main(String[] args) {
-		//simpleTest();
-		plotTest();
+		simpleTest();
+		//plotTest();
 	}
 	
 	public static void simpleTest(){
@@ -44,7 +44,7 @@ public class sS_DP {
 		double holdingCost = 1;
 		double penaltyCost = 2;
 		
-		double[] demand = {15,16,15,14,11,7,6,3};
+		double[] demand = {15,16,15,14,11,7,6};
 		
 		double initialInventory = 0;
 		
@@ -83,6 +83,7 @@ public class sS_DP {
 			double errorTolerance){
 		
 		sS_BackwardRecursionPoisson recursion = new sS_BackwardRecursionPoisson(demand,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
+		//sS_SequentialBackwardRecursionPoisson recursion = new sS_SequentialBackwardRecursionPoisson(demand,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
 		StopWatch timer = new StopWatch();
 		timer.start();
 		recursion.runBackwardRecursion();
