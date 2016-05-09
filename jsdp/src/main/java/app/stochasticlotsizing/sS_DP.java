@@ -1,6 +1,7 @@
 package app.stochasticlotsizing;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.logging.log4j.LogManager;
 
 import java.io.File;
@@ -28,8 +29,8 @@ public class sS_DP {
 	static final Logger logger = LogManager.getLogger(sS_DP.class.getName());
 	
 	public static void main(String[] args) {
-		//simpleTest();
-		plotTest();
+		simpleTest();
+		//plotTest();
 	}
 	
 	public static void simpleTest(){
@@ -81,9 +82,12 @@ public class sS_DP {
 			double confidence,
 			double errorTolerance){
 		
-		sS_BackwardRecursionPoisson recursion = new sS_FastBackwardRecursionPoisson(demand,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
-		//sS_BackwardRecursionPoisson recursion = new sS_BackwardRecursionPoisson(demand,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
+		sS_BackwardRecursionPoisson recursion = new sS_BackwardRecursionPoisson(demand,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
+		StopWatch timer = new StopWatch();
+		timer.start();
 		recursion.runBackwardRecursion();
+		timer.stop();
+	    System.out.println();
 		double[] S = new double[demand.length];
 		double[] s = new double[demand.length];
 		double ETC = Double.NaN;
@@ -102,6 +106,7 @@ public class sS_DP {
 		}
 		
 		System.out.println("Expected total cost (assuming an initial inventory level "+initialInventory+"): "+ETC);
+		System.out.println("Time elapsed: "+timer);
 		System.out.println();
 		for(int i = 0; i < demand.length; i++){
 			System.out.println("S["+(i+1)+"]:"+S[i]+"\ts["+(i+1)+"]:"+s[i]);
@@ -125,7 +130,7 @@ public class sS_DP {
 			boolean printCostFunctionValues,
 			boolean latexOutput){
 		
-		sS_BackwardRecursionPoisson recursion = new sS_FastBackwardRecursionPoisson(demand,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
+		sS_BackwardRecursionPoisson recursion = new sS_SequentialBackwardRecursionPoisson(demand,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
 		if(orderAtPeriod0)
 			recursion.runBackwardRecursion();
 		else

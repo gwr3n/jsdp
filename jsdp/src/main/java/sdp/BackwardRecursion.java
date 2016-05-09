@@ -2,6 +2,7 @@ package sdp;
 
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -29,8 +30,8 @@ public abstract class BackwardRecursion {
 	}
 	
 	public void runBackwardRecursion(){
-		logger.info("Generating final states...");
-		generateFinalStates();
+		logger.info("Generating states...");
+		generateStates();
 		for(int i = horizonLength - 1; i >= 0; i--){
 			logger.info("Processing period["+i+"]...");
 			recurse(i);
@@ -38,51 +39,67 @@ public abstract class BackwardRecursion {
 	}
 	
 	public void runBackwardRecursion(int period){
-		logger.info("Generating final states...");
-		generateFinalStates();
+		logger.info("Generating states...");
+		generateStates();
 		for(int i = horizonLength - 1; i > period; i--){
 			logger.info("Processing period["+i+"]...");
 			recurse(i);
 		}
 		
 		logger.info("Processing period["+period+"]...");
-		Iterator<State> iterator = this.getStateSpace(period).iterator();
-		while(iterator.hasNext()){
-			State state = iterator.next();
+		this.getStateSpace(period).entrySet()
+		.parallelStream()
+		.forEach(entry -> {
+			State state = entry.getValue();
 			Action bestAction = state.getNoAction();
 			double bestCost = this.getCostRepository().getExpectedCost(state, bestAction, this.getTransitionProbability());
 			this.getCostRepository().setOptimalExpectedCost(state, bestCost);
 			this.getCostRepository().setOptimalAction(state, bestAction);
-		}
+		});
 	}
 	
 	protected void recurse(int period){
-		Iterator<State> iterator = this.getStateSpace(period).iterator();
-		while(iterator.hasNext()){
-			State state = iterator.next();
-			Action bestAction = null;
-			double bestCost = Double.MAX_VALUE;
-			Enumeration<Action> actions = state.getPermissibleActions();
-			while(actions.hasMoreElements()){
-				Action currentAction = actions.nextElement();
-				double currentCost = this.getCostRepository().getExpectedCost(state, currentAction, this.getTransitionProbability());
-				if(currentCost < bestCost){
-					bestCost = currentCost;
-					bestAction = currentAction;
+		this.getStateSpace(period).entrySet()
+			.parallelStream()
+			.forEach(entry -> {
+				State state = entry.getValue();
+				Action bestAction = null;
+				double bestCost = Double.MAX_VALUE;
+				Enumeration<Action> actions = state.getPermissibleActions();
+				while(actions.hasMoreElements()){
+					Action currentAction = actions.nextElement();
+					double currentCost = this.getCostRepository().getExpectedCost(state, currentAction, this.getTransitionProbability());
+					if(currentCost < bestCost){
+						bestCost = currentCost;
+						bestAction = currentAction;
+					}
 				}
-			}
-			this.getCostRepository().setOptimalExpectedCost(state, bestCost);
-			this.getCostRepository().setOptimalAction(state, bestAction);
-			
-			logger.trace(bestAction+"\tCost: "+bestCost);
-		}
+				this.getCostRepository().setOptimalExpectedCost(state, bestCost);
+				this.getCostRepository().setOptimalAction(state, bestAction);
+				logger.trace(bestAction+"\tCost: "+bestCost);
+			});
 	}
 	
-	protected void generateFinalStates(){
-		Iterator<State> iterator = this.getStateSpace(horizonLength).iterator();
-		while(iterator.hasNext()){
-			State state = iterator.next();
-			this.getCostRepository().setOptimalExpectedCost(state, 0);
+	protected void generateStates(){
+		CountDownLatch latch = new CountDownLatch(horizonLength + 1);
+		for(int i = horizonLength; i >= 0; i--){
+			Iterator<State> iterator = this.getStateSpace(i).iterator();
+			Runnable r = () -> {
+				while(iterator.hasNext()) 
+					iterator.next();
+				latch.countDown();
+				};
+			new Thread(r).start();
 		}
+		try {
+			latch.await();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		this.getStateSpace(horizonLength).entrySet()
+			.parallelStream()
+			.forEach(entry -> this.getCostRepository().setOptimalExpectedCost(entry.getValue(), 0));
 	}
 }

@@ -1,6 +1,8 @@
 package sdp;
 
 import java.util.Hashtable;
+import java.util.Map;
+import java.util.Set;
 
 public abstract class StateSpace<SD> implements Iterable<State>{
 	
@@ -15,5 +17,9 @@ public abstract class StateSpace<SD> implements Iterable<State>{
 	
 	public int getPeriod(){
 		return period;
+	}
+	
+	public Set<Map.Entry<SD,State>> entrySet(){
+		return states.entrySet();
 	}
 }

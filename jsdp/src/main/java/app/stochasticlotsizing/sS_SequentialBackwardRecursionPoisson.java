@@ -7,10 +7,10 @@ import sdp.Action;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-public class sS_FastBackwardRecursionPoisson extends sS_BackwardRecursionPoisson {
+public class sS_SequentialBackwardRecursionPoisson extends sS_BackwardRecursionPoisson {
 	static final Logger logger = LogManager.getLogger(sS_BackwardRecursionPoisson.class.getName());
 	
-	public sS_FastBackwardRecursionPoisson(double[] demand,
+	public sS_SequentialBackwardRecursionPoisson(double[] demand,
 			double fixedOrderingCost, 
 			double proportionalOrderingCost, 
 			double holdingCost,
