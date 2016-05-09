@@ -57,7 +57,7 @@ public class SimulatePolicies {
 		}
 		
 		int minRuns = 1000;
-		int maxRuns = 1000000;
+		int maxRuns = 100000;
 		double[][] demandRealizations = PoissonSample.getPoissonLHSSample(expDemand, maxRuns, System.currentTimeMillis());
 		
 		double[] centerAndRadius = new double[2];
@@ -106,7 +106,7 @@ public class SimulatePolicies {
 		}
 		
 		int minRuns = 1000;
-		int maxRuns = 1000000;
+		int maxRuns = 100000;
 		double[][] demandRealizations = NormalSample.getNormalLHSSample(expDemand, stdDemand, maxRuns, System.currentTimeMillis());
 		
 		double[] centerAndRadius = new double[2];
