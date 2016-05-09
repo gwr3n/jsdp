@@ -2,12 +2,12 @@ package jsdp.app.stochasticlotsizing.sampling;
 
 import java.util.Random;
 
-import umontreal.iro.lecuyer.probdist.NormalDist;
-import umontreal.iro.lecuyer.randvar.UniformGen;
-import umontreal.iro.lecuyer.randvarmulti.IIDMultivariateGen;
-import umontreal.iro.lecuyer.randvarmulti.RandomMultivariateGen;
-import umontreal.iro.lecuyer.rng.MRG32k3aL;
-import umontreal.iro.lecuyer.rng.RandomStream;
+import umontreal.ssj.probdist.NormalDist;
+import umontreal.ssj.randvar.UniformGen;
+import umontreal.ssj.randvarmulti.IIDMultivariateGen;
+import umontreal.ssj.randvarmulti.RandomMultivariateGen;
+import umontreal.ssj.rng.MRG32k3aL;
+import umontreal.ssj.rng.RandomStream;
 
 public class NormalSample {
 	
@@ -38,18 +38,6 @@ public class NormalSample {
 		}
 		return sample;
 	}
-	
-	public static double[][] getNormalSample(double[] mu, double[] sigma, int points, long seed){
-		Random generator = new Random(seed);
-        if(mu.length != sigma.length) return null;
-        double[][] normalSample = new double[points][mu.length];
-        for(int i = 0; i < points; i++){
-            for(int j = 0; j < mu.length; j++){
-                normalSample[i][j] = NormalDist.inverseF01(generator.nextDouble())*sigma[j]+mu[j];
-            }
-        }
-        return normalSample;
-    }
 	
 	public static double[][] getNormalLHSSample(double[] mu, double[] sigma, int points, long seed){
         if(mu.length != sigma.length) return null;

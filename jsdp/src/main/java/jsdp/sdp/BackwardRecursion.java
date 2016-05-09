@@ -63,28 +63,6 @@ public abstract class BackwardRecursion {
 		});
 	}
 	
-	/*protected void recurse(int period){
-		this.getStateSpace(period).entrySet()
-			.parallelStream()
-			.forEach(entry -> {
-				State state = entry.getValue();
-				Action bestAction = null;
-				double bestCost = Double.MAX_VALUE;
-				Enumeration<Action> actions = state.getPermissibleActions();
-				while(actions.hasMoreElements()){
-					Action currentAction = actions.nextElement();
-					double currentCost = this.getCostRepository().getExpectedCost(state, currentAction, this.getTransitionProbability());
-					if(currentCost < bestCost){
-						bestCost = currentCost;
-						bestAction = currentAction;
-					}
-				}
-				this.getCostRepository().setOptimalExpectedCost(state, bestCost);
-				this.getCostRepository().setOptimalAction(state, bestAction);
-				logger.trace(bestAction+"\tCost: "+bestCost);
-			});
-	}*/
-	
 	class BestActionRepository {
 		Action bestAction = null;
 		double bestCost = Double.MAX_VALUE;

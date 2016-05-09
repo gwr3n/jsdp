@@ -7,7 +7,7 @@ import java.util.Enumeration;
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
 import jsdp.sdp.TransitionProbability;
-import umontreal.iro.lecuyer.probdist.PoissonDist;
+import umontreal.ssj.probdist.PoissonDist;
 
 public class sS_TransitionProbabilityPoisson extends TransitionProbability {
 	double[] meanDemand;

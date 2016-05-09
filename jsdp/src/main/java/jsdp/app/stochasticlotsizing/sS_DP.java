@@ -22,7 +22,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 import jsdp.app.stochasticlotsizing.simulation.SimulatePolicies;
 import jsdp.sdp.State;
-import umontreal.iro.lecuyer.charts.XYLineChart;
+import umontreal.ssj.charts.XYLineChart;
 
 public class sS_DP {
 	

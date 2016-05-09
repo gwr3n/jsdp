@@ -5,7 +5,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 import jsdp.app.stochasticlotsizing.sampling.*;
-import umontreal.iro.lecuyer.stat.Tally;
+import umontreal.ssj.stat.Tally;
 
 public class SimulatePolicies {
 	
@@ -61,7 +61,7 @@ public class SimulatePolicies {
 		
 		double[] centerAndRadius = new double[2];
 		for(int i = 0; i < minRuns || (centerAndRadius[1]>=centerAndRadius[0]*error && i < maxRuns); i++){
-			double[] demandRealizations = PoissonSample.getNextPoissonSample(expDemand);
+			int[] demandRealizations = PoissonSample.getNextPoissonSample(expDemand);
 			
 			double replicationCost = 0;
 			double inventory = initialStock;
