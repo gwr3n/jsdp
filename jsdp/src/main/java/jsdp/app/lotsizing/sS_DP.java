@@ -1,4 +1,4 @@
-package jsdp.app.stochasticlotsizing;
+package jsdp.app.lotsizing;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.commons.lang3.time.StopWatch;
@@ -20,7 +20,7 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import jsdp.app.stochasticlotsizing.simulation.SimulatePolicies;
+import jsdp.app.lotsizing.simulation.SimulatePolicies;
 import jsdp.sdp.State;
 import umontreal.ssj.charts.XYLineChart;
 

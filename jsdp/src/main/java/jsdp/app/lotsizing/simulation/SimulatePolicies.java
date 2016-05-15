@@ -1,10 +1,10 @@
-package jsdp.app.stochasticlotsizing.simulation;
+package jsdp.app.lotsizing.simulation;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-import jsdp.app.stochasticlotsizing.sampling.*;
+import jsdp.app.lotsizing.sampling.*;
 import umontreal.ssj.stat.Tally;
 
 public class SimulatePolicies {

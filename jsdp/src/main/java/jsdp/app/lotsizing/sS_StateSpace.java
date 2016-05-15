@@ -1,4 +1,4 @@
-package jsdp.app.stochasticlotsizing;
+package jsdp.app.lotsizing;
 
 import java.util.Iterator;
 

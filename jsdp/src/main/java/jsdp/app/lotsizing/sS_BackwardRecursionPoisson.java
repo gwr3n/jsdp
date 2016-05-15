@@ -1,4 +1,4 @@
-package jsdp.app.stochasticlotsizing;
+package jsdp.app.lotsizing;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.BackwardRecursion;

@@ -1,4 +1,4 @@
-package jsdp.app.stochasticlotsizing.sampling;
+package jsdp.app.lotsizing.sampling;
 
 import static org.junit.Assert.*;
 
@@ -8,8 +8,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import cern.colt.list.DoubleArrayList;
-import jsdp.app.stochasticlotsizing.sampling.NormalSample;
+import jsdp.app.lotsizing.sampling.NormalSample;
 import umontreal.ssj.gof.GofStat;
 import umontreal.ssj.probdist.ContinuousDistribution;
 import umontreal.ssj.probdist.NormalDist;

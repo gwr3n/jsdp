@@ -1,4 +1,4 @@
-package jsdp.app.stochasticlotsizing.sampling;
+package jsdp.app.lotsizing.sampling;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;

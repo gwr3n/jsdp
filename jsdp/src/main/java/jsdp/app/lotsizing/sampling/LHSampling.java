@@ -1,4 +1,4 @@
-package jsdp.app.stochasticlotsizing.sampling;
+package jsdp.app.lotsizing.sampling;
 
 import java.util.Random;
 

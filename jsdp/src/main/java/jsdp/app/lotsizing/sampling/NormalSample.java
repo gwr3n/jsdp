@@ -1,6 +1,4 @@
-package jsdp.app.stochasticlotsizing.sampling;
-
-import java.util.Random;
+package jsdp.app.lotsizing.sampling;
 
 import umontreal.ssj.probdist.NormalDist;
 import umontreal.ssj.randvar.UniformGen;

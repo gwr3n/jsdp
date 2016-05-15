@@ -1,4 +1,4 @@
-package jsdp.app.stochasticlotsizing.sampling;
+package jsdp.app.lotsizing.sampling;
 
 import static org.junit.Assert.*;
 
@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cern.colt.list.IntArrayList;
+import jsdp.app.lotsizing.sampling.PoissonSample;
 import umontreal.ssj.gof.GofStat;
 import umontreal.ssj.probdist.ChiSquareDist;
 import umontreal.ssj.probdist.DiscreteDistributionInt;
