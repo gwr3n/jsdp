@@ -1,17 +1,19 @@
 package jsdp.app.lotsizing.sampling;
 
-import java.util.Random;
+import umontreal.ssj.randvar.UniformGen;
+import umontreal.ssj.randvar.UniformIntGen;
+import umontreal.ssj.rng.MRG32k3aL;
+import umontreal.ssj.rng.RandomStream;
 
 public class LHSampling {
 
-	public static double[][] latin_random_matrix ( int dim_num, int point_num, long seed ){
-        Random rnd = new Random(seed);
+	public static double[][] latin_random_matrix ( int dim_num, int point_num, RandomStream stream ){
         double x[][] = new double[dim_num][point_num];
         int [] perm;
 
         for (int i = 0; i < dim_num; i++ )
         {
-            perm = perm_random ( point_num, rnd );
+            perm = perm_random ( point_num, stream );
 
         for (int j = 0; j < point_num; j++ )
         {
@@ -21,24 +23,23 @@ public class LHSampling {
       return x;
     }
 	
-    public static double[][] latin_random ( int dim_num, int point_num, long seed ){
-        Random rnd = new Random(seed);
+    public static double[][] latin_random ( int dim_num, int point_num, RandomStream stream ){
         double x[][] = new double[dim_num][point_num];
         int [] perm;
 
         for (int i = 0; i < dim_num; i++ )
         {
-            perm = perm_random ( point_num, rnd );
+            perm = perm_random ( point_num, stream );
 
         for (int j = 0; j < point_num; j++ )
         {
-          x[i][j] = ( ( ( double ) ( perm[j] - 1 ) ) + rnd.nextDouble() ) / ( ( double ) point_num );
+          x[i][j] = ( ( ( double ) ( perm[j] - 1 ) ) + UniformGen.nextDouble(stream, 0, 1) ) / ( ( double ) point_num );
         }
       }
       return x;
     }
 
-    static int getUniform(int a, int b, Random rnd) {
+    /*static int getUniform(int a, int b, Random rnd) {
         double randDbl = rnd.nextDouble();
         randDbl = (1.0 - randDbl) * ((double) (Math.min(a, b)) - 0.5)
                   + randDbl * ((double) (Math.max(a, b)) + 0.5);
@@ -49,9 +50,9 @@ public class LHSampling {
         randDbl = Math.min(randDbl, Math.max(a, b));
 
         return (int)randDbl;
-    }
+    }*/
 
-    static int[] perm_random ( int point_num, Random rnd){
+    static int[] perm_random ( int point_num, RandomStream stream){
         int[] perm = new int[point_num];
 
         for (int i = 0; i < point_num; i++) {
@@ -59,7 +60,7 @@ public class LHSampling {
         }
 
         for (int i = 1; i <= point_num; i++) {
-            int j = getUniform(i, point_num, rnd);
+            int j = UniformIntGen.nextInt(stream, i, point_num); 
             int swap = perm[i - 1];
             perm[i - 1] = perm[j - 1];
             perm[j - 1] = swap;
@@ -71,9 +72,9 @@ public class LHSampling {
     static void test(){
         int dimNumber = 4;
         int pointNumber = 4;
-        long seed = 1112;
+        RandomStream  stream = new MRG32k3aL();
 
-        double[][] latin = latin_random(dimNumber, pointNumber, seed);
+        double[][] latin = latin_random(dimNumber, pointNumber, stream);
 
         for(int j = 0; j < pointNumber; j++){
             for(int i = 0; i < dimNumber; i++){

@@ -11,6 +11,7 @@ import java.io.Writer;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.stream.IntStream;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
@@ -23,6 +24,8 @@ import org.jfree.data.xy.XYSeriesCollection;
 import jsdp.app.lotsizing.simulation.SimulatePolicies;
 import jsdp.sdp.State;
 import umontreal.ssj.charts.XYLineChart;
+import umontreal.ssj.probdist.Distribution;
+import umontreal.ssj.probdist.PoissonDist;
 
 public class sS_DP {
 	
@@ -116,7 +119,9 @@ public class sS_DP {
 		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.ENGLISH);
 	    DecimalFormat df = new DecimalFormat("#.00",otherSymbols);
 		
-		double[] results = SimulatePolicies.simulate_sS_Poisson(demand.length, demand, fixedOrderingCost, holdingCost, penaltyCost, proportionalOrderingCost, initialInventory, S, s, confidence, errorTolerance);
+	    Distribution[] distributions = IntStream.iterate(0, i -> i + 1).limit(demand.length).mapToObj(i -> new PoissonDist(demand[i])).toArray(Distribution[]::new);
+	    
+		double[] results = SimulatePolicies.simulate_sS(distributions, fixedOrderingCost, holdingCost, penaltyCost, proportionalOrderingCost, initialInventory, S, s, confidence, errorTolerance);
 		System.out.println();
 		System.out.println("Simulated cost: "+df.format(results[0])+" Confidence interval=("+df.format(results[0]-results[1])+","+df.format(results[0]+results[1])+")@"+df.format(confidence*100)+"% confidence");
 	}

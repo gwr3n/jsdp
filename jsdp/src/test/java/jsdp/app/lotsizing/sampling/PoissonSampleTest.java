@@ -3,16 +3,17 @@ package jsdp.app.lotsizing.sampling;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
+import java.util.stream.IntStream;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import cern.colt.list.IntArrayList;
-import jsdp.app.lotsizing.sampling.PoissonSample;
 import umontreal.ssj.gof.GofStat;
 import umontreal.ssj.probdist.ChiSquareDist;
 import umontreal.ssj.probdist.DiscreteDistributionInt;
+import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
 
 public class PoissonSampleTest {
@@ -37,9 +38,13 @@ public class PoissonSampleTest {
 
 	@Test
 	public void testGetNextPoissonSample() {
-		double[] array = new double[10000];
+		int N = 10000;
+		double[] array = new double[N];
 		Arrays.fill(array, 30);
-		IntArrayList list = new IntArrayList(PoissonSample.getNextPoissonSample(array));
+		Distribution[] distributions = IntStream.iterate(0, i -> i + 1).limit(N).mapToObj(i -> new PoissonDist(array[i])).toArray(Distribution[]::new);
+	    
+		int[] samples = Arrays.stream(SampleFactory.getInstance().getNextSample(distributions)).mapToInt(i -> (int) Math.round(i)).toArray();
+		IntArrayList list = new IntArrayList(samples);
 		DiscreteDistributionInt distribution = new PoissonDist(30);
 		int[] categories = new int[1];
 		double chi2Statistic = GofStat.chi2(

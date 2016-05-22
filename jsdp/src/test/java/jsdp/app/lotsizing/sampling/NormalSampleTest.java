@@ -3,14 +3,15 @@ package jsdp.app.lotsizing.sampling;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
+import java.util.stream.IntStream;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import jsdp.app.lotsizing.sampling.NormalSample;
 import umontreal.ssj.gof.GofStat;
 import umontreal.ssj.probdist.ContinuousDistribution;
+import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.NormalDist;
 
 /* 
@@ -39,11 +40,15 @@ public class NormalSampleTest {
 	
 	@Test
 	public void testGetNextNormalSample() {
-		double[] arrayMu = new double[10000];
-		double[] arraySigma = new double[10000];
+		int N = 10000;
+		double[] arrayMu = new double[N];
+		double[] arraySigma = new double[N];
 		Arrays.fill(arrayMu, 30);
 		Arrays.fill(arraySigma, 3);
-		double[] data = NormalSample.getNextNormalSample(arrayMu, arraySigma);
+		
+		Distribution[] distributions = IntStream.iterate(0, i -> i + 1).limit(N).mapToObj(i -> new NormalDist(arrayMu[i],arraySigma[i])).toArray(Distribution[]::new);
+	    
+		double[] data = SampleFactory.getInstance().getNextSample(distributions);
 		ContinuousDistribution distribution = new NormalDist(30,3);
 		double[] sval = new double[3];
 		double[] pval = new double[3];
