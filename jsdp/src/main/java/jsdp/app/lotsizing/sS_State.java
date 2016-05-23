@@ -46,6 +46,9 @@ public class sS_State extends State {
 		this.buildActionList();
 	}
 	
+	/**
+	 * Implement inventory normalisation!
+	 */
 	public int getInitialInventory(){
 		return this.initialInventory;
 	}

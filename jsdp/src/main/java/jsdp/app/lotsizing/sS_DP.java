@@ -59,8 +59,8 @@ public class sS_DP {
 	static final Logger logger = LogManager.getLogger(sS_DP.class.getName());
 	
 	public static void main(String[] args) {
-		simpleTest();
-		//plotTest();
+		//simpleTest();
+		plotTest();
 	}
 	
 	public static void simpleTest(){
@@ -87,21 +87,6 @@ public class sS_DP {
 		solveSampleInstance(demand,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost,initialInventory,confidence,errorTolerance);
 	}
 	
-	public static void plotTest(){
-		sS_State.factor = 1;					//Factor must be 1 for discrete distributions
-		sS_State.minInventory = -100;
-		sS_State.maxInventory = 100;
-		
-		double fixedOrderingCost = 50; 
-		double proportionalOrderingCost = 0; 
-		double holdingCost = 1;
-		double penaltyCost = 4;
-		
-		double[] demand = {20,30,20,40};
-		
-		plotCostFunction(demand,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost,false,false,false);
-	}
-	
 	public static void solveSampleInstance(
 			double[] demand,
 			double fixedOrderingCost, 
@@ -115,28 +100,16 @@ public class sS_DP {
 		Distribution[] distributions = IntStream.iterate(0, i -> i + 1).limit(demand.length).mapToObj(i -> new NormalDist(demand[i],demand[i]*0.4)).toArray(Distribution[]::new);
 		
 		sS_BackwardRecursion recursion = new sS_BackwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
-		//sS_SequentialBackwardRecursionPoisson recursion = new sS_SequentialBackwardRecursionPoisson(demand,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
+		//sS_SequentialBackwardRecursion recursion = new sS_SequentialBackwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
 		StopWatch timer = new StopWatch();
 		timer.start();
 		recursion.runBackwardRecursion();
 		timer.stop();
 	    System.out.println();
-		double[] S = new double[demand.length];
-		double[] s = new double[demand.length];
-		double ETC = Double.NaN;
-		for(int i = 0; i < demand.length; i++){
-			if(i == 0) {
-				sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(0, (int)Math.round(initialInventory*sS_State.factor));
-				State initialState = ((sS_StateSpace)recursion.getStateSpace(i)).getState(stateDescriptor);
-				ETC = recursion.expectedCost(initialState);
-				s[i] = recursion.find_s(i).getInitialInventory()/sS_State.factor;
-				S[i] = ((sS_Action)recursion.getCostRepository().getOptimalAction(initialState)).getOrderQuantity()/sS_State.factor+initialInventory;
-			}
-			else{
-				s[i] = recursion.find_s(i).getInitialInventory()/sS_State.factor;
-				S[i] = recursion.find_S(i).getInitialInventory()/sS_State.factor;
-			}
-		}
+		double ETC = recursion.getExpectedCost(initialInventory);
+	    double[][] optimalPolicy = recursion.getOptimalPolicy(initialInventory);
+	    double[] s = optimalPolicy[0];
+		double[] S = optimalPolicy[1];
 		
 		System.out.println("Expected total cost (assuming an initial inventory level "+initialInventory+"): "+ETC);
 		System.out.println("Time elapsed: "+timer);
@@ -153,7 +126,25 @@ public class sS_DP {
 		System.out.println("Simulated cost: "+df.format(results[0])+" Confidence interval=("+df.format(results[0]-results[1])+","+df.format(results[0]+results[1])+")@"+df.format(confidence*100)+"% confidence");
 	}
 	
+	public static void plotTest(){
+		sS_State.factor = 1;					//Factor must be 1 for discrete distributions
+		sS_State.minInventory = -100;
+		sS_State.maxInventory = 100;
+		
+		double fixedOrderingCost = 50; 
+		double proportionalOrderingCost = 0; 
+		double holdingCost = 1;
+		double penaltyCost = 4;
+		
+		double[] demand = {20,30,20,40};
+		
+		int targetPeriod = 0;
+		
+		plotCostFunction(targetPeriod, demand,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost,false,false,false);
+	}
+	
 	public static void plotCostFunction(
+			int targetPeriod,
 			double[] demand,
 			double fixedOrderingCost, 
 			double proportionalOrderingCost, 
@@ -172,12 +163,10 @@ public class sS_DP {
 			recursion.runBackwardRecursion(0);
 		XYSeries series = new XYSeries("(s,S) policy");
 		for(int i = 0; i <= sS_State.maxInventory; i++){
-			int period = 0;
-			sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(period, i);
-			sS_State state = (sS_State) ((sS_StateSpace)recursion.getStateSpace()[period]).getState(stateDescriptor);
-			series.add(i/sS_State.factor,recursion.expectedCost(state));
+			sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(targetPeriod, i);
+			series.add(i/sS_State.factor,recursion.getExpectedCost(stateDescriptor));
 			if(printCostFunctionValues) 
-				System.out.println(i/sS_State.factor+"\t"+recursion.expectedCost(state));
+				System.out.println(i/sS_State.factor+"\t"+recursion.getExpectedCost(stateDescriptor));
 		}
 		XYDataset xyDataset = new XYSeriesCollection(series);
 		JFreeChart chart = ChartFactory.createXYLineChart("(s,S) policy", "Opening inventory level", "Expected total cost",

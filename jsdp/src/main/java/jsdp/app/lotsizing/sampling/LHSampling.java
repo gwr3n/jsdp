@@ -65,19 +65,6 @@ public class LHSampling {
       return x;
     }
 
-    /*static int getUniform(int a, int b, Random rnd) {
-        double randDbl = rnd.nextDouble();
-        randDbl = (1.0 - randDbl) * ((double) (Math.min(a, b)) - 0.5)
-                  + randDbl * ((double) (Math.max(a, b)) + 0.5);
-
-        randDbl = Math.round(randDbl);
-
-        randDbl = Math.max(randDbl, Math.min(a, b));
-        randDbl = Math.min(randDbl, Math.max(a, b));
-
-        return (int)randDbl;
-    }*/
-
     static int[] perm_random ( int point_num, RandomStream stream){
         int[] perm = new int[point_num];
 
