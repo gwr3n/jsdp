@@ -26,6 +26,7 @@ import jsdp.sdp.State;
 import umontreal.ssj.charts.XYLineChart;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
+import umontreal.ssj.probdist.NormalDist;
 
 public class sS_DP {
 	
@@ -85,7 +86,9 @@ public class sS_DP {
 			double confidence,
 			double errorTolerance){
 		
-		sS_BackwardRecursionPoisson recursion = new sS_BackwardRecursionPoisson(demand,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
+		Distribution[] distributions = IntStream.iterate(0, i -> i + 1).limit(demand.length).mapToObj(i -> new NormalDist(demand[i],demand[i]*0.4)).toArray(Distribution[]::new);
+		
+		sS_BackwardRecursion recursion = new sS_BackwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
 		//sS_SequentialBackwardRecursionPoisson recursion = new sS_SequentialBackwardRecursionPoisson(demand,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
 		StopWatch timer = new StopWatch();
 		timer.start();
@@ -119,8 +122,6 @@ public class sS_DP {
 		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.ENGLISH);
 	    DecimalFormat df = new DecimalFormat("#.00",otherSymbols);
 		
-	    Distribution[] distributions = IntStream.iterate(0, i -> i + 1).limit(demand.length).mapToObj(i -> new PoissonDist(demand[i])).toArray(Distribution[]::new);
-	    
 		double[] results = SimulatePolicies.simulate_sS(distributions, fixedOrderingCost, holdingCost, penaltyCost, proportionalOrderingCost, initialInventory, S, s, confidence, errorTolerance);
 		System.out.println();
 		System.out.println("Simulated cost: "+df.format(results[0])+" Confidence interval=("+df.format(results[0]-results[1])+","+df.format(results[0]+results[1])+")@"+df.format(confidence*100)+"% confidence");
@@ -136,7 +137,9 @@ public class sS_DP {
 			boolean printCostFunctionValues,
 			boolean latexOutput){
 		
-		sS_BackwardRecursionPoisson recursion = new sS_BackwardRecursionPoisson(demand,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
+		Distribution[] distributions = IntStream.iterate(0, i -> i + 1).limit(demand.length).mapToObj(i -> new PoissonDist(demand[i])).toArray(Distribution[]::new);
+		
+		sS_BackwardRecursion recursion = new sS_BackwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
 		if(orderAtPeriod0)
 			recursion.runBackwardRecursion();
 		else

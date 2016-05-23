@@ -5,13 +5,15 @@ import java.util.Enumeration;
 import org.apache.logging.log4j.Logger;
 
 import jsdp.sdp.Action;
+import umontreal.ssj.probdist.Distribution;
 
 import org.apache.logging.log4j.LogManager;
 
-public class sS_SequentialBackwardRecursionPoisson extends sS_BackwardRecursionPoisson {
-	static final Logger logger = LogManager.getLogger(sS_BackwardRecursionPoisson.class.getName());
+public class sS_SequentialBackwardRecursion extends sS_BackwardRecursion {
+	static final Logger logger = LogManager.getLogger(sS_BackwardRecursion.class.getName());
 	
-	public sS_SequentialBackwardRecursionPoisson(double[] demand,
+	public sS_SequentialBackwardRecursion(
+			Distribution[] demand,
 			double fixedOrderingCost, 
 			double proportionalOrderingCost, 
 			double holdingCost,

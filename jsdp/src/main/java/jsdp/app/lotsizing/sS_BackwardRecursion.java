@@ -2,24 +2,25 @@ package jsdp.app.lotsizing;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.BackwardRecursion;
+import umontreal.ssj.probdist.Distribution;
 
-public class sS_BackwardRecursionPoisson extends BackwardRecursion{
+public class sS_BackwardRecursion extends BackwardRecursion{
 	
 	double fixedOrderingCost; 
 	double proportionalOrderingCost; 
 	double holdingCost;
 	double penaltyCost;
-	double[] demand;
+	Distribution[] demand;
 	
-	public sS_TransitionProbabilityPoisson getTransitionProbability(){
-		return (sS_TransitionProbabilityPoisson) this.transitionProbability; 
+	public sS_TransitionProbability getTransitionProbability(){
+		return (sS_TransitionProbability) this.transitionProbability; 
 	}
 	
 	public sS_CostRepository getCostRepository(){
 		return (sS_CostRepository) this.costRepository;
 	}
 	
-	public sS_BackwardRecursionPoisson(double[] demand,
+	public sS_BackwardRecursion(Distribution[] demand,
 								double fixedOrderingCost, 
 								double proportionalOrderingCost, 
 								double holdingCost,
@@ -36,7 +37,7 @@ public class sS_BackwardRecursionPoisson extends BackwardRecursion{
 		this.stateSpace = new sS_StateSpace[this.horizonLength+1];
 		for(int i = 0; i < this.horizonLength + 1; i++) 
 			this.stateSpace[i] = new sS_StateSpace(i);
-		this.transitionProbability = new sS_TransitionProbabilityPoisson(demand,(sS_StateSpace[])this.getStateSpace());
+		this.transitionProbability = new sS_TransitionProbability(demand,(sS_StateSpace[])this.getStateSpace(),sS_State.factor);
 		this.costRepository = new sS_CostRepository(fixedOrderingCost, proportionalOrderingCost, holdingCost, penaltyCost);
 	}
 

@@ -3,19 +3,28 @@ package jsdp.app.lotsizing;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.stream.IntStream;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
 import jsdp.sdp.TransitionProbability;
-import umontreal.ssj.probdist.PoissonDist;
+import jsdp.utilities.DiscreteDistributionFactory;
+import umontreal.ssj.probdist.DiscreteDistribution;
+import umontreal.ssj.probdist.Distribution;
 
-public class sS_TransitionProbabilityPoisson extends TransitionProbability {
-	double[] meanDemand;
-	double[] stdDemand;
+public class sS_TransitionProbability extends TransitionProbability {
+	DiscreteDistribution[] demand;
 	sS_StateSpace[] stateSpace;
 	
-	public sS_TransitionProbabilityPoisson(double[] meanDemand, sS_StateSpace[] stateSpace){
-		this.meanDemand = meanDemand;
+	public sS_TransitionProbability(Distribution[] demand, sS_StateSpace[] stateSpace, double stepSize){
+		this.demand = IntStream.iterate(0, i -> i + 1)
+							   .limit(demand.length)
+							   .mapToObj(i -> DiscreteDistributionFactory.getTruncatedDiscreteDistribution(
+									   							demand[i],
+									   							0,
+									   							sS_State.maxInventory-sS_State.minInventory,
+									   							stepSize))
+							   .toArray(DiscreteDistribution[]::new);
 		this.stateSpace = stateSpace;
 	}
 	
@@ -23,9 +32,7 @@ public class sS_TransitionProbabilityPoisson extends TransitionProbability {
 	public double getTransitionProbability(State initialState, Action action, State finalState) {
 		double realizedDemand = ((sS_State)initialState).getInitialInventory()+((sS_Action)action).getOrderQuantity()-((sS_State)finalState).getInitialInventory();
 		int period = ((sS_State)initialState).getPeriod();
-		PoissonDist distribution = new PoissonDist(meanDemand[period]);
-		//return (distribution.cdf(realizedDemand/sS_State.factor+0.5/sS_State.factor)-distribution.cdf(realizedDemand/sS_State.factor-0.5/sS_State.factor))/computeNormalization(initialState, action);
-		return (distribution.prob((int)Math.round(realizedDemand/sS_State.factor))/computeNormalization(initialState, action));
+		return this.demand[period].prob((int)Math.round(realizedDemand/sS_State.factor));
 	}
 
 	@Override
@@ -39,11 +46,5 @@ public class sS_TransitionProbabilityPoisson extends TransitionProbability {
 		Enumeration<State> e = Collections.enumeration(states);
 		return e;
 	}
-	
-	public double computeNormalization(State initialState, Action action){
-		int period = ((sS_State)initialState).getPeriod();
-		PoissonDist distribution = new PoissonDist(meanDemand[period]);
-		int maxDemand = ((sS_State) initialState).getInitialInventory() + ((sS_Action) action).getOrderQuantity() - sS_State.minInventory;
-		return distribution.cdf((int)Math.round(maxDemand/sS_State.factor));
-	}
 }
+
