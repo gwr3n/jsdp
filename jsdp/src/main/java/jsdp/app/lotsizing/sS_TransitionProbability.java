@@ -48,7 +48,7 @@ public class sS_TransitionProbability extends TransitionProbability {
 							   .mapToObj(i -> DiscreteDistributionFactory.getTruncatedDiscreteDistribution(
 									   							demand[i],
 									   							0,
-									   							sS_State.maxInventory-sS_State.minInventory,
+									   							(sS_State.maxInventory-sS_State.minInventory)*stepSize,
 									   							stepSize))
 							   .toArray(DiscreteDistribution[]::new);
 		this.stateSpace = stateSpace;
@@ -58,7 +58,7 @@ public class sS_TransitionProbability extends TransitionProbability {
 	public double getTransitionProbability(State initialState, Action action, State finalState) {
 		double realizedDemand = ((sS_State)initialState).getInitialInventory()+((sS_Action)action).getOrderQuantity()-((sS_State)finalState).getInitialInventory();
 		int period = ((sS_State)initialState).getPeriod();
-		return this.demand[period].prob((int)Math.round(realizedDemand/sS_State.factor));
+		return this.demand[period].prob((int)Math.round(realizedDemand));
 	}
 
 	@Override

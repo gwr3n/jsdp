@@ -73,7 +73,7 @@ public class sS_SequentialBackwardRecursion extends sS_BackwardRecursion {
 				while(--i >= sS_State.minInventory){
 					stateDescriptor = new sS_StateDescriptor(period, i);
 					state = (sS_State) ((sS_StateSpace)this.getStateSpace()[period]).getState(stateDescriptor);
-					double orderingCostIncrement = (((sS_Action)bestAction).orderQty+1-initialOrderQty)/sS_State.factor*this.proportionalOrderingCost;
+					double orderingCostIncrement = (((sS_Action)bestAction).orderQty+1-initialOrderQty)*sS_State.factor*this.proportionalOrderingCost;
 					this.getCostRepository().setOptimalExpectedCost(state, bestCost+orderingCostIncrement);
 					bestAction = new sS_Action(state, ((sS_Action)bestAction).orderQty+1); 
 					this.getCostRepository().setOptimalAction(state, bestAction);

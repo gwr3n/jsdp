@@ -36,9 +36,9 @@ public class sS_State extends State {
 	private int initialInventory;
 	
 	//Factor must be 1 for discrete distributions
-	public static double factor = 1;
-	public static int minInventory = -100;
-	public static int maxInventory = 150;
+	public static double factor;
+	public static int minInventory;
+	public static int maxInventory;
 	
 	public sS_State(sS_StateDescriptor descriptor){
 		this.period = descriptor.getPeriod();

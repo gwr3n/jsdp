@@ -48,7 +48,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import jsdp.app.lotsizing.simulation.SimulatePolicies;
-import jsdp.sdp.State;
+
 import umontreal.ssj.charts.XYLineChart;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
@@ -59,8 +59,8 @@ public class sS_DP {
 	static final Logger logger = LogManager.getLogger(sS_DP.class.getName());
 	
 	public static void main(String[] args) {
-		//simpleTest();
-		plotTest();
+		simpleTest();
+		//plotTest();
 	}
 	
 	public static void simpleTest(){
@@ -99,8 +99,8 @@ public class sS_DP {
 		
 		Distribution[] distributions = IntStream.iterate(0, i -> i + 1).limit(demand.length).mapToObj(i -> new NormalDist(demand[i],demand[i]*0.4)).toArray(Distribution[]::new);
 		
-		sS_BackwardRecursion recursion = new sS_BackwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
-		//sS_SequentialBackwardRecursion recursion = new sS_SequentialBackwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
+		//sS_BackwardRecursion recursion = new sS_BackwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
+		sS_SequentialBackwardRecursion recursion = new sS_SequentialBackwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
 		StopWatch timer = new StopWatch();
 		timer.start();
 		recursion.runBackwardRecursion();
@@ -164,9 +164,9 @@ public class sS_DP {
 		XYSeries series = new XYSeries("(s,S) policy");
 		for(int i = 0; i <= sS_State.maxInventory; i++){
 			sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(targetPeriod, i);
-			series.add(i/sS_State.factor,recursion.getExpectedCost(stateDescriptor));
+			series.add(i*sS_State.factor,recursion.getExpectedCost(stateDescriptor));
 			if(printCostFunctionValues) 
-				System.out.println(i/sS_State.factor+"\t"+recursion.getExpectedCost(stateDescriptor));
+				System.out.println(i*sS_State.factor+"\t"+recursion.getExpectedCost(stateDescriptor));
 		}
 		XYDataset xyDataset = new XYSeriesCollection(series);
 		JFreeChart chart = ChartFactory.createXYLineChart("(s,S) policy", "Opening inventory level", "Expected total cost",

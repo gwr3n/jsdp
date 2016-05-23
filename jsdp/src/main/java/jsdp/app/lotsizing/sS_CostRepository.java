@@ -50,8 +50,8 @@ public class sS_CostRepository extends CostRepository {
 	protected double getImmediateCost(State initialState, Action action, State finalState) {
 		sS_Action a = (sS_Action)action;
 		sS_State fs = (sS_State)finalState;
-		double totalCost = a.getOrderQuantity() > 0 ? (fixedOrderingCost + a.getOrderQuantity()/sS_State.factor*proportionalOrderingCost) : 0;
-		totalCost += Math.max(fs.getInitialInventory()/sS_State.factor,0)*holdingCost+Math.max(-fs.getInitialInventory()/sS_State.factor,0)*penaltyCost;
+		double totalCost = a.getOrderQuantity() > 0 ? (fixedOrderingCost + a.getOrderQuantity()*sS_State.factor*proportionalOrderingCost) : 0;
+		totalCost += Math.max(fs.getInitialInventory()*sS_State.factor,0)*holdingCost+Math.max(-fs.getInitialInventory()*sS_State.factor,0)*penaltyCost;
 		return totalCost;
 	}
 

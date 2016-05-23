@@ -39,52 +39,6 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 	double penaltyCost;
 	Distribution[] demand;
 	
-	public double[][] getOptimalPolicy(double initialInventory){
-		double[][] optimalPolicy = new double[2][];
-		double[] S = new double[demand.length];
-		double[] s = new double[demand.length];
-		for(int i = 0; i < demand.length; i++){
-			if(i == 0) {
-				sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(0, (int)Math.round(initialInventory*sS_State.factor));
-				s[i] = this.find_s(i).getInitialInventory()/sS_State.factor;
-				S[i] = this.getOptimalAction(stateDescriptor).getOrderQuantity()/sS_State.factor+initialInventory;
-			}
-			else{
-				s[i] = this.find_s(i).getInitialInventory()/sS_State.factor;
-				S[i] = this.find_S(i).getInitialInventory()/sS_State.factor;
-			}
-		}
-		optimalPolicy[0] = s;
-		optimalPolicy[1] = S;
-		return optimalPolicy;
-	}
-	
-	public double getExpectedCost(double initialInventory){
-		sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(0, (int)Math.round(initialInventory*sS_State.factor));
-		State state = ((sS_StateSpace)this.getStateSpace(stateDescriptor.getPeriod())).getState(stateDescriptor);
-		return expectedCost(state);
-	}
-	
-	public double getExpectedCost(sS_StateDescriptor stateDescriptor){
-		State state = ((sS_StateSpace)this.getStateSpace(stateDescriptor.getPeriod())).getState(stateDescriptor);
-		return expectedCost(state);
-	}
-	
-	public sS_Action getOptimalAction(sS_StateDescriptor stateDescriptor){
-		State state = ((sS_StateSpace)this.getStateSpace(stateDescriptor.getPeriod())).getState(stateDescriptor);
-		return (sS_Action) this.getCostRepository().getOptimalAction(state);
-	}
-	
-	@Override
-	public sS_TransitionProbability getTransitionProbability(){
-		return (sS_TransitionProbability) this.transitionProbability; 
-	}
-	
-	@Override
-	public sS_CostRepository getCostRepository(){
-		return (sS_CostRepository) this.costRepository;
-	}
-	
 	public sS_BackwardRecursion(Distribution[] demand,
 								double fixedOrderingCost, 
 								double proportionalOrderingCost, 
@@ -104,6 +58,52 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 			this.stateSpace[i] = new sS_StateSpace(i);
 		this.transitionProbability = new sS_TransitionProbability(demand,(sS_StateSpace[])this.getStateSpace(),sS_State.factor);
 		this.costRepository = new sS_CostRepository(fixedOrderingCost, proportionalOrderingCost, holdingCost, penaltyCost);
+	}
+	
+	public double[][] getOptimalPolicy(double initialInventory){
+		double[][] optimalPolicy = new double[2][];
+		double[] S = new double[demand.length];
+		double[] s = new double[demand.length];
+		for(int i = 0; i < demand.length; i++){
+			if(i == 0) {
+				sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(0, (int)Math.round(initialInventory/sS_State.factor));
+				s[i] = this.find_s(i).getInitialInventory()*sS_State.factor;
+				S[i] = this.getOptimalAction(stateDescriptor).getOrderQuantity()*sS_State.factor+initialInventory;
+			}
+			else{
+				s[i] = this.find_s(i).getInitialInventory()*sS_State.factor;
+				S[i] = this.find_S(i).getInitialInventory()*sS_State.factor;
+			}
+		}
+		optimalPolicy[0] = s;
+		optimalPolicy[1] = S;
+		return optimalPolicy;
+	}
+	
+	@Override
+	public sS_TransitionProbability getTransitionProbability(){
+		return (sS_TransitionProbability) this.transitionProbability; 
+	}
+	
+	@Override
+	public sS_CostRepository getCostRepository(){
+		return (sS_CostRepository) this.costRepository;
+	}
+	
+	public double getExpectedCost(double initialInventory){
+		sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(0, (int)Math.round(initialInventory/sS_State.factor));
+		State state = ((sS_StateSpace)this.getStateSpace(stateDescriptor.getPeriod())).getState(stateDescriptor);
+		return expectedCost(state);
+	}
+	
+	public double getExpectedCost(sS_StateDescriptor stateDescriptor){
+		State state = ((sS_StateSpace)this.getStateSpace(stateDescriptor.getPeriod())).getState(stateDescriptor);
+		return expectedCost(state);
+	}
+	
+	public sS_Action getOptimalAction(sS_StateDescriptor stateDescriptor){
+		State state = ((sS_StateSpace)this.getStateSpace(stateDescriptor.getPeriod())).getState(stateDescriptor);
+		return (sS_Action) this.getCostRepository().getOptimalAction(state);
 	}
 
 	public sS_State find_S(int period){

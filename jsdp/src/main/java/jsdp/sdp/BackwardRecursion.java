@@ -112,6 +112,7 @@ public abstract class BackwardRecursion {
 	protected void recurse(int period){
 		this.getStateSpace(period).entrySet()
 			.parallelStream()
+			//.stream()
 			.forEach(entry -> {
 				State state = entry.getValue();
 				BestActionRepository repository = new BestActionRepository();
@@ -122,6 +123,7 @@ public abstract class BackwardRecursion {
 				this.getCostRepository().setOptimalExpectedCost(state, repository.getBestCost());
 				this.getCostRepository().setOptimalAction(state, repository.getBestAction());
 				logger.trace(repository.getBestAction()+"\tCost: "+repository.getBestCost());
+				//System.out.println(repository.getBestAction()+"\tCost: "+repository.getBestCost());
 			});
 	}
 	
