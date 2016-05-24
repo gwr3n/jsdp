@@ -31,21 +31,29 @@ import jsdp.sdp.State;
 
 public class sS_Action extends Action {
 	
-	int orderQty;
+	int intAction;
 	
-	public sS_Action(State state, int orderQty){
-		this.state = state;
-		this.orderQty = orderQty;
+	public static double actionToOrderQuantity(int action){
+		return action*sS_State.factor;
 	}
 	
-	public int getOrderQuantity(){
-		return this.orderQty;
+	public static int orderQuantityToAction(double orderQty){
+		return (int) Math.round(orderQty/sS_State.factor);
+	}
+	
+	public sS_Action(State state, int intAction){
+		this.state = state;
+		this.intAction = intAction;
+	}
+	
+	public int getIntAction(){
+		return this.intAction;
 	}
 	
 	@Override
 	public boolean equals(Object action){
 		if(action instanceof sS_Action)
-			return this.orderQty == ((sS_Action)action).orderQty;
+			return this.intAction == ((sS_Action)action).intAction;
 		else
 			return false;
 	}
@@ -53,12 +61,12 @@ public class sS_Action extends Action {
 	@Override
 	public int hashCode(){
 		String hash = "";
-        hash = (hash + orderQty);
+        hash = (hash + intAction);
         return hash.hashCode();
 	}
 	
 	@Override
 	public String toString(){
-		return state+"\tAction: "+this.orderQty;
+		return state+"\tAction: "+ actionToOrderQuantity(this.intAction);
 	}
 }

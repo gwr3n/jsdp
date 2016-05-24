@@ -33,46 +33,59 @@ import jsdp.sdp.State;
 
 public class sS_State extends State {
 	
-	private int initialInventory;
+	private int initialIntState;
 	
 	//Factor must be 1 for discrete distributions
 	public static double factor;
-	public static int minInventory;
-	public static int maxInventory;
+	public static int minIntState;
+	public static int maxIntState;
+	
+	public static double stateToInventory(int state){
+		return state*factor;
+	}
+	
+	public static int inventoryToState(double inventory){
+		return (int) Math.round(inventory/factor);
+	}
+	
+	public static double getMinInventory(){
+		return stateToInventory(minIntState);
+	}
+	
+	public static double getMaxInventory(){
+		return stateToInventory(maxIntState);
+	}
 	
 	public sS_State(sS_StateDescriptor descriptor){
 		this.period = descriptor.getPeriod();
-		this.initialInventory = descriptor.getInitialInventory();
+		this.initialIntState = descriptor.getInitialIntState();
 		this.buildActionList();
 	}
 	
-	/**
-	 * Implement inventory normalisation!
-	 */
-	public int getInitialInventory(){
-		return this.initialInventory;
+	public int getInitialIntState(){
+		return this.initialIntState;
 	}
 	
 	@Override
 	protected void buildActionList(){
 		this.noAction = new sS_Action(this, 0);
 		this.permissibleActions = new ArrayList<Action>();
-		for(int i = this.initialInventory; i <= maxInventory; i++){
-			permissibleActions.add(new sS_Action(this, i - this.initialInventory));
+		for(int i = this.initialIntState; i <= maxIntState; i++){
+			permissibleActions.add(new sS_Action(this, i - this.initialIntState));
 		}
 	}
 	
 	@Override
 	public boolean equals(Object state){
 		if(state instanceof sS_State)
-			return this.period == ((sS_State)state).period && this.initialInventory == ((sS_State)state).initialInventory;
+			return this.period == ((sS_State)state).period && this.initialIntState == ((sS_State)state).initialIntState;
 		else return false;
 	}
 	
 	@Override
 	public int hashCode(){
 		String hash = "";
-        hash = (hash + period) + initialInventory;
+        hash = (hash + period) + initialIntState;
         return hash.hashCode();
 	}
 
@@ -84,6 +97,6 @@ public class sS_State extends State {
 	
 	@Override
 	public String toString(){
-		return "Period: "+this.period+"\tInventory:"+this.initialInventory;
+		return "Period: "+this.period+"\tInventory:"+stateToInventory(this.initialIntState);
 	}
 }

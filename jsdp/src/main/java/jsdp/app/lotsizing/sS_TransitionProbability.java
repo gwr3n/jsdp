@@ -27,9 +27,8 @@
 package jsdp.app.lotsizing;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
@@ -48,7 +47,7 @@ public class sS_TransitionProbability extends TransitionProbability {
 							   .mapToObj(i -> DiscreteDistributionFactory.getTruncatedDiscreteDistribution(
 									   							demand[i],
 									   							0,
-									   							(sS_State.maxInventory-sS_State.minInventory)*stepSize,
+									   							sS_State.stateToInventory(sS_State.maxIntState-sS_State.minIntState),
 									   							stepSize))
 							   .toArray(DiscreteDistribution[]::new);
 		this.stateSpace = stateSpace;
@@ -56,21 +55,23 @@ public class sS_TransitionProbability extends TransitionProbability {
 	
 	@Override
 	public double getTransitionProbability(State initialState, Action action, State finalState) {
-		double realizedDemand = ((sS_State)initialState).getInitialInventory()+((sS_Action)action).getOrderQuantity()-((sS_State)finalState).getInitialInventory();
+		double realizedDemand = ((sS_State)initialState).getInitialIntState() +
+								((sS_Action)action).getIntAction() -
+								((sS_State)finalState).getInitialIntState();
 		int period = ((sS_State)initialState).getPeriod();
 		return this.demand[period].prob((int)Math.round(realizedDemand));
 	}
 
 	@Override
-	public Enumeration<State> getFinalStates(State initialState, Action action) {
+	public Stream<State> getFinalStates(State initialState, Action action) {
 		ArrayList<State> states = new ArrayList<State>();
-		int openingInventory = ((sS_State) initialState).getInitialInventory() + ((sS_Action) action).getOrderQuantity();
-		for(int i = openingInventory; i >= sS_State.minInventory; i--){
+		int initialIntState = 	((sS_State) initialState).getInitialIntState() + 
+								((sS_Action) action).getIntAction();
+		for(int i = initialIntState; i >= sS_State.minIntState; i--){
 			sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(((sS_State) initialState).getPeriod()+1,i);
 			states.add(this.stateSpace[((sS_State) initialState).getPeriod()+1].getState(stateDescriptor));
 		}
-		Enumeration<State> e = Collections.enumeration(states);
-		return e;
+		return states.parallelStream();
 	}
 }
 

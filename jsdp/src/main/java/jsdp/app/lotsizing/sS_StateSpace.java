@@ -47,9 +47,6 @@ public class sS_StateSpace extends StateSpace<sS_StateDescriptor>{
 			return (sS_State)value;
 	}
 	
-	/*
-	 * Needed?
-	 */
 	public Iterator<State> iterator() {
 		return new sS_StateSpaceIterator(this.getPeriod(), this);
 	}

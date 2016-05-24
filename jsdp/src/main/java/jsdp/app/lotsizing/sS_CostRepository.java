@@ -26,7 +26,6 @@
 
 package jsdp.app.lotsizing;
 
-import java.util.Enumeration;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.CostRepository;
@@ -50,8 +49,9 @@ public class sS_CostRepository extends CostRepository {
 	protected double getImmediateCost(State initialState, Action action, State finalState) {
 		sS_Action a = (sS_Action)action;
 		sS_State fs = (sS_State)finalState;
-		double totalCost = a.getOrderQuantity() > 0 ? (fixedOrderingCost + a.getOrderQuantity()*sS_State.factor*proportionalOrderingCost) : 0;
-		totalCost += Math.max(fs.getInitialInventory()*sS_State.factor,0)*holdingCost+Math.max(-fs.getInitialInventory()*sS_State.factor,0)*penaltyCost;
+		double totalCost = a.getIntAction() > 0 ? (fixedOrderingCost + sS_Action.actionToOrderQuantity(a.getIntAction())*proportionalOrderingCost) : 0;
+		totalCost += 	Math.max(sS_State.stateToInventory(fs.getInitialIntState()),0)*holdingCost+
+						Math.max(-sS_State.stateToInventory(fs.getInitialIntState()),0)*penaltyCost;
 		return totalCost;
 	}
 
@@ -61,13 +61,10 @@ public class sS_CostRepository extends CostRepository {
 		if(this.costHashTable.containsKey(key)) 
 			return this.costHashTable.get(key).doubleValue();
 		
-		Enumeration<State> e = transitionProbability.getFinalStates(initialState, action);
-		double expectedTotalCost = 0;
-		while(e.hasMoreElements()){
-			sS_State finalState = (sS_State)e.nextElement();
-			expectedTotalCost += (this.getImmediateCost(initialState, action, finalState)+this.getOptimalExpectedCost(finalState))
-					*transitionProbability.getTransitionProbability(initialState, action, finalState);
-		}
+		double expectedTotalCost = transitionProbability.getFinalStates(initialState, action).mapToDouble(finalState -> 
+			(this.getImmediateCost(initialState, action, finalState)+this.getOptimalExpectedCost(finalState))
+			*transitionProbability.getTransitionProbability(initialState, action, finalState)
+		).sum();
 		this.costHashTable.put(key, new Double(expectedTotalCost));
 		return expectedTotalCost;
 	}

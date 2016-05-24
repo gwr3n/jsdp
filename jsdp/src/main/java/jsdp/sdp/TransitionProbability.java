@@ -26,9 +26,9 @@
 
 package jsdp.sdp;
 
-import java.util.Enumeration;
+import java.util.stream.Stream;
 
 public abstract class TransitionProbability {
 	public abstract double getTransitionProbability(State initialState, Action action, State finalState);
-	public abstract Enumeration<State> getFinalStates(State initialState, Action action);
+	public abstract Stream<State> getFinalStates(State initialState, Action action);
 }

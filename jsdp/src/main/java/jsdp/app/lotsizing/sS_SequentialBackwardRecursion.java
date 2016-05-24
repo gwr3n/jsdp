@@ -49,7 +49,7 @@ public class sS_SequentialBackwardRecursion extends sS_BackwardRecursion {
 	
 	@Override
 	protected void recurse(int period){
-		for(int i = sS_State.maxInventory; i >= sS_State.minInventory; i--){
+		for(int i = sS_State.maxIntState; i >= sS_State.minIntState; i--){
 			sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(period, i);
 			sS_State state = (sS_State) ((sS_StateSpace)this.getStateSpace()[period]).getState(stateDescriptor);
 			Action bestAction = null;
@@ -65,20 +65,18 @@ public class sS_SequentialBackwardRecursion extends sS_BackwardRecursion {
 			}
 			this.getCostRepository().setOptimalExpectedCost(state, bestCost);
 			this.getCostRepository().setOptimalAction(state, bestAction);
-			logger.trace("Period["+period+"]\tInventory: "+i+"\tOrder: "+((sS_Action)bestAction).orderQty+"\tCost: "+bestCost);
-			//System.out.println("Period["+period+"]\tInventory: "+i+"\tOrder: "+((sS_Action)bestAction).orderQty+"\tCost: "+bestCost);
+			logger.trace("Period["+period+"]\tInventory: "+i+"\tOrder: "+sS_Action.actionToOrderQuantity(((sS_Action)bestAction).intAction)+"\tCost: "+bestCost);
 			
-			if(((sS_Action)bestAction).getOrderQuantity() > 0){
-				double initialOrderQty = ((sS_Action)bestAction).getOrderQuantity();
-				while(--i >= sS_State.minInventory){
+			if(((sS_Action)bestAction).getIntAction() > 0){
+				int initialAction = ((sS_Action)bestAction).getIntAction();
+				while(--i >= sS_State.minIntState){
 					stateDescriptor = new sS_StateDescriptor(period, i);
 					state = (sS_State) ((sS_StateSpace)this.getStateSpace()[period]).getState(stateDescriptor);
-					double orderingCostIncrement = (((sS_Action)bestAction).orderQty+1-initialOrderQty)*sS_State.factor*this.proportionalOrderingCost;
+					double orderingCostIncrement = sS_Action.actionToOrderQuantity(((sS_Action)bestAction).intAction+1-initialAction)*this.proportionalOrderingCost;
 					this.getCostRepository().setOptimalExpectedCost(state, bestCost+orderingCostIncrement);
-					bestAction = new sS_Action(state, ((sS_Action)bestAction).orderQty+1); 
+					bestAction = new sS_Action(state, ((sS_Action)bestAction).intAction+1); 
 					this.getCostRepository().setOptimalAction(state, bestAction);
-					logger.trace("Period["+period+"]\tInventory: "+i+"\tOrder: "+((sS_Action)bestAction).orderQty+"\tCost: "+bestCost);
-					//System.out.println("Period["+period+"]\tInventory: "+i+"\tOrder: "+((sS_Action)bestAction).orderQty+"\tCost: "+bestCost);
+					logger.trace("Period["+period+"]\tInventory: "+i+"\tOrder: "+sS_Action.actionToOrderQuantity(((sS_Action)bestAction).intAction)+"\tCost: "+bestCost);
 				}
 			}
 		}

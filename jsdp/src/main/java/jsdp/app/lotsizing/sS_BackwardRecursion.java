@@ -45,7 +45,6 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 								double holdingCost,
 								double penaltyCost){
 		this.demand = demand;
-		
 		this.horizonLength = demand.length;
 		
 		this.fixedOrderingCost = fixedOrderingCost;
@@ -66,13 +65,13 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 		double[] s = new double[demand.length];
 		for(int i = 0; i < demand.length; i++){
 			if(i == 0) {
-				sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(0, (int)Math.round(initialInventory/sS_State.factor));
-				s[i] = this.find_s(i).getInitialInventory()*sS_State.factor;
-				S[i] = this.getOptimalAction(stateDescriptor).getOrderQuantity()*sS_State.factor+initialInventory;
+				sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(0, sS_State.inventoryToState(initialInventory));
+				s[i] = sS_State.stateToInventory(this.find_s(i).getInitialIntState());
+				S[i] = sS_Action.actionToOrderQuantity(this.getOptimalAction(stateDescriptor).getIntAction())+initialInventory;
 			}
 			else{
-				s[i] = this.find_s(i).getInitialInventory()*sS_State.factor;
-				S[i] = this.find_S(i).getInitialInventory()*sS_State.factor;
+				s[i] = sS_State.stateToInventory(this.find_s(i).getInitialIntState());
+				S[i] = sS_State.stateToInventory(this.find_S(i).getInitialIntState());
 			}
 		}
 		optimalPolicy[0] = s;
@@ -91,9 +90,8 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 	}
 	
 	public double getExpectedCost(double initialInventory){
-		sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(0, (int)Math.round(initialInventory/sS_State.factor));
-		State state = ((sS_StateSpace)this.getStateSpace(stateDescriptor.getPeriod())).getState(stateDescriptor);
-		return expectedCost(state);
+		sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(0, sS_State.inventoryToState(initialInventory));
+		return getExpectedCost(stateDescriptor);
 	}
 	
 	public double getExpectedCost(sS_StateDescriptor stateDescriptor){
@@ -108,7 +106,7 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 
 	public sS_State find_S(int period){
 		sS_State s = this.find_s(period);
-		int i = ((sS_Action)this.getCostRepository().getOptimalAction(s)).getOrderQuantity()+s.getInitialInventory();
+		int i = ((sS_Action)this.getCostRepository().getOptimalAction(s)).getIntAction()+s.getInitialIntState();
 		sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(period, i);
 		sS_State state = (sS_State) ((sS_StateSpace)this.getStateSpace()[period]).getState(stateDescriptor);
 		return state;
@@ -120,7 +118,7 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 		do{
 			state = (sS_State) iterator.next();
 			Action action = this.getCostRepository().getOptimalAction(state);
-			if(((sS_Action)action).getOrderQuantity() > 0){
+			if(((sS_Action)action).getIntAction() > 0){
 				return state;
 			}
 		}while(iterator.hasNext());
