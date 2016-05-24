@@ -29,6 +29,7 @@ package jsdp.app.lotsizing.sampling;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
+import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 import org.junit.After;
@@ -38,6 +39,7 @@ import org.junit.Test;
 import umontreal.ssj.gof.GofStat;
 import umontreal.ssj.probdist.ContinuousDistribution;
 import umontreal.ssj.probdist.Distribution;
+import umontreal.ssj.probdist.EmpiricalDist;
 import umontreal.ssj.probdist.NormalDist;
 
 /* 
@@ -83,7 +85,70 @@ public class NormalSampleTest {
 	}
 	
 	@Test
-	public void testGetNormalLHSSample(){
-		fail("Not yet implemented");
+	public void testGetNormalLHSSampleGof(){
+		int N = 200;
+		int randomVariables = 2;
+		double[] arrayMu = new double[randomVariables];
+		double[] arraySigma = new double[randomVariables];
+		Arrays.fill(arrayMu, 30);
+		Arrays.fill(arraySigma, 3);
+		
+		Distribution[] distributions = IntStream.iterate(0, i -> i + 1)
+												.limit(randomVariables)
+												.mapToObj(i -> new NormalDist(arrayMu[i],arraySigma[i]))
+												.toArray(Distribution[]::new);
+	    
+		double[][] dataLHS = SampleFactory.getInstance().getNextLHSample(distributions, N);
+		ContinuousDistribution distribution = new NormalDist(30,3);
+		double[] sval = new double[3];
+		double[] pval = new double[3];
+		GofStat.kolmogorovSmirnov(dataLHS[0], distribution, sval, pval);
+		assertTrue("Gof (KS): "+pval[2]+"<= 0.05", pval[2] >= 0.05);
+		GofStat.kolmogorovSmirnov(dataLHS[1], distribution, sval, pval);
+		assertTrue("Gof (KS): "+pval[2]+"<= 0.05", pval[2] >= 0.05);
+	}
+	
+	@Test
+	public void testVarianceReduction(){
+		int N = 200;
+		int randomVariables = 10;
+		
+		ContinuousDistribution distribution = new NormalDist(30,3);
+		
+		double[] arrayMu = new double[randomVariables];
+		double[] arraySigma = new double[randomVariables];
+		
+		Arrays.fill(arrayMu, distribution.getMean());
+		Arrays.fill(arraySigma, distribution.getStandardDeviation());
+		
+		Distribution[] distributions = IntStream.iterate(0, i -> i + 1)
+												.limit(randomVariables)
+												.mapToObj(i -> new NormalDist(arrayMu[i],arraySigma[i]))
+												.toArray(Distribution[]::new);
+	    
+		double[][] dataLHS = SampleFactory.getInstance().getNextLHSample(distributions, N);
+		
+		double[][] dataSRS = IntStream.iterate(0, d -> d + 1)
+									.limit(randomVariables)
+									.mapToObj(d -> DoubleStream.iterate(0, i -> i + 1)
+															   .limit(N).map(i -> SampleFactory.getInstance().getNextSample(distributions)[d]).toArray()
+									).toArray(double[][]::new);
+		
+		
+		for(int i = 0; i < randomVariables; i++) Arrays.sort(dataLHS[i]);
+		EmpiricalDist empLHS[] = IntStream.iterate(0, i -> i + 1)
+										  .limit(randomVariables)
+									      .mapToObj(i -> new EmpiricalDist(dataLHS[i]))
+									      .toArray(EmpiricalDist[]::new);
+		for(int i = 0; i < randomVariables; i++) Arrays.sort(dataSRS[i]);
+		EmpiricalDist empSRS[] = IntStream.iterate(0, i -> i + 1)
+										  .limit(randomVariables)
+										  .mapToObj(i -> new EmpiricalDist(dataSRS[i]))
+										  .toArray(EmpiricalDist[]::new);
+		
+		for(int i = 0; i < randomVariables; i++)
+			assertTrue("LHS Mean: "+empLHS[i].getMean()+"\tSRS Mean: "+empSRS[i].getMean(), 
+					Math.abs(distribution.getMean()-empLHS[i].getMean()) < Math.abs(distribution.getMean()-empSRS[i].getMean()));
+
 	}
 }

@@ -29,6 +29,7 @@ package jsdp.app.lotsizing.sampling;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
+import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 import org.junit.After;
@@ -38,8 +39,11 @@ import org.junit.Test;
 import cern.colt.list.IntArrayList;
 import umontreal.ssj.gof.GofStat;
 import umontreal.ssj.probdist.ChiSquareDist;
+import umontreal.ssj.probdist.ContinuousDistribution;
 import umontreal.ssj.probdist.DiscreteDistributionInt;
 import umontreal.ssj.probdist.Distribution;
+import umontreal.ssj.probdist.EmpiricalDist;
+import umontreal.ssj.probdist.NormalDist;
 import umontreal.ssj.probdist.PoissonDist;
 
 public class PoissonSampleTest {
@@ -63,7 +67,7 @@ public class PoissonSampleTest {
 	}
 
 	@Test
-	public void testGetNextPoissonSample() {
+	public void testGetNextPoissonSampleGof() {
 		int N = 10000;
 		double[] array = new double[N];
 		Arrays.fill(array, 30);
@@ -85,8 +89,45 @@ public class PoissonSampleTest {
 	}
 
 	@Test
-	public void testGetPoissonLHSSampleMatrix() {
-		fail("Not yet implemented");
+	public void testVarianceReduction(){
+		int N = 200;
+		int randomVariables = 10;
+		
+		DiscreteDistributionInt distribution = new PoissonDist(30);
+		
+		double[] arraylambda = new double[randomVariables];
+		
+		Arrays.fill(arraylambda, distribution.getMean());
+		
+		Distribution[] distributions = IntStream.iterate(0, i -> i + 1)
+												.limit(randomVariables)
+												.mapToObj(i -> new PoissonDist(arraylambda[i]))
+												.toArray(Distribution[]::new);
+	    
+		double[][] dataLHS = SampleFactory.getInstance().getNextLHSample(distributions, N);
+		
+		double[][] dataSRS = IntStream.iterate(0, d -> d + 1)
+									.limit(randomVariables)
+									.mapToObj(d -> DoubleStream.iterate(0, i -> i + 1)
+															   .limit(N).map(i -> SampleFactory.getInstance().getNextSample(distributions)[d]).toArray()
+									).toArray(double[][]::new);
+		
+		
+		for(int i = 0; i < randomVariables; i++) Arrays.sort(dataLHS[i]);
+		EmpiricalDist empLHS[] = IntStream.iterate(0, i -> i + 1)
+										  .limit(randomVariables)
+									      .mapToObj(i -> new EmpiricalDist(dataLHS[i]))
+									      .toArray(EmpiricalDist[]::new);
+		for(int i = 0; i < randomVariables; i++) Arrays.sort(dataSRS[i]);
+		EmpiricalDist empSRS[] = IntStream.iterate(0, i -> i + 1)
+										  .limit(randomVariables)
+										  .mapToObj(i -> new EmpiricalDist(dataSRS[i]))
+										  .toArray(EmpiricalDist[]::new);
+		
+		for(int i = 0; i < randomVariables; i++)
+			assertTrue("LHS Mean: "+empLHS[i].getMean()+"\tSRS Mean: "+empSRS[i].getMean(), 
+					Math.abs(distribution.getMean()-empLHS[i].getMean()) < Math.abs(distribution.getMean()-empSRS[i].getMean()));
+
 	}
 
 }

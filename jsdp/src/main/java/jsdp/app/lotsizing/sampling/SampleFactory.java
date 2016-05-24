@@ -26,10 +26,12 @@
 
 package jsdp.app.lotsizing.sampling;
 
+import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.randvar.UniformGen;
+import umontreal.ssj.randvar.UniformIntGen;
 import umontreal.ssj.rng.MRG32k3aL;
 import umontreal.ssj.rng.RandomStream;
 
@@ -61,14 +63,29 @@ public class SampleFactory {
 				).toArray();
 	}
 	
-	public double[][] getLHSSampleMatrix(Distribution[] distributions, int samples){
-        double[][] sampledProbabilities = LHSampling.latin_random(distributions.length, samples, stream);
-        double[][] poissonSample = new double[samples][distributions.length];
-        for(int i = 0; i < samples; i++){
-            for(int j = 0; j < distributions.length; j++){
-            	poissonSample[i][j] = distributions[i].inverseF(sampledProbabilities[j][i]);
-            }
-        }
-        return poissonSample;
-    }
+	private double[] shuffle(double[] sample){
+		for(int i = 0; i < sample.length; i++){
+			int j = UniformIntGen.nextInt(stream, 0, sample.length - 1);
+			double temp = sample[i];
+			sample[i] = sample[j];
+			sample[j] = temp;
+		}
+		return sample;
+	}
+	
+	public double[][] getNextLHSample(Distribution[] distributions, int samples){
+		double x[][] = new double[distributions.length][samples];
+		x = IntStream.iterate(0, d -> d + 1)
+					 .limit(distributions.length)
+					 .mapToObj(
+							 d -> DoubleStream.iterate(0, i -> i + 1.0/samples)
+							 				  .limit(samples)
+							 				  .map(i -> distributions[d].inverseF(i + UniformGen.nextDouble(stream, 0, 1.0/samples)))
+							 				  .toArray())
+					 .toArray(double[][]::new);	
+		for(int i = 0; i < x.length; i++){
+			shuffle(x[i]);
+		}
+		return x;
+	}
 }
