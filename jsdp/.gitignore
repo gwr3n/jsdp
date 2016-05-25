@@ -4,6 +4,11 @@
 __MACOSX
 .DS_Store
 
+.project
+.settings
+.classpath
+.sass-cache/
+
 # OS generated files #
 ######################
 */.DS_Store
