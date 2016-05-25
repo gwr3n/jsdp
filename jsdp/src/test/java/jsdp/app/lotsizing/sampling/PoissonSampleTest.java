@@ -39,11 +39,9 @@ import org.junit.Test;
 import cern.colt.list.IntArrayList;
 import umontreal.ssj.gof.GofStat;
 import umontreal.ssj.probdist.ChiSquareDist;
-import umontreal.ssj.probdist.ContinuousDistribution;
 import umontreal.ssj.probdist.DiscreteDistributionInt;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.EmpiricalDist;
-import umontreal.ssj.probdist.NormalDist;
 import umontreal.ssj.probdist.PoissonDist;
 
 public class PoissonSampleTest {

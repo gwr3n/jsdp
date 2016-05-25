@@ -28,6 +28,7 @@ package jsdp.app.lotsizing.simulation;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.stream.IntStream;
 
@@ -45,9 +46,14 @@ public class SimulatePolicies {
 		double cp = 10;
 		double co_eff_var = 0.25;
 		double demand[] = {20,40,60,40};
-		double[] stdDemand = new double[demand.length];
-		for(int o = 0; o < demand.length; o++) stdDemand[o] = demand[o]*co_eff_var; 
-		Distribution[] distributions = IntStream.iterate(0, i -> i + 1).limit(demand.length).mapToObj(i -> new NormalDist(demand[i], stdDemand[i])).toArray(Distribution[]::new);
+		double[] stdDemand = Arrays.stream(demand)
+								   .map(i -> i*co_eff_var)
+								   .toArray();
+		
+		Distribution[] distributions = IntStream.iterate(0, i -> i + 1)
+												.limit(demand.length)
+												.mapToObj(i -> new NormalDist(demand[i], stdDemand[i]))
+												.toArray(Distribution[]::new);
 		
 		double errorTolerance = 0.0001;
 	    double confidence = 0.95;
