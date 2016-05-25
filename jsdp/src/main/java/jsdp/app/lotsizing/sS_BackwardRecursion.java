@@ -55,8 +55,18 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 		this.stateSpace = new sS_StateSpace[this.horizonLength+1];
 		for(int i = 0; i < this.horizonLength + 1; i++) 
 			this.stateSpace[i] = new sS_StateSpace(i);
-		this.transitionProbability = new sS_TransitionProbability(demand,(sS_StateSpace[])this.getStateSpace(),sS_State.factor);
+		this.transitionProbability = new sS_TransitionProbability(demand,(sS_StateSpace[])this.getStateSpace(),sS_State.getStepSize());
 		this.costRepository = new sS_CostRepository(fixedOrderingCost, proportionalOrderingCost, holdingCost, penaltyCost);
+	}
+	
+	@Override
+	public sS_TransitionProbability getTransitionProbability(){
+		return (sS_TransitionProbability) this.transitionProbability; 
+	}
+	
+	@Override
+	public sS_CostRepository getCostRepository(){
+		return (sS_CostRepository) this.costRepository;
 	}
 	
 	public double[][] getOptimalPolicy(double initialInventory){
@@ -77,16 +87,6 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 		optimalPolicy[0] = s;
 		optimalPolicy[1] = S;
 		return optimalPolicy;
-	}
-	
-	@Override
-	public sS_TransitionProbability getTransitionProbability(){
-		return (sS_TransitionProbability) this.transitionProbability; 
-	}
-	
-	@Override
-	public sS_CostRepository getCostRepository(){
-		return (sS_CostRepository) this.costRepository;
 	}
 	
 	public double getExpectedCost(double initialInventory){

@@ -47,7 +47,7 @@ public class sS_TransitionProbability extends TransitionProbability {
 							   .mapToObj(i -> DiscreteDistributionFactory.getTruncatedDiscreteDistribution(
 									   							demand[i],
 									   							0,
-									   							sS_State.stateToInventory(sS_State.maxIntState-sS_State.minIntState),
+									   							sS_State.getMaxInventory()-sS_State.getMinInventory(),
 									   							stepSize))
 							   .toArray(DiscreteDistribution[]::new);
 		this.stateSpace = stateSpace;
@@ -62,14 +62,26 @@ public class sS_TransitionProbability extends TransitionProbability {
 		return this.demand[period].prob((int)Math.round(realizedDemand));
 	}
 
+	/*@Override
+	public Stream<State> getFinalStates(State initialState, Action action) {
+		int period = ((sS_State) initialState).getPeriod();
+		ArrayList<State> states = new ArrayList<State>();
+		int initialIntState = 	((sS_State) initialState).getInitialIntState() + ((sS_Action) action).getIntAction();
+		for(int i = initialIntState; i >= sS_State.minIntState; i--){
+			sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(period+1,i);
+			states.add(this.stateSpace[period+1].getState(stateDescriptor));
+		}
+		return states.parallelStream();
+	}*/
+	
 	@Override
 	public Stream<State> getFinalStates(State initialState, Action action) {
+		int period = ((sS_State) initialState).getPeriod();
 		ArrayList<State> states = new ArrayList<State>();
-		int initialIntState = 	((sS_State) initialState).getInitialIntState() + 
-								((sS_Action) action).getIntAction();
-		for(int i = initialIntState; i >= sS_State.minIntState; i--){
-			sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(((sS_State) initialState).getPeriod()+1,i);
-			states.add(this.stateSpace[((sS_State) initialState).getPeriod()+1].getState(stateDescriptor));
+		int initialIntState = ((sS_State) initialState).getInitialIntState() + ((sS_Action) action).getIntAction();	
+		for(int i = 0; this.demand[period].cdf(sS_State.stateToInventory(i-1)) < 1 && initialIntState-i >= sS_State.getMinIntState(); i++){
+			sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(period+1,initialIntState-i);
+			states.add(this.stateSpace[period+1].getState(stateDescriptor));
 		}
 		return states.parallelStream();
 	}

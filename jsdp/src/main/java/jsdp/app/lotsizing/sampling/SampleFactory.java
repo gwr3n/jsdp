@@ -36,6 +36,7 @@ import umontreal.ssj.rng.MRG32k3aL;
 import umontreal.ssj.rng.RandomStream;
 
 public class SampleFactory {
+	
 	private static SampleFactory instance = null;
 	
 	public static SampleFactory getInstance(){
@@ -56,6 +57,11 @@ public class SampleFactory {
 		stream.resetStartStream();
 	}
 	
+	/**
+	 * Implements Simple Random Sampling
+	 * @param distributions array of distributions to be sampled
+	 * @return a Simple Random Sample for the distributions in {@code distributions}
+	 */
 	public double[] getNextSample(Distribution[] distributions){
 		UniformGen uniform = new UniformGen(stream);
 		return IntStream.iterate(0, i -> i + 1).limit(distributions.length).mapToDouble(
@@ -73,6 +79,19 @@ public class SampleFactory {
 		return sample;
 	}
 	
+	
+	/**
+	 * Implements Latin Hypercube Sampling as originally introduced in 
+	 * 
+	 * McKay, M.D.; Beckman, R.J.; Conover, W.J. (May 1979). 
+	 * "A Comparison of Three Methods for Selecting Values of Input Variables 
+	 * in the Analysis of Output from a Computer Code". 
+	 * Technometrics 21 (2): 239–245.
+	 * 
+	 * @param distributions array of distributions to be sampled 
+	 * @param samples number of samples
+	 * @return a Latin Hypercube Sample for the distributions in {@code distributions}
+	 */
 	public double[][] getNextLHSample(Distribution[] distributions, int samples){
 		double x[][] = new double[distributions.length][samples];
 		x = IntStream.iterate(0, d -> d + 1)

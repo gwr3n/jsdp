@@ -61,10 +61,14 @@ public class sS_CostRepository extends CostRepository {
 		if(this.costHashTable.containsKey(key)) 
 			return this.costHashTable.get(key).doubleValue();
 		
+		double normalisationFactor = transitionProbability.getFinalStates(initialState, action)
+				  .mapToDouble(finalState -> transitionProbability.getTransitionProbability(initialState, action, finalState))
+				  .sum();
 		double expectedTotalCost = transitionProbability.getFinalStates(initialState, action).mapToDouble(finalState -> 
 			(this.getImmediateCost(initialState, action, finalState)+this.getOptimalExpectedCost(finalState))
 			*transitionProbability.getTransitionProbability(initialState, action, finalState)
-		).sum();
+		).sum()/normalisationFactor;
+		
 		this.costHashTable.put(key, new Double(expectedTotalCost));
 		return expectedTotalCost;
 	}

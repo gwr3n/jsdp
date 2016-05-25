@@ -36,16 +36,34 @@ public class sS_State extends State {
 	private int initialIntState;
 	
 	//Factor must be 1 for discrete distributions
-	public static double factor;
-	public static int minIntState;
-	public static int maxIntState;
+	private static double stepSize;
+	private static int minIntState;
+	private static int maxIntState;
+	
+	public static void setStateBoundaries(double stepSize, int minIntState, int maxIntState){
+		sS_State.stepSize = stepSize;
+		sS_State.minIntState = minIntState;
+		sS_State.maxIntState = maxIntState;
+	}
+	
+	public static double getStepSize(){
+		return sS_State.stepSize;
+	}
 	
 	public static double stateToInventory(int state){
-		return state*factor;
+		return state*stepSize;
 	}
 	
 	public static int inventoryToState(double inventory){
-		return (int) Math.round(inventory/factor);
+		return (int) Math.round(inventory/stepSize);
+	}
+	
+	public static int getMinIntState(){
+		return sS_State.minIntState;
+	}
+	
+	public static int getMaxIntState(){
+		return sS_State.maxIntState;
 	}
 	
 	public static double getMinInventory(){

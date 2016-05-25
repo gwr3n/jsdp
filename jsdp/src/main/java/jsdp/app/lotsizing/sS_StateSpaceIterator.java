@@ -36,20 +36,20 @@ public class sS_StateSpaceIterator extends StateSpaceIterator {
 	
 	public sS_StateSpaceIterator(int period, sS_StateSpace stateSpace){
 		this.stateSpace = stateSpace;
-		currentStateDescriptor = new sS_StateDescriptor(period, sS_State.maxIntState);
+		currentStateDescriptor = new sS_StateDescriptor(period, sS_State.getMaxIntState());
 	}
     
     public boolean hasNext() {
-    	if(currentStateDescriptor.getInitialIntState() <= sS_State.maxIntState && 
-    	   currentStateDescriptor.getInitialIntState() >= sS_State.minIntState)
+    	if(currentStateDescriptor.getInitialIntState() <= sS_State.getMaxIntState() && 
+    	   currentStateDescriptor.getInitialIntState() >= sS_State.getMinIntState())
     		return true;
     	else
     		return false;
 	}
 
 	public State next() {
-		if(currentStateDescriptor.getInitialIntState() <= sS_State.maxIntState && 
-		   currentStateDescriptor.getInitialIntState() >= sS_State.minIntState){
+		if(currentStateDescriptor.getInitialIntState() <= sS_State.getMaxIntState() && 
+		   currentStateDescriptor.getInitialIntState() >= sS_State.getMinIntState()){
 			State state = stateSpace.getState(currentStateDescriptor);
 			currentStateDescriptor = new sS_StateDescriptor(currentStateDescriptor.getPeriod(), 
 															currentStateDescriptor.getInitialIntState() - 1);

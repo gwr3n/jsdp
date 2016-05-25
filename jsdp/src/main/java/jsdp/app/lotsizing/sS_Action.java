@@ -34,11 +34,11 @@ public class sS_Action extends Action {
 	int intAction;
 	
 	public static double actionToOrderQuantity(int action){
-		return action*sS_State.factor;
+		return action*sS_State.getStepSize();
 	}
 	
 	public static int orderQuantityToAction(double orderQty){
-		return (int) Math.round(orderQty/sS_State.factor);
+		return (int) Math.round(orderQty/sS_State.getStepSize());
 	}
 	
 	public sS_Action(State state, int intAction){

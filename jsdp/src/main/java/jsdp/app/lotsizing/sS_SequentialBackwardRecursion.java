@@ -49,7 +49,7 @@ public class sS_SequentialBackwardRecursion extends sS_BackwardRecursion {
 	
 	@Override
 	protected void recurse(int period){
-		for(int i = sS_State.maxIntState; i >= sS_State.minIntState; i--){
+		for(int i = sS_State.getMaxIntState(); i >= sS_State.getMinIntState(); i--){
 			sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(period, i);
 			sS_State state = (sS_State) ((sS_StateSpace)this.getStateSpace()[period]).getState(stateDescriptor);
 			Action bestAction = null;
@@ -69,7 +69,7 @@ public class sS_SequentialBackwardRecursion extends sS_BackwardRecursion {
 			
 			if(((sS_Action)bestAction).getIntAction() > 0){
 				int initialAction = ((sS_Action)bestAction).getIntAction();
-				while(--i >= sS_State.minIntState){
+				while(--i >= sS_State.getMinIntState()){
 					stateDescriptor = new sS_StateDescriptor(period, i);
 					state = (sS_State) ((sS_StateSpace)this.getStateSpace()[period]).getState(stateDescriptor);
 					double orderingCostIncrement = sS_Action.actionToOrderQuantity(((sS_Action)bestAction).intAction+1-initialAction)*this.proportionalOrderingCost;
