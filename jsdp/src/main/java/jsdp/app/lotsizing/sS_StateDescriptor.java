@@ -32,9 +32,9 @@ public class sS_StateDescriptor extends StateDescriptor{
 		
 		int initialIntState;
 		
-		public sS_StateDescriptor(int period, int initialInventory){
+		public sS_StateDescriptor(int period, int initialIntState){
 			this.period = period;
-			this.initialIntState = initialInventory;
+			this.initialIntState = initialIntState;
 		}
 		
 		public boolean equals(Object descriptor){

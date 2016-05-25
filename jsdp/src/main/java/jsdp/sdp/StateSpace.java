@@ -39,7 +39,7 @@ public abstract class StateSpace<SD> implements Iterable<State>{
 		this.period = period;
 	}
 	
-	protected abstract State getState(SD descriptor);
+	public abstract State getState(SD descriptor);
 	
 	public int getPeriod(){
 		return period;
