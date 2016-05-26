@@ -55,7 +55,7 @@ public class sS_State extends State {
 	}
 	
 	public static int inventoryToState(double inventory){
-		return (int) Math.round(inventory/stepSize);
+		return (int) Math.max(Math.min(Math.round(inventory/stepSize), sS_State.maxIntState), sS_State.minIntState);
 	}
 	
 	public static int getMinIntState(){

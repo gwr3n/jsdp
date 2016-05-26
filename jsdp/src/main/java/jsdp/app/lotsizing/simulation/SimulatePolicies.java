@@ -32,6 +32,9 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.stream.IntStream;
 
+import jsdp.app.lotsizing.sS_ForwardRecursion;
+import jsdp.app.lotsizing.sS_State;
+import jsdp.app.lotsizing.sS_StateDescriptor;
 import jsdp.app.lotsizing.sampling.SampleFactory;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.NormalDist;
@@ -107,6 +110,55 @@ public class SimulatePolicies {
 					replicationCost += Math.max(inventory, 0)*holdingCost - Math.min(inventory, 0)*penaltyCost;
 				}else{
 					inventory = inventory-demandRealizations[t];
+					replicationCost += Math.max(inventory, 0)*holdingCost - Math.min(inventory, 0)*penaltyCost;
+				}
+				stockPTally[t].add(Math.max(inventory, 0));
+				stockNTally[t].add(Math.max(-inventory, 0));
+			}
+			costTally.add(replicationCost);
+			if(i >= minRuns) costTally.confidenceIntervalNormal(confidence, centerAndRadius);
+		}
+		return centerAndRadius;
+	}
+	
+	public static double[] simulate_sS(
+			Distribution[] demand, 
+			double orderCost, 
+			double holdingCost, 
+			double penaltyCost,
+			double unitCost,
+			double initialStock,
+			sS_ForwardRecursion recursion,
+			double confidence,
+			double error
+			){
+		Tally costTally = new Tally();
+		Tally[] stockPTally = new Tally[demand.length];
+		Tally[] stockNTally = new Tally[demand.length];
+		for(int i = 0; i < demand.length; i++) {
+			stockPTally[i] = new Tally();
+			stockNTally[i] = new Tally();
+		}
+		
+		int minRuns = 1000;
+		int maxRuns = 1000000;
+		
+		double[] centerAndRadius = new double[2];
+		for(int i = 0; i < minRuns || (centerAndRadius[1]>=centerAndRadius[0]*error && i < maxRuns); i++){
+			double[] demandRealizations = SampleFactory.getInstance().getNextSample(demand);
+			
+			double replicationCost = 0;
+			double inventory = initialStock;
+			for(int t = 0; t < demand.length; t++){
+				sS_StateDescriptor state = new sS_StateDescriptor(t, sS_State.inventoryToState(inventory));
+				double qty = sS_State.stateToInventory(recursion.getOptimalAction(state).getIntAction());
+				if(qty > 0){
+					replicationCost += orderCost;
+					replicationCost += qty*unitCost;
+					inventory = qty+inventory-demandRealizations[t];
+					replicationCost += Math.max(inventory, 0)*holdingCost - Math.min(inventory, 0)*penaltyCost;
+				}else{
+					inventory = qty+inventory-demandRealizations[t];
 					replicationCost += Math.max(inventory, 0)*holdingCost - Math.min(inventory, 0)*penaltyCost;
 				}
 				stockPTally[t].add(Math.max(inventory, 0));

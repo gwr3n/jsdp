@@ -40,7 +40,7 @@ public abstract class BackwardRecursion {
 	protected TransitionProbability transitionProbability;
 	protected CostRepository costRepository;
 	
-	public double expectedCost(State state){
+	public double getExpectedCost(State state){
 		return this.getCostRepository().getOptimalExpectedCost(state);
 	}
 	
@@ -116,7 +116,7 @@ public abstract class BackwardRecursion {
 			.forEach(entry -> {
 				State state = entry.getValue();
 				BestActionRepository repository = new BestActionRepository();
-				state.getPermissibleActionsStream().forEach(action -> {
+				state.getPermissibleActionsParallelStream().forEach(action -> {
 					double currentCost = this.getCostRepository().getExpectedCost(state, action, this.getTransitionProbability());
 					repository.update(action, currentCost);
 				});

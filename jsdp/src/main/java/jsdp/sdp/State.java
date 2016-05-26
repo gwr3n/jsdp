@@ -43,6 +43,10 @@ public abstract class State implements Comparable<State>{
 	}
 	
 	public Stream<Action> getPermissibleActionsStream(){
+		return this.permissibleActions.stream();
+	}
+	
+	public Stream<Action> getPermissibleActionsParallelStream(){
 		return this.permissibleActions.parallelStream();
 	}
 	

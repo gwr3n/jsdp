@@ -30,5 +30,6 @@ import java.util.stream.Stream;
 
 public abstract class TransitionProbability {
 	public abstract double getTransitionProbability(State initialState, Action action, State finalState);
-	public abstract Stream<State> getFinalStates(State initialState, Action action);
+	public abstract Stream<State> getFinalStatesParallelStream(State initialState, Action action);
+	public abstract Stream<State> getFinalStatesStream(State initialState, Action action);
 }

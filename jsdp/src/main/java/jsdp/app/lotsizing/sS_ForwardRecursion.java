@@ -27,11 +27,11 @@
 package jsdp.app.lotsizing;
 
 import jsdp.sdp.Action;
-import jsdp.sdp.BackwardRecursion;
+import jsdp.sdp.ForwardRecursion;
 import jsdp.sdp.State;
 import umontreal.ssj.probdist.Distribution;
 
-public class sS_BackwardRecursion extends BackwardRecursion{
+public class sS_ForwardRecursion extends ForwardRecursion{
 	
 	double fixedOrderingCost; 
 	double proportionalOrderingCost; 
@@ -39,7 +39,7 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 	double penaltyCost;
 	Distribution[] demand;
 	
-	public sS_BackwardRecursion(Distribution[] demand,
+	public sS_ForwardRecursion(Distribution[] demand,
 								double fixedOrderingCost, 
 								double proportionalOrderingCost, 
 								double holdingCost,

@@ -54,27 +54,21 @@ import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.probdist.NormalDist;
 
-public class sS_DP {
+public class sS_jsdp {
 	
-	static final Logger logger = LogManager.getLogger(sS_DP.class.getName());
+	static final Logger logger = LogManager.getLogger(sS_jsdp.class.getName());
 	
 	public static void main(String[] args) {
-		simpleTest();
-		//plotTest();
-	}
-	
-	public static void simpleTest(){
-		
 		//Factor must be 1 for discrete distributions
-		sS_State.setStateBoundaries(0.5, -200, 300);
-		
-		double fixedOrderingCost = 80; 
+		sS_State.setStateBoundaries(1, -100, 150);
+				
+		double fixedOrderingCost = 50; 
 		double proportionalOrderingCost = 0; 
 		double holdingCost = 1;
-		double penaltyCost = 2;
-		
-		double[] demand = {15,16,15,14,11,7,6};
-		
+		double penaltyCost = 4;
+				
+		double[] demand = {20,30,20,40};
+				
 		Distribution[] distributions = IntStream.iterate(0, i -> i + 1)
 												.limit(demand.length)
 												.mapToObj(i -> new NormalDist(demand[i],demand[i]*0.4))
@@ -84,8 +78,24 @@ public class sS_DP {
 												.limit(demand.length)
 												.mapToObj(i -> new PoissonDist(demand[i]))
 												.toArray(Distribution[]::new);*/
-		
+				
 		double initialInventory = 0;
+		
+		System.out.println("--------------Forward recursion--------------");
+		simpleTestForward(fixedOrderingCost, proportionalOrderingCost, holdingCost, penaltyCost, distributions, initialInventory);
+		System.out.println("--------------Backward recursion--------------");
+		simpleTestBackward(fixedOrderingCost, proportionalOrderingCost, holdingCost, penaltyCost, distributions, initialInventory);
+		System.out.println("--------------Cost function plot--------------");
+		int targetPeriod = 2;
+		plotCostFunction(targetPeriod, fixedOrderingCost, proportionalOrderingCost, holdingCost, penaltyCost, distributions,false,false);
+	}
+	
+	public static void simpleTestBackward(double fixedOrderingCost,
+										  double proportionalOrderingCost,
+										  double holdingCost,
+										  double penaltyCost,
+										  Distribution[] distributions,
+										  double initialInventory){
 		
 		/**
 		 * Simulation confidence level and error threshold
@@ -93,10 +103,26 @@ public class sS_DP {
 		double confidence = 0.95;
 		double errorTolerance = 0.001;
 		
-		solveSampleInstance(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost,initialInventory,confidence,errorTolerance);
+		solveSampleInstanceBackwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost,initialInventory,confidence,errorTolerance);
 	}
 	
-	public static void solveSampleInstance(
+	public static void simpleTestForward(double fixedOrderingCost,
+			  							 double proportionalOrderingCost,
+			  							 double holdingCost,
+			  							 double penaltyCost,
+			  							 Distribution[] distributions,
+			  							 double initialInventory){
+		
+		/**
+		 * Simulation confidence level and error threshold
+		 */
+		double confidence = 0.95;
+		double errorTolerance = 0.001;
+		
+		solveSampleInstanceForwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost,initialInventory,confidence,errorTolerance);
+	}
+	
+	public static void solveSampleInstanceBackwardRecursion(
 			Distribution[] distributions,
 			double fixedOrderingCost, 
 			double proportionalOrderingCost, 
@@ -108,6 +134,7 @@ public class sS_DP {
 		
 		sS_BackwardRecursion recursion = new sS_BackwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
 		//sS_SequentialBackwardRecursion recursion = new sS_SequentialBackwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
+		
 		StopWatch timer = new StopWatch();
 		timer.start();
 		recursion.runBackwardRecursion();
@@ -131,42 +158,54 @@ public class sS_DP {
 		double[] results = SimulatePolicies.simulate_sS(distributions, fixedOrderingCost, holdingCost, penaltyCost, proportionalOrderingCost, initialInventory, S, s, confidence, errorTolerance);
 		System.out.println();
 		System.out.println("Simulated cost: "+df.format(results[0])+" Confidence interval=("+df.format(results[0]-results[1])+","+df.format(results[0]+results[1])+")@"+df.format(confidence*100)+"% confidence");
+		System.out.println();
 	}
 	
-	public static void plotTest(){
-		//Factor must be 1 for discrete distributions
-		sS_State.setStateBoundaries(1, -100, 100);
-		
-		double fixedOrderingCost = 50; 
-		double proportionalOrderingCost = 0; 
-		double holdingCost = 1;
-		double penaltyCost = 4;
-		
-		double[] demand = {20,30,20,40};
-		
-		int targetPeriod = 0;
-		
-		plotCostFunction(targetPeriod, demand,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost,false,false,false);
-	}
-	
-	public static void plotCostFunction(
-			int targetPeriod,
-			double[] demand,
+	public static void solveSampleInstanceForwardRecursion(
+			Distribution[] distributions,
 			double fixedOrderingCost, 
 			double proportionalOrderingCost, 
 			double holdingCost,
 			double penaltyCost,
-			boolean orderAtPeriod0,
+			double initialInventory,
+			double confidence,
+			double errorTolerance){
+		
+		sS_ForwardRecursion recursion = new sS_ForwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
+		
+		sS_StateDescriptor initialState = new sS_StateDescriptor(0, sS_State.inventoryToState(initialInventory));
+		
+		StopWatch timer = new StopWatch();
+		timer.start();
+		recursion.runForwardRecursion(((sS_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
+		timer.stop();
+		double ETC = recursion.getExpectedCost(initialInventory);
+		double action = sS_State.stateToInventory(recursion.getOptimalAction(initialState).getIntAction());
+		
+		System.out.println("Expected total cost (assuming an initial inventory level "+initialInventory+"): "+ETC);
+		System.out.println("Optimal initial action: "+action);
+		System.out.println("Time elapsed: "+timer);
+		
+		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.ENGLISH);
+	    DecimalFormat df = new DecimalFormat("#.00",otherSymbols);
+		
+		double[] results = SimulatePolicies.simulate_sS(distributions, fixedOrderingCost, holdingCost, penaltyCost, proportionalOrderingCost, initialInventory, recursion, confidence, errorTolerance);
+		System.out.println("Simulated cost: "+df.format(results[0])+" Confidence interval=("+df.format(results[0]-results[1])+","+df.format(results[0]+results[1])+")@"+df.format(confidence*100)+"% confidence");
+		System.out.println();
+	}
+	
+	public static void plotCostFunction(
+			int targetPeriod,
+			double fixedOrderingCost, 
+			double proportionalOrderingCost, 
+			double holdingCost,
+			double penaltyCost,
+			Distribution[] distributions,
 			boolean printCostFunctionValues,
 			boolean latexOutput){
 		
-		Distribution[] distributions = IntStream.iterate(0, i -> i + 1).limit(demand.length).mapToObj(i -> new PoissonDist(demand[i])).toArray(Distribution[]::new);
-		
 		sS_BackwardRecursion recursion = new sS_BackwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
-		if(orderAtPeriod0)
-			recursion.runBackwardRecursion();
-		else
-			recursion.runBackwardRecursion(0);
+		recursion.runBackwardRecursion(targetPeriod);
 		XYSeries series = new XYSeries("(s,S) policy");
 		for(int i = 0; i <= sS_State.getMaxInventory(); i += sS_State.getStepSize()){
 			sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(targetPeriod, sS_State.inventoryToState(i));

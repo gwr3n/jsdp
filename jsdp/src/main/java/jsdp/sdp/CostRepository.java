@@ -36,7 +36,7 @@ public abstract class CostRepository {
 	protected abstract double getImmediateCost(State initialState, Action action, State finalState);
 	public abstract double getExpectedCost(State initialState, Action action, TransitionProbability transitionProbability);
 	
-	public void setOptimalExpectedCost(State state, double expectedCost){
+	public synchronized void setOptimalExpectedCost(State state, double expectedCost){
 		this.optimalCostHashTable.put(state, new Double(expectedCost));
 	}
 	
@@ -44,7 +44,7 @@ public abstract class CostRepository {
 		return this.optimalCostHashTable.get(state).doubleValue();
 	}
 	
-	public void setOptimalAction(State state, Action action){
+	public synchronized void setOptimalAction(State state, Action action){
 		this.optimalActionHashTable.put(state, action);
 	}
 	
