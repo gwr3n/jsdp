@@ -26,10 +26,21 @@
 
 package jsdp.sdp;
 
+/**
+ * An abstraction for an action that can be selected for a given {@code State}.
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public abstract class Action {
 	
 	protected State state;
 
+	/**
+	 * Returns the {@code State} associated with this {@code Action}.
+	 * 
+	 * @return the {@code State} associated with this {@code Action}
+	 */
 	public State getState() {
 		return this.state;
 	}

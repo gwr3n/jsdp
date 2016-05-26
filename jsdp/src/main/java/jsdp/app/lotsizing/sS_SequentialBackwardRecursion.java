@@ -26,6 +26,7 @@
 
 package jsdp.app.lotsizing;
 
+import java.util.Collections;
 import java.util.Enumeration;
 
 import org.apache.logging.log4j.Logger;
@@ -54,7 +55,7 @@ public class sS_SequentialBackwardRecursion extends sS_BackwardRecursion {
 			sS_State state = (sS_State) ((sS_StateSpace)this.getStateSpace()[period]).getState(stateDescriptor);
 			Action bestAction = null;
 			double bestCost = Double.MAX_VALUE;
-			Enumeration<Action> actions = state.getPermissibleActions();
+			Enumeration<Action> actions = Collections.enumeration(state.getFeasibleActions()); 
 			while(actions.hasMoreElements()){
 				Action currentAction = actions.nextElement();
 				double currentCost = this.getCostRepository().getExpectedCost(state, currentAction, this.getTransitionProbability());

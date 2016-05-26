@@ -31,29 +31,52 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.stream.Stream;
 
+/**
+ * {@code State} provides an abstraction for a state in which
+ * the system may be found in period {@code period}.
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public abstract class State implements Comparable<State>{
 	
 	protected int period;
-	protected ArrayList<Action> permissibleActions;
+	protected ArrayList<Action> feasibleActions;
 	protected Action noAction;
 	
-	public Enumeration<Action> getPermissibleActions() {
-		Enumeration<Action> e = Collections.enumeration(this.permissibleActions);
-		return e;
+	/**
+	 * Creates a {@code State} associated with a given {@code period}.
+	 * 
+	 * @param period planning horizon period associated with the state.
+	 */
+	public State(int period){
+		this.period = period;
 	}
 	
-	public Stream<Action> getPermissibleActionsStream(){
-		return this.permissibleActions.stream();
+	/**
+	 * Returns an {@code ArrayList<Action>} of feasible actions for this 
+	 * {@code State}.
+	 * 
+	 * @return the {@code ArrayList<Action>} of feasible actions.
+	 */
+	public ArrayList<Action> getFeasibleActions() {
+		return this.feasibleActions;
 	}
 	
-	public Stream<Action> getPermissibleActionsParallelStream(){
-		return this.permissibleActions.parallelStream();
-	}
-	
+	/**
+	 * Returns the idempotent {@code Action} for this {@code State}.
+	 * 
+	 * @return the idempotent {@code Action} for this {@code State}.
+	 */
 	public Action getNoAction(){
 		return noAction;
 	}
 	
+	/**
+	 * Returns the planning horizon period associated with the state.
+	 * 
+	 * @return the planning horizon period associated with the state.
+	 */
 	public int getPeriod(){
 		return this.period;
 	}
@@ -61,5 +84,10 @@ public abstract class State implements Comparable<State>{
 	public abstract int compareTo(State state);
 	public abstract boolean equals(Object state);
 	public abstract int hashCode();
+	
+	/**
+	 * This method constructs the set of feasible actions stored in 
+	 * {@code ArrayList<Action> feasibleAction}.
+	 */
 	protected abstract void buildActionList();
 }

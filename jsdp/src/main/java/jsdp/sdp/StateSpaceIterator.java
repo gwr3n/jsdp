@@ -28,6 +28,12 @@ package jsdp.sdp;
 
 import java.util.Iterator;
 
+/**
+ * An abstraction representing an {@code Iterator} for a given {@code StateSpace}.
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public abstract class StateSpaceIterator implements Iterator<State> {
 	
 	public abstract boolean hasNext();

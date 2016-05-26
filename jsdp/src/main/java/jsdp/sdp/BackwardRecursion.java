@@ -116,7 +116,7 @@ public abstract class BackwardRecursion {
 			.forEach(entry -> {
 				State state = entry.getValue();
 				BestActionRepository repository = new BestActionRepository();
-				state.getPermissibleActionsParallelStream().forEach(action -> {
+				state.getFeasibleActions().parallelStream().forEach(action -> {
 					double currentCost = this.getCostRepository().getExpectedCost(state, action, this.getTransitionProbability());
 					repository.update(action, currentCost);
 				});

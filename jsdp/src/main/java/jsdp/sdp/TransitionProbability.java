@@ -26,10 +26,38 @@
 
 package jsdp.sdp;
 
-import java.util.stream.Stream;
+import java.util.ArrayList;
 
+/**
+ * An abstraction to capture the stochastic decision process transition probabilities.
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public abstract class TransitionProbability {
+	
+	/**
+	 * This method returns the transition probability from {@code initialState} to {@code finalState} when
+	 * {@code action} is selected.
+	 * 
+	 * @param initialState the initial state.
+	 * @param action the action chosen.
+	 * @param finalState the final state.
+	 * @return the transition probability from {@code initialState} to {@code finalState} when
+	 * {@code action} is selected.
+	 */
 	public abstract double getTransitionProbability(State initialState, Action action, State finalState);
-	public abstract Stream<State> getFinalStatesParallelStream(State initialState, Action action);
-	public abstract Stream<State> getFinalStatesStream(State initialState, Action action);
+	
+	/**
+	 * This method constructs an {@code ArrayList<State>} of states towards which the stochastic process may 
+	 * transition in period {@code t+1} if {@code action} is selected in {@code initialState} at period  
+	 * {@code t}.
+	 * 
+	 * @param initialState the initial state of the stochastic process; note that we assume that 
+	 * {@code initialState} is associated with period {@code t}.
+	 * @param action the action selected at period {@code t}.
+	 * @return an {@code ArrayList<State>} of states towards which the stochastic process may 
+	 * transition in period {@code t+1}.
+	 */
+	public abstract ArrayList<State> getFinalStates(State initialState, Action action);
 }

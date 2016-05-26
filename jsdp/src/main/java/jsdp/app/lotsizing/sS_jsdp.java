@@ -86,7 +86,7 @@ public class sS_jsdp {
 		System.out.println("--------------Backward recursion--------------");
 		simpleTestBackward(fixedOrderingCost, proportionalOrderingCost, holdingCost, penaltyCost, distributions, initialInventory);
 		System.out.println("--------------Cost function plot--------------");
-		int targetPeriod = 2;
+		int targetPeriod = 0;
 		plotCostFunction(targetPeriod, fixedOrderingCost, proportionalOrderingCost, holdingCost, penaltyCost, distributions,false,false);
 	}
 	
@@ -207,7 +207,7 @@ public class sS_jsdp {
 		sS_BackwardRecursion recursion = new sS_BackwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
 		recursion.runBackwardRecursion(targetPeriod);
 		XYSeries series = new XYSeries("(s,S) policy");
-		for(int i = 0; i <= sS_State.getMaxInventory(); i += sS_State.getStepSize()){
+		for(double i = 0; i <= sS_State.getMaxInventory(); i += sS_State.getStepSize()){
 			sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(targetPeriod, sS_State.inventoryToState(i));
 			series.add(i,recursion.getExpectedCost(stateDescriptor));
 			if(printCostFunctionValues) 

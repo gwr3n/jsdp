@@ -34,9 +34,9 @@ public class sS_StateSpaceIterator extends StateSpaceIterator {
 	sS_StateSpace stateSpace;
 	sS_StateDescriptor currentStateDescriptor;
 	
-	public sS_StateSpaceIterator(int period, sS_StateSpace stateSpace){
+	public sS_StateSpaceIterator(sS_StateSpace stateSpace){
 		this.stateSpace = stateSpace;
-		currentStateDescriptor = new sS_StateDescriptor(period, sS_State.getMaxIntState());
+		currentStateDescriptor = new sS_StateDescriptor(this.stateSpace.getPeriod(), sS_State.getMaxIntState());
 	}
     
     public boolean hasNext() {

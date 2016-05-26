@@ -35,10 +35,19 @@ import umontreal.ssj.probdist.DiscreteDistribution;
 import umontreal.ssj.probdist.DiscreteDistributionInt;
 import umontreal.ssj.probdist.Distribution;
 
+/**
+ * {@code DiscreteDistributionFactory} converts a {@code ContinuousDistribution} 
+ * or a {@code DiscreteDistributionInt} from the {@code umontreal.ssj.probdist}} 
+ * package to a {@code DiscreteDistribution}.
+ *  
+ * @author Roberto Rossi
+ *
+ */
 public class DiscreteDistributionFactory {
 
 	/**
-	 * A method to discretize and truncate a {@code Distribution}
+	 * A method to discretize and truncate a {@code Distribution}.
+	 * 
 	 * @param distribution original {@code DiscreteDistributionInt} to be discretized and truncated
 	 * @param supportLB support lower bound
 	 * @param supportUB support upper bound
@@ -61,7 +70,8 @@ public class DiscreteDistributionFactory {
 	}
 	
 	/**
-	 * A method to discretize a {@code DiscreteDistributionInt}
+	 * A method to discretize a {@code DiscreteDistributionInt}.
+	 * 
 	 * @param distribution original {@code DiscreteDistributionInt} to be discretized
 	 * @param supportLB support lower bound
 	 * @param supportUB support upper bound
@@ -84,7 +94,8 @@ public class DiscreteDistributionFactory {
 	}
 	
 	/**
-	 * A method to discretize a {@code ContinuousDistribution}
+	 * A method to discretize a {@code ContinuousDistribution}.
+	 * 
 	 * @param distribution original {@code ContinuousDistribution} to be discretized
 	 * @param supportLB support lower bound
 	 * @param supportUB support upper bound

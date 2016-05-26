@@ -30,21 +30,49 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * An abstract container that stores all generated {@code State}.
+ * 
+ * @author Roberto Rossi
+ *
+ * @param <SD> a specific state descriptor for the problem at hand.
+ */
 public abstract class StateSpace<SD> implements Iterable<State>{
 	
 	protected int period;
 	protected Hashtable<SD,State> states = new Hashtable<SD,State>();
 	
+	/**
+	 * Constructs a container for states associated with a given {@code period}.
+	 * 
+	 * @param period the period associated with this container.
+	 */
 	public StateSpace(int period){
 		this.period = period;
 	}
 	
+	/**
+	 * Returns the {@code State} associated with a given state descriptor.
+	 * 
+	 * @param descriptor the state descriptor.
+	 * @return the {@code State} associated with {@code descriptor}.
+	 */
 	public abstract State getState(SD descriptor);
 	
+	/**
+	 * Returns the period associated with this container.
+	 * 
+	 * @return the period associated with this container.
+	 */
 	public int getPeriod(){
 		return period;
 	}
 	
+	/**
+	 * Returns the key entry set associated with this container.
+	 * 
+	 * @return the set of state descriptors that are keys in the states {@code Hashtable}.
+	 */
 	public Set<Map.Entry<SD,State>> entrySet(){
 		return states.entrySet();
 	}
