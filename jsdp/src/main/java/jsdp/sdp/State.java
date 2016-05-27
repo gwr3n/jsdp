@@ -32,8 +32,7 @@ import java.util.Enumeration;
 import java.util.stream.Stream;
 
 /**
- * {@code State} provides an abstraction for a state in which
- * the system may be found in period {@code period}.
+ * An abstraction for a state in which the system may be found in period {@code period}.
  * 
  * @author Roberto Rossi
  *

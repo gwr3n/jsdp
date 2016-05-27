@@ -32,6 +32,12 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
+/**
+ * Implements a backward recursion algorithm to solve a stochastic dynamic program.
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public abstract class BackwardRecursion {
 	static final Logger logger = LogManager.getLogger(BackwardRecursion.class.getName());
 	
@@ -40,26 +46,56 @@ public abstract class BackwardRecursion {
 	protected TransitionProbability transitionProbability;
 	protected CostRepository costRepository;
 	
+	/**
+	 * Returns the expected cost associated with {@code state}.
+	 * 
+	 * @param state the target state.
+	 * @return the expected cost associated with {@code state}.
+	 */
 	public double getExpectedCost(State state){
 		return this.getCostRepository().getOptimalExpectedCost(state);
 	}
 	
+	/**
+	 * Returns the {@code StateSpace} for period {@code period}.
+	 * 
+	 * @param period the target period.
+	 * @return the {@code StateSpace} for period {@code period}.
+	 */
 	public StateSpace<?> getStateSpace(int period){
 		return this.stateSpace[period];
 	}
 	
+	/**
+	 * Returns the {@code StateSpace} array for the stochastic process planning horizon.
+	 * 
+	 * @return the {@code StateSpace} array for the stochastic process planning horizon.
+	 */
 	public StateSpace<?>[] getStateSpace(){
 		return this.stateSpace;
 	}
 	
+	/**
+	 * Returns the {@code TransitionProbability} of the stochastic process.
+	 * 
+	 * @return the {@code TransitionProbability} of the stochastic process.
+	 */
 	public TransitionProbability getTransitionProbability(){
 		return this.transitionProbability; 
 	}
 	
+	/**
+	 * Returns the {@code CostRepository} of the stochastic process.
+	 * 
+	 * @return the {@code CostRepository} of the stochastic process.
+	 */
 	public CostRepository getCostRepository(){
 		return this.costRepository;
 	}
 	
+	/**
+	 * Runs the backward recursion algorithm for the given stochastic dynamic program.
+	 */
 	public void runBackwardRecursion(){
 		logger.info("Generating states...");
 		generateStates();
@@ -69,6 +105,11 @@ public abstract class BackwardRecursion {
 		}
 	}
 	
+	/**
+	 * Runs the backward recursion algorithm for the given stochastic dynamic program up to period {@code period}.
+	 * This implementation of the backward recursion algorithm assumes that the idempotent action is selected in 
+	 * period {@code period}.
+	 */
 	public void runBackwardRecursion(int period){
 		logger.info("Generating states...");
 		generateStates();
@@ -89,26 +130,12 @@ public abstract class BackwardRecursion {
 		});
 	}
 	
-	class BestActionRepository {
-		Action bestAction = null;
-		double bestCost = Double.MAX_VALUE;
-		
-		public synchronized void update(Action currentAction, double currentCost){
-			if(currentCost < bestCost){
-				bestCost = currentCost;
-				bestAction = currentAction;
-			}
-		}
-		
-		public Action getBestAction(){
-			return this.bestAction;
-		}
-		
-		public double getBestCost(){
-			return this.bestCost;
-		}
-	}
-	
+	/**
+	 * Backward recursion step. In order to run the recursion step for period {@code period} 
+	 * the recursion step must have been already run for all subsequent periods.  
+	 * 
+	 * @param period the target period for the step.
+	 */
 	protected void recurse(int period){
 		this.getStateSpace(period).entrySet()
 			.parallelStream()
@@ -127,6 +154,9 @@ public abstract class BackwardRecursion {
 			});
 	}
 	
+	/**
+	 * Generates the complete state space for the discrete time, discrete space, stochastic dynamic program.
+	 */
 	protected void generateStates(){
 		CountDownLatch latch = new CountDownLatch(horizonLength + 1);
 		for(int i = horizonLength; i >= 0; i--){
@@ -148,5 +178,48 @@ public abstract class BackwardRecursion {
 		this.getStateSpace(horizonLength).entrySet()
 			.parallelStream()
 			.forEach(entry -> this.getCostRepository().setOptimalExpectedCost(entry.getValue(), 0));
+	}
+	
+	/**
+	 * Stores the best action and its cost.
+	 * 
+	 * @author Roberto Rossi
+	 *
+	 */
+	class BestActionRepository {
+		Action bestAction = null;
+		double bestCost = Double.MAX_VALUE;
+		
+		/**
+		 * Compares {@code currentAction} and {@code currentCost} to the best action currently stored and updates
+		 * the value of the best action and of its cost if necessary.
+		 * 
+		 * @param currentAction the action.
+		 * @param currentCost the action expected total cost.
+		 */
+		public synchronized void update(Action currentAction, double currentCost){
+			if(currentCost < bestCost){
+				bestCost = currentCost;
+				bestAction = currentAction;
+			}
+		}
+		
+		/**
+		 * Returns the best action stored.
+		 * 
+		 * @return the best action stored.
+		 */
+		public Action getBestAction(){
+			return this.bestAction;
+		}
+		
+		/**
+		 * Returns the cost associated with the best action stored.
+		 * 
+		 * @return the cost associated with the best action stored.
+		 */
+		public double getBestCost(){
+			return this.bestCost;
+		}
 	}
 }

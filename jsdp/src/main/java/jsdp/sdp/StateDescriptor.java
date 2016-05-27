@@ -26,12 +26,25 @@
 
 package jsdp.sdp;
 
+/**
+ * An abstract lightweight descriptor to uniquely identify a {@code State}. {@StateDescriptor}
+ * must implement method {@code hashCode()}, which will be used by the {@code Hashtable} used
+ * to store states.
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public abstract class StateDescriptor{
 	
 	protected int period;
 	
 	public abstract boolean equals(Object descriptor);
 	public abstract int hashCode();
+	
+	/**
+	 * Returns the period associated with this {@code StateDescriptor}.
+	 * @return the period associated with this {@code StateDescriptor}. 
+	 */
 	public int getPeriod(){
 		return period;
 	}

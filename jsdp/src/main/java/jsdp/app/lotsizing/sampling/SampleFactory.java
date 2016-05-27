@@ -39,20 +39,31 @@ public class SampleFactory {
 	
 	private static SampleFactory instance = null;
 	
+	/**
+	 * Returns an instance of {@code SampleFactory}; if no instance exists, it creates a new one.
+	 * 
+	 * @return an instance of {@code SampleFactory}.
+	 */
 	public static SampleFactory getInstance(){
 		return instance == null ? new SampleFactory() : instance;
 	}
 	
 	private RandomStream stream;
 	
-	public SampleFactory(){
+	private SampleFactory(){
 		stream = new MRG32k3aL();
 	}
 	
+	/**
+	 * Reinitializes the stream to the beginning of its next substream.
+	 */
 	public void resetNextSubstream(){
 		stream.resetNextSubstream();
 	}
 	
+	/**
+	 * Reinitializes the stream to its initial state.
+	 */
 	public void resetStartStream(){
 		stream.resetStartStream();
 	}
@@ -68,17 +79,6 @@ public class SampleFactory {
 				i -> distributions[i].inverseF(uniform.nextDouble())
 				).toArray();
 	}
-	
-	private double[] shuffle(double[] sample){
-		for(int i = 0; i < sample.length; i++){
-			int j = UniformIntGen.nextInt(stream, 0, sample.length - 1);
-			double temp = sample[i];
-			sample[i] = sample[j];
-			sample[j] = temp;
-		}
-		return sample;
-	}
-	
 	
 	/**
 	 * Implements Latin Hypercube Sampling as originally introduced in 
@@ -106,5 +106,21 @@ public class SampleFactory {
 			shuffle(x[i]);
 		}
 		return x;
+	}
+	
+	/**
+	 * Returns a random shuffle of {@code sample}.
+	 * 
+	 * @param sample the original sample.
+	 * @return a random shuffle of {@code sample}.
+	 */
+	private double[] shuffle(double[] sample){
+		for(int i = 0; i < sample.length; i++){
+			int j = UniformIntGen.nextInt(stream, 0, sample.length - 1);
+			double temp = sample[i];
+			sample[i] = sample[j];
+			sample[j] = temp;
+		}
+		return sample;
 	}
 }
