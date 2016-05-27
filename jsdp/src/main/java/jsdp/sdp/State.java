@@ -27,9 +27,6 @@
 package jsdp.sdp;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.stream.Stream;
 
 /**
  * An abstraction for a state in which the system may be found in period {@code period}.

@@ -29,55 +29,56 @@ package jsdp.sdp;
 import java.util.Hashtable;
 
 /**
- * An abstraction representing a repository for the cost associated with each {@code State}.
+ * An abstraction representing a repository for the value associated with each {@code State}.
  *  
  * @author Roberto Rossi
  *
  */
-public abstract class CostRepository {	
-	protected Hashtable<StateAction,Double> costHashTable = new Hashtable<StateAction,Double>();
-	protected Hashtable<State,Double> optimalCostHashTable = new Hashtable<State,Double>();
+public abstract class ValueRepository {	
+	protected Hashtable<StateAction,Double> valueHashTable = new Hashtable<StateAction,Double>();
+	protected Hashtable<State,Double> optimalValueHashTable = new Hashtable<State,Double>();
 	protected Hashtable<State,Action> optimalActionHashTable = new Hashtable<State,Action>();
 	
 	/**
-	 * Returns the immediate cost of a transition from {@code initialState} to {@code finalState} under a chosen {@code action}.
+	 * Returns the immediate value of a transition from {@code initialState} to {@code finalState} under a chosen {@code action}.
 	 * 
 	 * @param initialState the initial state of the stochastic process.
 	 * @param action the chosen action.
 	 * @param finalState the final state of the stochastic process.
-	 * @return
+	 * @return the immediate value of a transition from {@code initialState} to {@code finalState} under a chosen {@code action}.
 	 */
-	protected abstract double getImmediateCost(State initialState, Action action, State finalState);
+	protected abstract double getImmediateValue(State initialState, Action action, State finalState);
 	
 	/**
-	 * Returns the expected cost associated with {@code initialState} and {@code action} under one-step transition probabilities
+	 * Returns the expected value associated with {@code initialState} and {@code action} under one-step transition probabilities
 	 * described in {@code transitionProbability}.
 	 * 
 	 * @param initialState the initial state of the stochastic process.
 	 * @param action the chosen action. 
 	 * @param transitionProbability the transition probabilities of the stochastic process.
-	 * @return
+	 * @return the expected value associated with {@code initialState} and {@code action} under one-step transition probabilities
+	 * described in {@code transitionProbability}.
 	 */
-	public abstract double getExpectedCost(State initialState, Action action, TransitionProbability transitionProbability);
+	public abstract double getExpectedValue(State initialState, Action action, TransitionProbability transitionProbability);
 	
 	/**
-	 * Associates an optimal expected total cost {@code expectedCost} to {@code state}.
+	 * Associates an optimal expected value {@code expectedValue} to {@code state}.
 	 * 
 	 * @param state the target state.
-	 * @param expectedCost the optimal expected total cost.
+	 * @param expectedValue the optimal expected total cost.
 	 */
-	public synchronized void setOptimalExpectedCost(State state, double expectedCost){
-		this.optimalCostHashTable.put(state, new Double(expectedCost));
+	public synchronized void setOptimalExpectedValue(State state, double expectedValue){
+		this.optimalValueHashTable.put(state, new Double(expectedValue));
 	}
 	
 	/**
-	 * Returns the optimal expected total cost associated with {@code state}.
+	 * Returns the optimal expected value associated with {@code state}.
 	 * 
 	 * @param state the target state.
-	 * @return the optimal expected total cost.
+	 * @return the optimal expected value.
 	 */
-	public double getOptimalExpectedCost(State state){
-		return this.optimalCostHashTable.get(state).doubleValue();
+	public double getOptimalExpectedValue(State state){
+		return this.optimalValueHashTable.get(state).doubleValue();
 	}
 	
 	/**

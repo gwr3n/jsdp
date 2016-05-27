@@ -39,11 +39,13 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 	double penaltyCost;
 	Distribution[] demand;
 	
-	public sS_BackwardRecursion(Distribution[] demand,
+	public sS_BackwardRecursion(OptimisationDirection direction,
+								Distribution[] demand,
 								double fixedOrderingCost, 
 								double proportionalOrderingCost, 
 								double holdingCost,
 								double penaltyCost){
+		super(direction);
 		this.demand = demand;
 		this.horizonLength = demand.length;
 		
@@ -56,7 +58,7 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 		for(int i = 0; i < this.horizonLength + 1; i++) 
 			this.stateSpace[i] = new sS_StateSpace(i);
 		this.transitionProbability = new sS_TransitionProbability(demand,(sS_StateSpace[])this.getStateSpace(),sS_State.getStepSize());
-		this.costRepository = new sS_CostRepository(fixedOrderingCost, proportionalOrderingCost, holdingCost, penaltyCost);
+		this.valueRepository = new sS_CostRepository(fixedOrderingCost, proportionalOrderingCost, holdingCost, penaltyCost);
 	}
 	
 	@Override
@@ -65,8 +67,8 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 	}
 	
 	@Override
-	public sS_CostRepository getCostRepository(){
-		return (sS_CostRepository) this.costRepository;
+	public sS_CostRepository getValueRepository(){
+		return (sS_CostRepository) this.valueRepository;
 	}
 	
 	public double[][] getOptimalPolicy(double initialInventory){
@@ -96,17 +98,17 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 	
 	public double getExpectedCost(sS_StateDescriptor stateDescriptor){
 		State state = ((sS_StateSpace)this.getStateSpace(stateDescriptor.getPeriod())).getState(stateDescriptor);
-		return getExpectedCost(state);
+		return getExpectedValue(state);
 	}
 	
 	public sS_Action getOptimalAction(sS_StateDescriptor stateDescriptor){
 		State state = ((sS_StateSpace)this.getStateSpace(stateDescriptor.getPeriod())).getState(stateDescriptor);
-		return (sS_Action) this.getCostRepository().getOptimalAction(state);
+		return (sS_Action) this.getValueRepository().getOptimalAction(state);
 	}
 
 	public sS_State find_S(int period){
 		sS_State s = this.find_s(period);
-		int i = ((sS_Action)this.getCostRepository().getOptimalAction(s)).getIntAction()+s.getInitialIntState();
+		int i = ((sS_Action)this.getValueRepository().getOptimalAction(s)).getIntAction()+s.getInitialIntState();
 		sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(period, i);
 		sS_State state = (sS_State) ((sS_StateSpace)this.getStateSpace()[period]).getState(stateDescriptor);
 		return state;
@@ -117,7 +119,7 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 		sS_State state = null;
 		do{
 			state = (sS_State) iterator.next();
-			Action action = this.getCostRepository().getOptimalAction(state);
+			Action action = this.getValueRepository().getOptimalAction(state);
 			if(((sS_Action)action).getIntAction() > 0){
 				return state;
 			}

@@ -38,59 +38,42 @@ import org.apache.logging.log4j.LogManager;
  * @author Roberto Rossi
  *
  */
-public abstract class BackwardRecursion {
+public abstract class BackwardRecursion extends Recursion{
 	static final Logger logger = LogManager.getLogger(BackwardRecursion.class.getName());
 	
-	protected int horizonLength;
-	protected StateSpace<?>[] stateSpace;
-	protected TransitionProbability transitionProbability;
-	protected CostRepository costRepository;
-	
 	/**
-	 * Returns the expected cost associated with {@code state}.
+	 * Creates an instance of {@code BackwardRecursion} with the given optimization direction.
 	 * 
-	 * @param state the target state.
-	 * @return the expected cost associated with {@code state}.
+	 * @param direction the direction of optimization.
 	 */
-	public double getExpectedCost(State state){
-		return this.getCostRepository().getOptimalExpectedCost(state);
+	public BackwardRecursion(OptimisationDirection direction){
+		super(direction);
 	}
 	
 	/**
-	 * Returns the {@code StateSpace} for period {@code period}.
-	 * 
-	 * @param period the target period.
-	 * @return the {@code StateSpace} for period {@code period}.
+	 * Generates the complete state space for the discrete time, discrete space, stochastic dynamic program.
 	 */
-	public StateSpace<?> getStateSpace(int period){
-		return this.stateSpace[period];
-	}
-	
-	/**
-	 * Returns the {@code StateSpace} array for the stochastic process planning horizon.
-	 * 
-	 * @return the {@code StateSpace} array for the stochastic process planning horizon.
-	 */
-	public StateSpace<?>[] getStateSpace(){
-		return this.stateSpace;
-	}
-	
-	/**
-	 * Returns the {@code TransitionProbability} of the stochastic process.
-	 * 
-	 * @return the {@code TransitionProbability} of the stochastic process.
-	 */
-	public TransitionProbability getTransitionProbability(){
-		return this.transitionProbability; 
-	}
-	
-	/**
-	 * Returns the {@code CostRepository} of the stochastic process.
-	 * 
-	 * @return the {@code CostRepository} of the stochastic process.
-	 */
-	public CostRepository getCostRepository(){
-		return this.costRepository;
+	protected void generateStates(){
+		CountDownLatch latch = new CountDownLatch(horizonLength + 1);
+		for(int i = horizonLength; i >= 0; i--){
+			Iterator<State> iterator = this.getStateSpace(i).iterator();
+			Runnable r = () -> {
+				while(iterator.hasNext()) 
+					iterator.next();
+				latch.countDown();
+				};
+			new Thread(r).start();
+		}
+		try {
+			latch.await();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		this.getStateSpace(horizonLength).entrySet()
+			.parallelStream()
+			.forEach(entry -> this.getValueRepository().setOptimalExpectedValue(entry.getValue(), 0));
 	}
 	
 	/**
@@ -124,14 +107,14 @@ public abstract class BackwardRecursion {
 		.forEach(entry -> {
 			State state = entry.getValue();
 			Action bestAction = state.getNoAction();
-			double bestCost = this.getCostRepository().getExpectedCost(state, bestAction, this.getTransitionProbability());
-			this.getCostRepository().setOptimalExpectedCost(state, bestCost);
-			this.getCostRepository().setOptimalAction(state, bestAction);
+			double bestCost = this.getValueRepository().getExpectedValue(state, bestAction, this.getTransitionProbability());
+			this.getValueRepository().setOptimalExpectedValue(state, bestCost);
+			this.getValueRepository().setOptimalAction(state, bestAction);
 		});
 	}
 	
 	/**
-	 * Backward recursion step. In order to run the recursion step for period {@code period} 
+	 * Backward recursion step; in order to run the recursion step for period {@code period} 
 	 * the recursion step must have been already run for all subsequent periods.  
 	 * 
 	 * @param period the target period for the step.
@@ -144,82 +127,13 @@ public abstract class BackwardRecursion {
 				State state = entry.getValue();
 				BestActionRepository repository = new BestActionRepository();
 				state.getFeasibleActions().parallelStream().forEach(action -> {
-					double currentCost = this.getCostRepository().getExpectedCost(state, action, this.getTransitionProbability());
+					double currentCost = this.getValueRepository().getExpectedValue(state, action, this.getTransitionProbability());
 					repository.update(action, currentCost);
 				});
-				this.getCostRepository().setOptimalExpectedCost(state, repository.getBestCost());
-				this.getCostRepository().setOptimalAction(state, repository.getBestAction());
-				logger.trace(repository.getBestAction()+"\tCost: "+repository.getBestCost());
+				this.getValueRepository().setOptimalExpectedValue(state, repository.getBestValue());
+				this.getValueRepository().setOptimalAction(state, repository.getBestAction());
+				logger.trace(repository.getBestAction()+"\tCost: "+repository.getBestValue());
 				//System.out.println(repository.getBestAction()+"\tCost: "+repository.getBestCost());
 			});
-	}
-	
-	/**
-	 * Generates the complete state space for the discrete time, discrete space, stochastic dynamic program.
-	 */
-	protected void generateStates(){
-		CountDownLatch latch = new CountDownLatch(horizonLength + 1);
-		for(int i = horizonLength; i >= 0; i--){
-			Iterator<State> iterator = this.getStateSpace(i).iterator();
-			Runnable r = () -> {
-				while(iterator.hasNext()) 
-					iterator.next();
-				latch.countDown();
-				};
-			new Thread(r).start();
-		}
-		try {
-			latch.await();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		this.getStateSpace(horizonLength).entrySet()
-			.parallelStream()
-			.forEach(entry -> this.getCostRepository().setOptimalExpectedCost(entry.getValue(), 0));
-	}
-	
-	/**
-	 * Stores the best action and its cost.
-	 * 
-	 * @author Roberto Rossi
-	 *
-	 */
-	class BestActionRepository {
-		Action bestAction = null;
-		double bestCost = Double.MAX_VALUE;
-		
-		/**
-		 * Compares {@code currentAction} and {@code currentCost} to the best action currently stored and updates
-		 * the value of the best action and of its cost if necessary.
-		 * 
-		 * @param currentAction the action.
-		 * @param currentCost the action expected total cost.
-		 */
-		public synchronized void update(Action currentAction, double currentCost){
-			if(currentCost < bestCost){
-				bestCost = currentCost;
-				bestAction = currentAction;
-			}
-		}
-		
-		/**
-		 * Returns the best action stored.
-		 * 
-		 * @return the best action stored.
-		 */
-		public Action getBestAction(){
-			return this.bestAction;
-		}
-		
-		/**
-		 * Returns the cost associated with the best action stored.
-		 * 
-		 * @return the cost associated with the best action stored.
-		 */
-		public double getBestCost(){
-			return this.bestCost;
-		}
 	}
 }

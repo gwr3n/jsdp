@@ -28,11 +28,11 @@ package jsdp.app.lotsizing;
 
 
 import jsdp.sdp.Action;
-import jsdp.sdp.CostRepository;
+import jsdp.sdp.ValueRepository;
 import jsdp.sdp.State;
 import jsdp.sdp.TransitionProbability;
 
-public class sS_CostRepository extends CostRepository {
+public class sS_CostRepository extends ValueRepository {
 	double fixedOrderingCost;
 	double proportionalOrderingCost;
 	double holdingCost;
@@ -46,7 +46,7 @@ public class sS_CostRepository extends CostRepository {
 	}
 	
 	@Override
-	protected double getImmediateCost(State initialState, Action action, State finalState) {
+	protected double getImmediateValue(State initialState, Action action, State finalState) {
 		sS_Action a = (sS_Action)action;
 		sS_State fs = (sS_State)finalState;
 		double totalCost = a.getIntAction() > 0 ? (fixedOrderingCost + sS_Action.actionToOrderQuantity(a.getIntAction())*proportionalOrderingCost) : 0;
@@ -56,15 +56,15 @@ public class sS_CostRepository extends CostRepository {
 	}
 
 	@Override
-	public double getExpectedCost(State initialState, Action action, TransitionProbability transitionProbability) {
+	public double getExpectedValue(State initialState, Action action, TransitionProbability transitionProbability) {
 		StateAction key = new StateAction(initialState, action);
-		return this.costHashTable.computeIfAbsent(key, y -> {
+		return this.valueHashTable.computeIfAbsent(key, y -> {
 			double normalisationFactor = transitionProbability.getFinalStates(initialState, action).parallelStream()
 					  .mapToDouble(finalState -> transitionProbability.getTransitionProbability(initialState, action, finalState))
 					  .sum();
 			double expectedTotalCost = transitionProbability.getFinalStates(initialState, action).parallelStream()
 					  .mapToDouble(finalState -> 
-					  (this.getImmediateCost(initialState, action, finalState)+this.getOptimalExpectedCost(finalState))*
+					  (this.getImmediateValue(initialState, action, finalState)+this.getOptimalExpectedValue(finalState))*
 					  transitionProbability.getTransitionProbability(initialState, action, finalState)
 			).sum()/normalisationFactor;
 			return expectedTotalCost;

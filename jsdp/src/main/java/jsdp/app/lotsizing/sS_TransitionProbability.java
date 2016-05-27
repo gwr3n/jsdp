@@ -28,7 +28,6 @@ package jsdp.app.lotsizing;
 
 import java.util.ArrayList;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.State;

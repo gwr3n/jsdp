@@ -48,7 +48,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import jsdp.app.lotsizing.simulation.SimulatePolicies;
-
+import jsdp.sdp.Recursion.OptimisationDirection;
 import umontreal.ssj.charts.XYLineChart;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
@@ -132,8 +132,18 @@ public class sS_jsdp {
 			double confidence,
 			double errorTolerance){
 		
-		sS_BackwardRecursion recursion = new sS_BackwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
-		//sS_SequentialBackwardRecursion recursion = new sS_SequentialBackwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
+		sS_BackwardRecursion recursion = new sS_BackwardRecursion(OptimisationDirection.MIN,
+																  distributions,
+																  fixedOrderingCost,
+																  proportionalOrderingCost,
+																  holdingCost,
+																  penaltyCost);
+		/*sS_SequentialBackwardRecursion recursion = new sS_SequentialBackwardRecursion(OptimisationDirection.MIN,
+																					  distributions,
+																					  fixedOrderingCost,
+																					  proportionalOrderingCost,
+																					  holdingCost,
+																					  penaltyCost);*/
 		
 		StopWatch timer = new StopWatch();
 		timer.start();
@@ -171,7 +181,12 @@ public class sS_jsdp {
 			double confidence,
 			double errorTolerance){
 		
-		sS_ForwardRecursion recursion = new sS_ForwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
+		sS_ForwardRecursion recursion = new sS_ForwardRecursion(OptimisationDirection.MIN,
+																distributions,
+																fixedOrderingCost,
+																proportionalOrderingCost,
+																holdingCost,
+																penaltyCost);
 		
 		sS_StateDescriptor initialState = new sS_StateDescriptor(0, sS_State.inventoryToState(initialInventory));
 		
@@ -180,11 +195,19 @@ public class sS_jsdp {
 		recursion.runForwardRecursion(((sS_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
 		timer.stop();
 		double ETC = recursion.getExpectedCost(initialInventory);
+		double[][] optimalPolicy = recursion.getOptimalPolicy(initialInventory);
+	    double[] s = optimalPolicy[0];
+		double[] S = optimalPolicy[1];
 		double action = sS_State.stateToInventory(recursion.getOptimalAction(initialState).getIntAction());
 		
 		System.out.println("Expected total cost (assuming an initial inventory level "+initialInventory+"): "+ETC);
 		System.out.println("Optimal initial action: "+action);
 		System.out.println("Time elapsed: "+timer);
+		System.out.println();
+		for(int i = 0; i < distributions.length; i++){
+			System.out.println("S["+(i+1)+"]:"+S[i]+"\ts["+(i+1)+"]:"+s[i]);
+		}
+		System.out.println("Note that (s,S) values for period 0 have been set on best effort basis.");
 		
 		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.ENGLISH);
 	    DecimalFormat df = new DecimalFormat("#.00",otherSymbols);
@@ -204,7 +227,12 @@ public class sS_jsdp {
 			boolean printCostFunctionValues,
 			boolean latexOutput){
 		
-		sS_BackwardRecursion recursion = new sS_BackwardRecursion(distributions,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
+		sS_BackwardRecursion recursion = new sS_BackwardRecursion(OptimisationDirection.MIN,
+																  distributions,
+																  fixedOrderingCost,
+																  proportionalOrderingCost,
+																  holdingCost,
+																  penaltyCost);
 		recursion.runBackwardRecursion(targetPeriod);
 		XYSeries series = new XYSeries("(s,S) policy");
 		for(double i = 0; i <= sS_State.getMaxInventory(); i += sS_State.getStepSize()){
