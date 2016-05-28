@@ -29,6 +29,7 @@ package jsdp.app.gambler;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.DoubleStream;
 
 /**
@@ -71,13 +72,14 @@ public class GamblersRuin {
    public StateTransitionFunction<State, Double, Double> stateTransition = 
          (state, action, randomOutcome) -> new State(state.period + 1, state.money - action + action*randomOutcome);
 
+   public Function<State, Double> rewardFunction = state -> state.money >= this.targetWealth ? 1.0 : 0.0;    
+         
    Map<State, Double> cacheActions = new HashMap<>();
    Map<State, Double> cacheValueFunction = new HashMap<>();
    double f(State state){
       return cacheValueFunction.computeIfAbsent(state, s -> {
          if(s.period == this.betHorizon + 1){
-            double val =  state.money >= this.targetWealth ? 1.0 : 0.0;	
-            return val;
+            return rewardFunction.apply(s);
          }else{
             double val= Arrays.stream(s.getFeasibleActions())
                               .map(bet -> Arrays.stream(pmf)
