@@ -31,7 +31,21 @@ import java.util.Map;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
-
+/**
+ * A gambler has ${@code initialWealth}. She is allowed to play a game of chance over a given {@code betHorizon}, and her goal is to
+ * maximize her probability of ending up with a least ${@code targetWealth}. 
+ * 
+ * If the gambler bets $b on a play of the game, then with probability p, she wins the game and increases her capital position by $b; 
+ * with probability (1-p), she loses the game and decreases her capital by $b. 
+ * 
+ * On any play of the game, the gambler may not bet more money than she has available.
+ * 
+ * Determine a betting strategy that will maximize the gambler's probability of attaining a wealth of at least ${@code targetWealth} 
+ * by the end of the betting horizon. 
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public class GamblersRuin {
 
    double targetWealth;
@@ -49,19 +63,6 @@ public class GamblersRuin {
       this.probability = probability;
    }
 
-   public static void main(String [] args){
-      double support[] = {0,2};
-      double probability[] = {0.6,0.4};
-      int initialPeriod = 1;
-      int bettingHorizon = 4;
-      double initialWealth = 2;
-      double targetWealth = 6;
-      GamblersRuin ruin = new GamblersRuin(targetWealth, bettingHorizon, support, probability);
-      StateDescriptor initialState = ruin.new StateDescriptor(initialPeriod, initialWealth);
-      System.out.println("f_1(2)="+ruin.f(initialState));
-      System.out.println("b_2(1)="+ruin.cacheb.get(ruin.new StateDescriptor(2, 1)));
-   }
-
    Map<StateDescriptor, Double> cacheb = new HashMap<>();
 
    Map<StateDescriptor, Double> cachef = new HashMap<>();
@@ -73,19 +74,19 @@ public class GamblersRuin {
             return val;
          }else{
             double val= IntStream.iterate(0, bet -> bet + 1)
-                  .limit((int) Math.ceil(y.money + 1))
-                  .mapToDouble(bet -> IntStream.iterate(0, p -> p + 1)
-                        .limit(support.length)
-                        .mapToDouble(p -> probability[p]*f(new StateDescriptor(y.period + 1, y.money - bet + bet*support[p])))
-                        .sum())
-                  .max().getAsDouble();
+                                 .limit((int) Math.ceil(y.money + 1))
+                                 .mapToDouble(bet -> IntStream.iterate(0, p -> p + 1)
+                                                              .limit(support.length)
+                                                              .mapToDouble(p -> probability[p]*f(new StateDescriptor(y.period + 1, y.money - bet + bet*support[p])))
+                                                              .sum())
+                                 .max().getAsDouble();
             double bestBet = DoubleStream.iterate(0, bet -> bet + 1)
-                  .limit((int) Math.ceil(y.money + 1))
-                  .filter(bet -> IntStream.iterate(0, p -> p + 1)
-                        .limit(support.length)
-                        .mapToDouble(p -> probability[p]*f(new StateDescriptor(y.period + 1, y.money - bet + bet*support[p])))
-                        .sum() == val)
-                  .findAny().getAsDouble();
+                                         .limit((int) Math.ceil(y.money + 1))
+                                         .filter(bet -> IntStream.iterate(0, p -> p + 1)
+                                                                 .limit(support.length)
+                                                                 .mapToDouble(p -> probability[p]*f(new StateDescriptor(y.period + 1, y.money - bet + bet*support[p])))
+                                                                 .sum() == val)
+                                         .findAny().getAsDouble();
             cacheb.putIfAbsent(y, bestBet);
             return val;
          }
@@ -111,7 +112,7 @@ public class GamblersRuin {
       public boolean equals(Object o){
          if(o instanceof StateDescriptor)
             return  ((StateDescriptor) o).period == this.period &&
-            ((StateDescriptor) o).money == this.money;
+                    ((StateDescriptor) o).money == this.money;
          else
             return false;
       }
@@ -120,5 +121,18 @@ public class GamblersRuin {
       public String toString(){
          return this.period + " " + this.money;
       }
+   }
+   
+   public static void main(String [] args){
+      double support[] = {0,2};
+      double probability[] = {0.6,0.4};
+      int initialPeriod = 1;
+      int bettingHorizon = 4;
+      double initialWealth = 2;
+      double targetWealth = 6;
+      GamblersRuin ruin = new GamblersRuin(targetWealth, bettingHorizon, support, probability);
+      StateDescriptor initialState = ruin.new StateDescriptor(initialPeriod, initialWealth);
+      System.out.println("f_1(2)="+ruin.f(initialState));
+      System.out.println("b_2(1)="+ruin.cacheb.get(ruin.new StateDescriptor(2, 1)));
    }
 }
