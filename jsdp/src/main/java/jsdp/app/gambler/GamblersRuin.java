@@ -65,13 +65,13 @@ public class GamblersRuin {
       this.pmf = pmf;
    }
    
-   public StateTransitionFunction<StateDescriptor, Double, Double, StateDescriptor> stateTransition = 
-         (state, action, randomVariable) -> new StateDescriptor(state.period + 1, state.money - action + action*randomVariable);
+   public StateTransitionFunction<State, Double, Double, State> stateTransition = 
+         (state, action, randomVariable) -> new State(state.period + 1, state.money - action + action*randomVariable);
 
-   Map<StateDescriptor, Double> cacheActions = new HashMap<>();
+   Map<State, Double> cacheActions = new HashMap<>();
 
-   Map<StateDescriptor, Double> cacheValueFunction = new HashMap<>();
-   double f(StateDescriptor state){
+   Map<State, Double> cacheValueFunction = new HashMap<>();
+   double f(State state){
       return cacheValueFunction.computeIfAbsent(state, s -> {
          if(s.period == this.betHorizon + 1){
             double val =  state.money >= this.targetWealth ? 1.0 : 0;	
@@ -95,11 +95,11 @@ public class GamblersRuin {
       });
    }
    
-   class StateDescriptor{
+   class State{
       int period;
       double money;
 
-      public StateDescriptor(int period, double money){
+      public State(int period, double money){
          this.period = period;
          this.money = money;
       }
@@ -118,9 +118,9 @@ public class GamblersRuin {
 
       @Override
       public boolean equals(Object o){
-         if(o instanceof StateDescriptor)
-            return  ((StateDescriptor) o).period == this.period &&
-                    ((StateDescriptor) o).money == this.money;
+         if(o instanceof State)
+            return  ((State) o).period == this.period &&
+                    ((State) o).money == this.money;
          else
             return false;
       }
@@ -138,8 +138,8 @@ public class GamblersRuin {
       double initialWealth = 2;
       double targetWealth = 6;
       GamblersRuin ruin = new GamblersRuin(targetWealth, bettingHorizon, pmf);
-      StateDescriptor initialState = ruin.new StateDescriptor(initialPeriod, initialWealth);
+      State initialState = ruin.new State(initialPeriod, initialWealth);
       System.out.println("f_1(2)="+ruin.f(initialState));
-      System.out.println("b_2(1)="+ruin.cacheActions.get(ruin.new StateDescriptor(2, 1)));
+      System.out.println("b_2(1)="+ruin.cacheActions.get(ruin.new State(2, 1)));
    }
 }
