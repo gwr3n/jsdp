@@ -31,6 +31,12 @@ import jsdp.sdp.ForwardRecursion;
 import jsdp.sdp.State;
 import umontreal.ssj.probdist.Distribution;
 
+/**
+ * A concrete implementation of a forward recursion procedure to compute (s,S) policy parameters.
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public class sS_ForwardRecursion extends ForwardRecursion{
 	
 	double fixedOrderingCost; 
@@ -39,13 +45,21 @@ public class sS_ForwardRecursion extends ForwardRecursion{
 	double penaltyCost;
 	Distribution[] demand;
 	
-	public sS_ForwardRecursion( OptimisationDirection direction,
-								Distribution[] demand,
-								double fixedOrderingCost, 
-								double proportionalOrderingCost, 
-								double holdingCost,
-								double penaltyCost){
-		super(direction);
+	/**
+	 * Creates an instance of the problem and initialises state space, transition probability and value repository.
+	 * 
+	 * @param demand the distribution of random demand in each period, an array of {@code Distribution}.
+	 * @param fixedOrderingCost the fixed ordering cost.
+	 * @param proportionalOrderingCost the proportional (per unit) ordering cost.
+	 * @param holdingCost the proportional (per unit) holding cost; this is paid for each item brought from one period to the next.
+	 * @param penaltyCost the proportional (per unit) penalty cost; this is paid for each item short at the end of each period.
+	 */
+	public sS_ForwardRecursion(Distribution[] demand,
+			                   double fixedOrderingCost, 
+			                   double proportionalOrderingCost, 
+			                   double holdingCost,
+			                   double penaltyCost){
+		super(OptimisationDirection.MIN);
 		this.demand = demand;
 		this.horizonLength = demand.length;
 		

@@ -122,7 +122,6 @@ public abstract class BackwardRecursion extends Recursion{
 	protected void recurse(int period){
 		this.getStateSpace(period).entrySet()
 			.parallelStream()
-			//.stream()
 			.forEach(entry -> {
 				State state = entry.getValue();
 				BestActionRepository repository = new BestActionRepository();

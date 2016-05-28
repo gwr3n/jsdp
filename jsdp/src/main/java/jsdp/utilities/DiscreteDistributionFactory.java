@@ -37,7 +37,7 @@ import umontreal.ssj.probdist.Distribution;
 
 /**
  * {@code DiscreteDistributionFactory} converts a {@code ContinuousDistribution} 
- * or a {@code DiscreteDistributionInt} from the {@code umontreal.ssj.probdist}} 
+ * or a {@code DiscreteDistributionInt} from the {@code umontreal.ssj.probdist} 
  * package to a {@code DiscreteDistribution}.
  *  
  * @author Roberto Rossi

@@ -35,11 +35,18 @@ public class sS_State extends State {
 	
 	private int initialIntState;
 	
-	//Factor must be 1 for discrete distributions
 	private static double stepSize;
 	private static int minIntState;
 	private static int maxIntState;
 	
+	/**
+	 * Initializes the state space boundaries. Note that {@code stepSize} must be one if 
+	 * {@code DiscreteDistributionInt} are used.
+	 * 
+	 * @param stepSize the discretization step used to encode the state space
+	 * @param minIntState the minimum integer value used to encode a state
+	 * @param maxIntState the maximum integer value used to encode a state
+	 */
 	public static void setStateBoundaries(double stepSize, int minIntState, int maxIntState){
 		sS_State.stepSize = stepSize;
 		sS_State.minIntState = minIntState;

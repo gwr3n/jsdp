@@ -48,7 +48,6 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import jsdp.app.lotsizing.simulation.SimulatePolicies;
-import jsdp.sdp.Recursion.OptimisationDirection;
 import umontreal.ssj.charts.XYLineChart;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
@@ -132,14 +131,12 @@ public class sS_jsdp {
 			double confidence,
 			double errorTolerance){
 		
-		sS_BackwardRecursion recursion = new sS_BackwardRecursion(OptimisationDirection.MIN,
-																  distributions,
+		sS_BackwardRecursion recursion = new sS_BackwardRecursion(distributions,
 																  fixedOrderingCost,
 																  proportionalOrderingCost,
 																  holdingCost,
 																  penaltyCost);
-		/*sS_SequentialBackwardRecursion recursion = new sS_SequentialBackwardRecursion(OptimisationDirection.MIN,
-																					  distributions,
+		/*sS_SequentialBackwardRecursion recursion = new sS_SequentialBackwardRecursion(distributions,
 																					  fixedOrderingCost,
 																					  proportionalOrderingCost,
 																					  holdingCost,
@@ -181,8 +178,7 @@ public class sS_jsdp {
 			double confidence,
 			double errorTolerance){
 		
-		sS_ForwardRecursion recursion = new sS_ForwardRecursion(OptimisationDirection.MIN,
-																distributions,
+		sS_ForwardRecursion recursion = new sS_ForwardRecursion(distributions,
 																fixedOrderingCost,
 																proportionalOrderingCost,
 																holdingCost,
@@ -227,8 +223,7 @@ public class sS_jsdp {
 			boolean printCostFunctionValues,
 			boolean latexOutput){
 		
-		sS_BackwardRecursion recursion = new sS_BackwardRecursion(OptimisationDirection.MIN,
-																  distributions,
+		sS_BackwardRecursion recursion = new sS_BackwardRecursion(distributions,
 																  fixedOrderingCost,
 																  proportionalOrderingCost,
 																  holdingCost,
@@ -242,7 +237,7 @@ public class sS_jsdp {
 				System.out.println(i+"\t"+recursion.getExpectedCost(stateDescriptor));
 		}
 		XYDataset xyDataset = new XYSeriesCollection(series);
-		JFreeChart chart = ChartFactory.createXYLineChart("(s,S) policy", "Opening inventory level", "Expected total cost",
+		JFreeChart chart = ChartFactory.createXYLineChart("(s,S) policy - period "+targetPeriod+" expected total cost", "Opening inventory level", "Expected total cost",
 				 xyDataset, PlotOrientation.VERTICAL, false, true, false);
 		ChartFrame frame = new ChartFrame("(s,S) policy",chart);
 		frame.setVisible(true);

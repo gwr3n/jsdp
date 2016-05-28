@@ -31,6 +31,12 @@ import jsdp.sdp.BackwardRecursion;
 import jsdp.sdp.State;
 import umontreal.ssj.probdist.Distribution;
 
+/**
+ * A concrete implementation of a backward recursion procedure to compute (s,S) policy parameters.
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public class sS_BackwardRecursion extends BackwardRecursion{
 	
 	double fixedOrderingCost; 
@@ -39,13 +45,21 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 	double penaltyCost;
 	Distribution[] demand;
 	
-	public sS_BackwardRecursion(OptimisationDirection direction,
-								Distribution[] demand,
+	/**
+	 * Creates an instance of the problem and initialises state space, transition probability and value repository.
+	 * 
+	 * @param demand the distribution of random demand in each period, an array of {@code Distribution}.
+	 * @param fixedOrderingCost the fixed ordering cost.
+	 * @param proportionalOrderingCost the proportional (per unit) ordering cost.
+	 * @param holdingCost the proportional (per unit) holding cost; this is paid for each item brought from one period to the next.
+	 * @param penaltyCost the proportional (per unit) penalty cost; this is paid for each item short at the end of each period.
+	 */
+	public sS_BackwardRecursion(Distribution[] demand,
 								double fixedOrderingCost, 
 								double proportionalOrderingCost, 
 								double holdingCost,
 								double penaltyCost){
-		super(direction);
+		super(OptimisationDirection.MIN);
 		this.demand = demand;
 		this.horizonLength = demand.length;
 		
