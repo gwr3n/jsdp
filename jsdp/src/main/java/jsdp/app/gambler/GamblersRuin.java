@@ -32,6 +32,9 @@ import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 /**
+ * This problem is taken from W. L. Winston, Operations Research: Applications and Algorithms (7th Edition), Duxbury Press, 2003,
+ * chap. 19, example 3.
+ * 
  * A gambler has ${@code initialWealth}. She is allowed to play a game of chance over a given {@code betHorizon}, and her goal is to
  * maximize her probability of ending up with a least ${@code targetWealth}. 
  * 

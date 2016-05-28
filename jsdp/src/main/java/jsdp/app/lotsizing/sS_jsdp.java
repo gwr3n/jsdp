@@ -90,9 +90,9 @@ public class sS_jsdp {
                                               .toArray(Distribution[]::new);
 
       /*Distribution[] distributions = IntStream.iterate(0, i -> i + 1)
-												            .limit(demand.length)
-												            .mapToObj(i -> new PoissonDist(demand[i]))
-												            .toArray(Distribution[]::new);*/
+                                                .limit(demand.length)
+                                                .mapToObj(i -> new PoissonDist(demand[i]))
+                                                .toArray(Distribution[]::new);*/
 
       double initialInventory = 0;
 
