@@ -31,8 +31,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.DoubleStream;
 
-import jsdp.sdp.StateTransitionFunction;
-
 /**
  * This problem is taken from W. L. Winston, Operations Research: Applications and Algorithms (7th Edition), Duxbury Press, 2003,
  * chap. 19, example 3.
@@ -142,4 +140,9 @@ public class GamblersRuin {
       System.out.println("f_1(2)="+ruin.f(initialState));
       System.out.println("b_2(1)="+ruin.cacheActions.get(ruin.new State(2, 1)));
    }
+}
+
+@FunctionalInterface
+interface StateTransitionFunction <S, A, R> { 
+   public S apply (S s, A a, R r);
 }
