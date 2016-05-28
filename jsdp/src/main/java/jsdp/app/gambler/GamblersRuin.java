@@ -63,11 +63,15 @@ public class GamblersRuin {
       this.pmf = pmf;
    }
    
+   @FunctionalInterface
+   interface StateTransitionFunction <S, A, R> { 
+      public S apply (S s, A a, R r);
+   }
+   
    public StateTransitionFunction<State, Double, Double> stateTransition = 
          (state, action, randomOutcome) -> new State(state.period + 1, state.money - action + action*randomOutcome);
 
    Map<State, Double> cacheActions = new HashMap<>();
-
    Map<State, Double> cacheValueFunction = new HashMap<>();
    double f(State state){
       return cacheValueFunction.computeIfAbsent(state, s -> {
@@ -140,9 +144,4 @@ public class GamblersRuin {
       System.out.println("f_1(2)="+ruin.f(initialState));
       System.out.println("b_2(1)="+ruin.cacheActions.get(ruin.new State(2, 1)));
    }
-}
-
-@FunctionalInterface
-interface StateTransitionFunction <S, A, R> { 
-   public S apply (S s, A a, R r);
 }
