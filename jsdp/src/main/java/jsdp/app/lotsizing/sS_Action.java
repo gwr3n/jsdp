@@ -31,7 +31,7 @@ import jsdp.sdp.State;
 
 public class sS_Action extends Action {
 	
-	int intAction;
+   int intAction;
 	
 	public static double actionToOrderQuantity(int action){
 		return action*sS_State.getStepSize();

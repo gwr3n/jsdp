@@ -32,96 +32,96 @@ import jsdp.sdp.Action;
 import jsdp.sdp.State;
 
 public class sS_State extends State {
-	
-	private int initialIntState;
-	
-	private static double stepSize;
-	private static int minIntState;
-	private static int maxIntState;
-	
-	/**
-	 * Initializes the state space boundaries. Note that {@code stepSize} must be one if 
-	 * {@code DiscreteDistributionInt} are used.
-	 * 
-	 * @param stepSize the discretization step used to encode the state space
-	 * @param minIntState the minimum integer value used to encode a state
-	 * @param maxIntState the maximum integer value used to encode a state
-	 */
-	public static void setStateBoundaries(double stepSize, int minIntState, int maxIntState){
-		sS_State.stepSize = stepSize;
-		sS_State.minIntState = minIntState;
-		sS_State.maxIntState = maxIntState;
-	}
-	
-	public static double getStepSize(){
-		return sS_State.stepSize;
-	}
-	
-	public static double stateToInventory(int state){
-		return state*stepSize;
-	}
-	
-	public static int inventoryToState(double inventory){
-		return (int) Math.max(Math.min(Math.round(inventory/stepSize), sS_State.maxIntState), sS_State.minIntState);
-	}
-	
-	public static int getMinIntState(){
-		return sS_State.minIntState;
-	}
-	
-	public static int getMaxIntState(){
-		return sS_State.maxIntState;
-	}
-	
-	public static double getMinInventory(){
-		return stateToInventory(minIntState);
-	}
-	
-	public static double getMaxInventory(){
-		return stateToInventory(maxIntState);
-	}
-	
-	public sS_State(sS_StateDescriptor descriptor){
-		super(descriptor.getPeriod());
-		this.initialIntState = descriptor.getInitialIntState();
-		this.buildActionList();
-	}
-	
-	public int getInitialIntState(){
-		return this.initialIntState;
-	}
-	
-	@Override
-	protected void buildActionList(){
-		this.noAction = new sS_Action(this, 0);
-		this.feasibleActions = new ArrayList<Action>();
-		for(int i = this.initialIntState; i <= maxIntState; i++){
-			feasibleActions.add(new sS_Action(this, i - this.initialIntState));
-		}
-	}
-	
-	@Override
-	public boolean equals(Object state){
-		if(state instanceof sS_State)
-			return this.period == ((sS_State)state).period && this.initialIntState == ((sS_State)state).initialIntState;
-		else return false;
-	}
-	
-	@Override
-	public int hashCode(){
-		String hash = "";
-        hash = (hash + period) + initialIntState;
-        return hash.hashCode();
-	}
 
-	@Override
-	public int compareTo(State state) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-	
-	@Override
-	public String toString(){
-		return "Period: "+this.period+"\tInventory:"+stateToInventory(this.initialIntState);
-	}
+   private int initialIntState;
+
+   private static double stepSize;
+   private static int minIntState;
+   private static int maxIntState;
+
+   /**
+    * Initializes the state space boundaries. Note that {@code stepSize} must be one if 
+    * {@code DiscreteDistributionInt} are used.
+    * 
+    * @param stepSize the discretization step used to encode the state space
+    * @param minIntState the minimum integer value used to encode a state
+    * @param maxIntState the maximum integer value used to encode a state
+    */
+   public static void setStateBoundaries(double stepSize, int minIntState, int maxIntState){
+      sS_State.stepSize = stepSize;
+      sS_State.minIntState = minIntState;
+      sS_State.maxIntState = maxIntState;
+   }
+
+   public static double getStepSize(){
+      return sS_State.stepSize;
+   }
+
+   public static double stateToInventory(int state){
+      return state*stepSize;
+   }
+
+   public static int inventoryToState(double inventory){
+      return (int) Math.max(Math.min(Math.round(inventory/stepSize), sS_State.maxIntState), sS_State.minIntState);
+   }
+
+   public static int getMinIntState(){
+      return sS_State.minIntState;
+   }
+
+   public static int getMaxIntState(){
+      return sS_State.maxIntState;
+   }
+
+   public static double getMinInventory(){
+      return stateToInventory(minIntState);
+   }
+
+   public static double getMaxInventory(){
+      return stateToInventory(maxIntState);
+   }
+
+   public sS_State(sS_StateDescriptor descriptor){
+      super(descriptor.getPeriod());
+      this.initialIntState = descriptor.getInitialIntState();
+      this.buildActionList();
+   }
+
+   public int getInitialIntState(){
+      return this.initialIntState;
+   }
+
+   @Override
+   protected void buildActionList(){
+      this.noAction = new sS_Action(this, 0);
+      this.feasibleActions = new ArrayList<Action>();
+      for(int i = this.initialIntState; i <= maxIntState; i++){
+         feasibleActions.add(new sS_Action(this, i - this.initialIntState));
+      }
+   }
+
+   @Override
+   public boolean equals(Object state){
+      if(state instanceof sS_State)
+         return this.period == ((sS_State)state).period && this.initialIntState == ((sS_State)state).initialIntState;
+      else return false;
+   }
+
+   @Override
+   public int hashCode(){
+      String hash = "";
+      hash = (hash + period) + initialIntState;
+      return hash.hashCode();
+   }
+
+   @Override
+   public int compareTo(State state) {
+      // TODO Auto-generated method stub
+      return 0;
+   }
+
+   @Override
+   public String toString(){
+      return "Period: "+this.period+"\tInventory:"+stateToInventory(this.initialIntState);
+   }
 }

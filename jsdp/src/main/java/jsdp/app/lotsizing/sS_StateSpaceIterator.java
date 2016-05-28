@@ -30,32 +30,32 @@ import jsdp.sdp.State;
 import jsdp.sdp.StateSpaceIterator;
 
 public class sS_StateSpaceIterator extends StateSpaceIterator {
-	
-	sS_StateSpace stateSpace;
-	sS_StateDescriptor currentStateDescriptor;
-	
-	public sS_StateSpaceIterator(sS_StateSpace stateSpace){
-		this.stateSpace = stateSpace;
-		currentStateDescriptor = new sS_StateDescriptor(this.stateSpace.getPeriod(), sS_State.getMaxIntState());
-	}
-    
-    public boolean hasNext() {
-    	if(currentStateDescriptor.getInitialIntState() <= sS_State.getMaxIntState() && 
-    	   currentStateDescriptor.getInitialIntState() >= sS_State.getMinIntState())
-    		return true;
-    	else
-    		return false;
-	}
 
-	public State next() {
-		if(currentStateDescriptor.getInitialIntState() <= sS_State.getMaxIntState() && 
-		   currentStateDescriptor.getInitialIntState() >= sS_State.getMinIntState()){
-			State state = stateSpace.getState(currentStateDescriptor);
-			currentStateDescriptor = new sS_StateDescriptor(currentStateDescriptor.getPeriod(), 
-															currentStateDescriptor.getInitialIntState() - 1);
-			return state;
-		}else{
-			return null;
-		}
-	}
+   sS_StateSpace stateSpace;
+   sS_StateDescriptor currentStateDescriptor;
+
+   public sS_StateSpaceIterator(sS_StateSpace stateSpace){
+      this.stateSpace = stateSpace;
+      currentStateDescriptor = new sS_StateDescriptor(this.stateSpace.getPeriod(), sS_State.getMaxIntState());
+   }
+
+   public boolean hasNext() {
+      if(currentStateDescriptor.getInitialIntState() <= sS_State.getMaxIntState() && 
+            currentStateDescriptor.getInitialIntState() >= sS_State.getMinIntState())
+         return true;
+      else
+         return false;
+   }
+
+   public State next() {
+      if(currentStateDescriptor.getInitialIntState() <= sS_State.getMaxIntState() && 
+            currentStateDescriptor.getInitialIntState() >= sS_State.getMinIntState()){
+         State state = stateSpace.getState(currentStateDescriptor);
+         currentStateDescriptor = new sS_StateDescriptor(currentStateDescriptor.getPeriod(), 
+               currentStateDescriptor.getInitialIntState() - 1);
+         return state;
+      }else{
+         return null;
+      }
+   }
 }

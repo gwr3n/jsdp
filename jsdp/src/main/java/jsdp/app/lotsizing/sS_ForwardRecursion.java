@@ -55,11 +55,11 @@ public class sS_ForwardRecursion extends ForwardRecursion{
 	 * @param penaltyCost the proportional (per unit) penalty cost; this is paid for each item short at the end of each period.
 	 */
 	public sS_ForwardRecursion(Distribution[] demand,
-			                   double fixedOrderingCost, 
-			                   double proportionalOrderingCost, 
-			                   double holdingCost,
-			                   double penaltyCost){
-		super(OptimisationDirection.MIN);
+			                     double fixedOrderingCost, 
+			                     double proportionalOrderingCost, 
+			                     double holdingCost,
+			                     double penaltyCost){
+	   super(OptimisationDirection.MIN);
 		this.demand = demand;
 		this.horizonLength = demand.length;
 		

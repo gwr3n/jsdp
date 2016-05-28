@@ -29,29 +29,29 @@ package jsdp.app.lotsizing;
 import jsdp.sdp.StateDescriptor;
 
 public class sS_StateDescriptor extends StateDescriptor{
-		
-		int initialIntState;
-		
-		public sS_StateDescriptor(int period, int initialIntState){
-			this.period = period;
-			this.initialIntState = initialIntState;
-		}
-		
-		public boolean equals(Object descriptor){
-			if(descriptor instanceof sS_StateDescriptor)
-				return this.period == ((sS_StateDescriptor)descriptor).period &&
-				 	   this.initialIntState == ((sS_StateDescriptor)descriptor).initialIntState;
-			else
-				return false;
-		}
-		
-		public int hashCode(){
-			String hash = "";
-	        hash = (hash + period) + "_" + initialIntState;
-	        return hash.hashCode();
-		}
-		
-		public int getInitialIntState(){
-			return initialIntState;
-		}
-	}
+
+   int initialIntState;
+
+   public sS_StateDescriptor(int period, int initialIntState){
+      this.period = period;
+      this.initialIntState = initialIntState;
+   }
+
+   public boolean equals(Object descriptor){
+      if(descriptor instanceof sS_StateDescriptor)
+         return this.period == ((sS_StateDescriptor)descriptor).period &&
+         this.initialIntState == ((sS_StateDescriptor)descriptor).initialIntState;
+      else
+         return false;
+   }
+
+   public int hashCode(){
+      String hash = "";
+      hash = (hash + period) + "_" + initialIntState;
+      return hash.hashCode();
+   }
+
+   public int getInitialIntState(){
+      return initialIntState;
+   }
+}

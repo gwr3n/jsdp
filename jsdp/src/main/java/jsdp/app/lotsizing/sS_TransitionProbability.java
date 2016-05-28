@@ -37,40 +37,37 @@ import umontreal.ssj.probdist.DiscreteDistribution;
 import umontreal.ssj.probdist.Distribution;
 
 public class sS_TransitionProbability extends TransitionProbability {
-	DiscreteDistribution[] demand;
-	sS_StateSpace[] stateSpace;
-	
-	public sS_TransitionProbability(Distribution[] demand, sS_StateSpace[] stateSpace, double stepSize){
-		this.demand = IntStream.iterate(0, i -> i + 1)
-							   .limit(demand.length)
-							   .mapToObj(i -> DiscreteDistributionFactory.getTruncatedDiscreteDistribution(
-									   							demand[i],
-									   							0,
-									   							sS_State.getMaxInventory()-sS_State.getMinInventory(),
-									   							stepSize))
-							   .toArray(DiscreteDistribution[]::new);
-		this.stateSpace = stateSpace;
-	}
-	
-	@Override
-	public double getTransitionProbability(State initialState, Action action, State finalState) {
-		double realizedDemand = ((sS_State)initialState).getInitialIntState() +
-								((sS_Action)action).getIntAction() -
-								((sS_State)finalState).getInitialIntState();
-		int period = ((sS_State)initialState).getPeriod();
-		return this.demand[period].prob((int)Math.round(realizedDemand));
-	}
-	
-	@Override
-	public ArrayList<State> getFinalStates(State initialState, Action action) {
-		int period = ((sS_State) initialState).getPeriod();
-		ArrayList<State> states = new ArrayList<State>();
-		int initialIntState = ((sS_State) initialState).getInitialIntState() + ((sS_Action) action).getIntAction();	
-		for(int i = 0; this.demand[period].cdf(sS_State.stateToInventory(i-1)) < 1 && initialIntState-i >= sS_State.getMinIntState(); i++){
-			sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(period+1,initialIntState-i);
-			states.add(this.stateSpace[period+1].getState(stateDescriptor));
-		}
-		return states;
-	}
+   DiscreteDistribution[] demand;
+   sS_StateSpace[] stateSpace;
+
+   public sS_TransitionProbability(Distribution[] demand, sS_StateSpace[] stateSpace, double stepSize){
+      this.demand = IntStream.iterate(0, i -> i + 1)
+                             .limit(demand.length)
+                             .mapToObj(i -> DiscreteDistributionFactory.getTruncatedDiscreteDistribution(
+                                               demand[i], 0, sS_State.getMaxInventory()-sS_State.getMinInventory(), stepSize))
+                             .toArray(DiscreteDistribution[]::new);
+      this.stateSpace = stateSpace;
+   }
+
+   @Override
+   public double getTransitionProbability(State initialState, Action action, State finalState) {
+      double realizedDemand = ((sS_State)initialState).getInitialIntState() +
+                              ((sS_Action)action).getIntAction() -
+                              ((sS_State)finalState).getInitialIntState();
+      int period = ((sS_State)initialState).getPeriod();
+      return this.demand[period].prob((int)Math.round(realizedDemand));
+   }
+
+   @Override
+   public ArrayList<State> getFinalStates(State initialState, Action action) {
+      int period = ((sS_State) initialState).getPeriod();
+      ArrayList<State> states = new ArrayList<State>();
+      int initialIntState = ((sS_State) initialState).getInitialIntState() + ((sS_Action) action).getIntAction();	
+      for(int i = 0; this.demand[period].cdf(sS_State.stateToInventory(i-1)) < 1 && initialIntState-i >= sS_State.getMinIntState(); i++){
+         sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(period+1,initialIntState-i);
+         states.add(this.stateSpace[period+1].getState(stateDescriptor));
+      }
+      return states;
+   }
 }
 
