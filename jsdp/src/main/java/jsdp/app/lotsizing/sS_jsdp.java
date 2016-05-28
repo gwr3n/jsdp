@@ -53,6 +53,22 @@ import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.probdist.NormalDist;
 
+/**
+ *  We formulate the stochastic lot sizing problem as defined in  
+ *  
+ *  Herbert E. Scarf. Optimality of (s, S) policies in the dynamic inventory problem. In K. J. Arrow, S. Karlin, 
+ *  and P. Suppes, editors, Mathematical Methods in the Social Sciences, pages 196–202. Stanford University
+ *  Press, Stanford, CA, 1960.
+ *  
+ *  as a stochastic dynamic programming problem. 
+ *  
+ *  We use forward and backward recursion to find optimal policies.
+ *  
+ *  We plot the optimal expected total cost function as a function of a period opening inventory level.
+ *  
+ * @author Roberto Rossi
+ *
+ */
 public class sS_jsdp {
 
    static final Logger logger = LogManager.getLogger(sS_jsdp.class.getName());
@@ -167,10 +183,10 @@ public class sS_jsdp {
                                                                 holdingCost,
                                                                 penaltyCost);
       /*sS_SequentialBackwardRecursion recursion = new sS_SequentialBackwardRecursion(distributions,
-																					                       fixedOrderingCost,
-																					                       proportionalOrderingCost,
-																					                       holdingCost,
-																					                       penaltyCost);*/
+                                                                                    fixedOrderingCost,
+                                                                                    proportionalOrderingCost,
+                                                                                    holdingCost,
+                                                                                    penaltyCost);*/
 
       StopWatch timer = new StopWatch();
       timer.start();
