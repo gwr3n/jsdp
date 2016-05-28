@@ -31,6 +31,7 @@ import java.util.stream.IntStream;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
+import jsdp.sdp.StateTransitionFunction;
 import jsdp.sdp.TransitionProbability;
 import jsdp.utilities.DiscreteDistributionFactory;
 import umontreal.ssj.probdist.DiscreteDistribution;
@@ -57,15 +58,33 @@ public class sS_TransitionProbability extends TransitionProbability {
       int period = ((sS_State)initialState).getPeriod();
       return this.demand[period].prob((int)Math.round(realizedDemand));
    }
-
+   
+   public StateTransitionFunction<State, Action, Double, State> stateTransition = 
+         (initialState, action, demand) -> {
+            int initialPeriod = ((sS_State) initialState).getPeriod();
+            int finalIntState = ((sS_State) initialState).getInitialIntState() +    //Initial state
+                                ((sS_Action) action).getIntAction() -               //Action
+                                sS_State.inventoryToState(demand);                  //Random demand
+            if(finalIntState >= sS_State.getMinIntState()){
+               sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(initialPeriod+1,finalIntState);
+               return this.stateSpace[initialPeriod+1].getState(stateDescriptor);
+            }else{
+               return null;
+            }
+         };
+         
    @Override
    public ArrayList<State> getFinalStates(State initialState, Action action) {
-      int period = ((sS_State) initialState).getPeriod();
       ArrayList<State> states = new ArrayList<State>();
-      int initialIntState = ((sS_State) initialState).getInitialIntState() + ((sS_Action) action).getIntAction();	
-      for(int i = 0; this.demand[period].cdf(sS_State.stateToInventory(i-1)) < 1 && initialIntState-i >= sS_State.getMinIntState(); i++){
-         sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(period+1,initialIntState-i);
-         states.add(this.stateSpace[period+1].getState(stateDescriptor));
+      for(int i = 0; i < this.demand[initialState.getPeriod()].getN(); i++){
+         double demandValue = this.demand[initialState.getPeriod()].getValue(i);
+         State finalState = stateTransition.apply(initialState, action, demandValue);
+         if(finalState != null) 
+            states.add(finalState);
+         else
+            break;
+         if(this.demand[initialState.getPeriod()].cdf(demandValue) >= 1) 
+            break;
       }
       return states;
    }

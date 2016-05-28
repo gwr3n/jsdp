@@ -47,11 +47,12 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import jsdp.app.lotsizing.simulation.SimulatePolicies;
 import umontreal.ssj.charts.XYLineChart;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.probdist.NormalDist;
+
+import jsdp.app.lotsizing.simulation.SimulatePolicies;
 
 /**
  *  We formulate the stochastic lot sizing problem as defined in  
@@ -75,7 +76,7 @@ public class sS_jsdp {
 
    public static void main(String[] args) {
       //Factor must be 1 for discrete distributions
-      sS_State.setStateBoundaries(1, -100, 150);
+      sS_State.setStateBoundaries(0.5, -150, 300);
 
       double fixedOrderingCost = 50; 
       double proportionalOrderingCost = 0; 

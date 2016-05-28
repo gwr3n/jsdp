@@ -38,7 +38,9 @@ public abstract class StateDescriptor{
 	
 	protected int period;
 	
+	@Override
 	public abstract boolean equals(Object descriptor);
+	@Override
 	public abstract int hashCode();
 	
 	/**

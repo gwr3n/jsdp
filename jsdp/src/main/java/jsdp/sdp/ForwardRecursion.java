@@ -60,7 +60,7 @@ public abstract class ForwardRecursion extends Recursion{
 							  .sum();
 					double currentCost = this.transitionProbability.getFinalStates(y, action).stream()
 							 				 .mapToDouble(c -> this.getValueRepository().getImmediateValue(y, action, c)*
-							 						 	       this.getTransitionProbability().getTransitionProbability(y, action, c))
+							 						 	          this.getTransitionProbability().getTransitionProbability(y, action, c))
 							 				 .sum()/normalisationFactor;
 					repository.update(action, currentCost);
 				});
@@ -76,11 +76,11 @@ public abstract class ForwardRecursion extends Recursion{
 							  .sum();
 					double currentCost = this.transitionProbability.getFinalStates(y, action).stream()
 							 				 .mapToDouble(c -> this.getValueRepository().getImmediateValue(y, action, c)*
-							 						 	       this.getTransitionProbability().getTransitionProbability(y, action, c))
+							 						 	          this.getTransitionProbability().getTransitionProbability(y, action, c))
 							 				 .sum() +
 							 			 this.transitionProbability.getFinalStates(y, action).stream()
 							 				 .mapToDouble(c -> runForwardRecursion(c)*
-							 				 				   this.getTransitionProbability().getTransitionProbability(y, action, c))
+							 				 				       this.getTransitionProbability().getTransitionProbability(y, action, c))
 							 				 .sum()/normalisationFactor;
 					repository.update(action, currentCost);
 				});

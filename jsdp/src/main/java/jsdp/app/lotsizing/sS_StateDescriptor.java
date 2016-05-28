@@ -36,7 +36,8 @@ public class sS_StateDescriptor extends StateDescriptor{
       this.period = period;
       this.initialIntState = initialIntState;
    }
-
+   
+   @Override
    public boolean equals(Object descriptor){
       if(descriptor instanceof sS_StateDescriptor)
          return this.period == ((sS_StateDescriptor)descriptor).period &&
@@ -45,6 +46,7 @@ public class sS_StateDescriptor extends StateDescriptor{
          return false;
    }
 
+   @Override
    public int hashCode(){
       String hash = "";
       hash = (hash + period) + "_" + initialIntState;

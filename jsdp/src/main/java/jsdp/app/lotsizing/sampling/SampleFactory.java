@@ -75,9 +75,10 @@ public class SampleFactory {
 	 */
 	public double[] getNextSample(Distribution[] distributions){
 		UniformGen uniform = new UniformGen(stream);
-		return IntStream.iterate(0, i -> i + 1).limit(distributions.length).mapToDouble(
-				i -> distributions[i].inverseF(uniform.nextDouble())
-				).toArray();
+		return IntStream.iterate(0, i -> i + 1)
+		                .limit(distributions.length).mapToDouble(
+		                      i -> distributions[i].inverseF(uniform.nextDouble()))
+		                .toArray();
 	}
 	
 	/**
@@ -95,13 +96,13 @@ public class SampleFactory {
 	public double[][] getNextLHSample(Distribution[] distributions, int samples){
 		double x[][] = new double[distributions.length][samples];
 		x = IntStream.iterate(0, d -> d + 1)
-					 .limit(distributions.length)
-					 .mapToObj(
-							 d -> DoubleStream.iterate(0, i -> i + 1.0/samples)
-							 				  .limit(samples)
-							 				  .map(i -> distributions[d].inverseF(i + UniformGen.nextDouble(stream, 0, 1.0/samples)))
-							 				  .toArray())
-					 .toArray(double[][]::new);	
+		             .limit(distributions.length)
+		             .mapToObj(
+		                   d -> DoubleStream.iterate(0, i -> i + 1.0/samples)
+		                                    .limit(samples)
+		                                    .map(i -> distributions[d].inverseF(i + UniformGen.nextDouble(stream, 0, 1.0/samples)))
+		                                    .toArray())
+		             .toArray(double[][]::new);	
 		for(int i = 0; i < x.length; i++){
 			shuffle(x[i]);
 		}
