@@ -65,8 +65,8 @@ public class GamblersRuin {
       this.pmf = pmf;
    }
    
-   public StateTransitionFunction<State, Double, Double, State> stateTransition = 
-         (state, action, randomVariable) -> new State(state.period + 1, state.money - action + action*randomVariable);
+   public StateTransitionFunction<State, Double, Double> stateTransition = 
+         (state, action, randomOutcome) -> new State(state.period + 1, state.money - action + action*randomOutcome);
 
    Map<State, Double> cacheActions = new HashMap<>();
 
@@ -74,7 +74,7 @@ public class GamblersRuin {
    double f(State state){
       return cacheValueFunction.computeIfAbsent(state, s -> {
          if(s.period == this.betHorizon + 1){
-            double val =  state.money >= this.targetWealth ? 1.0 : 0;	
+            double val =  state.money >= this.targetWealth ? 1.0 : 0.0;	
             return val;
          }else{
             double val= Arrays.stream(s.getFeasibleActions())

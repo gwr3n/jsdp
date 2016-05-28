@@ -59,7 +59,7 @@ public class sS_TransitionProbability extends TransitionProbability {
       return this.demand[period].prob((int)Math.round(realizedDemand));
    }
    
-   public StateTransitionFunction<State, Action, Double, State> stateTransition = 
+   public StateTransitionFunction<State, Action, Double> stateTransition = 
          (initialState, action, demand) -> {
             int initialPeriod = ((sS_State) initialState).getPeriod();
             int finalIntState = ((sS_State) initialState).getInitialIntState() +    //Initial state
