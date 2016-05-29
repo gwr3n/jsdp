@@ -45,6 +45,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import jsdp.app.inventory.simulation.SimulatePolicies;
 import jsdp.sdp.Action;
 import jsdp.sdp.ImmediateValueFunction;
+import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.State;
 import jsdp.sdp.impl.*;
 
@@ -131,7 +132,7 @@ public class StochasticLotSizing {
       
       // Random Outcome Function
       
-      ImmediateValueFunction<State, Action, Double> randomOutcomeFunction = (initialState, action, finalState) -> {
+      RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction = (initialState, action, finalState) -> {
          double realizedDemand = ((StateImpl)initialState).getInitialState() +
                                  ((ActionImpl)action).getAction() -
                                  ((StateImpl)finalState).getInitialState();

@@ -33,6 +33,7 @@ import java.util.function.Function;
 import jsdp.sdp.Action;
 import jsdp.sdp.BackwardRecursion;
 import jsdp.sdp.ImmediateValueFunction;
+import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.State;
 import jsdp.sdp.ValueRepository;
 import umontreal.ssj.probdist.Distribution;
@@ -62,7 +63,7 @@ public class BackwardRecursionImpl extends BackwardRecursion{
     */
    public BackwardRecursionImpl(Distribution[] demand,
                         ImmediateValueFunction<State, Action, Double> immediateValueFunction,
-                        ImmediateValueFunction<State, Action, Double> randomOutcomeFunction,
+                        RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction,
                         Function<State, ArrayList<Action>> buildActionList,
                         Function<State, Action> idempotentAction,
                         SamplingScheme samplingScheme,

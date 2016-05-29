@@ -32,6 +32,7 @@ import java.util.stream.IntStream;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.ImmediateValueFunction;
+import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.State;
 import jsdp.sdp.TransitionProbability;
 import jsdp.utilities.DiscreteDistributionFactory;
@@ -44,7 +45,7 @@ public class TransitionProbabilityImpl extends TransitionProbability {
    StateSpaceImpl[] stateSpace;
 
    public TransitionProbabilityImpl(Distribution[] demand,
-                                    ImmediateValueFunction<State, Action, Double> randomOutcomeFunction,
+                                    RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction,
                                     StateSpaceImpl[] stateSpace, 
                                     double stepSize){
       this.demand = IntStream.iterate(0, i -> i + 1)
@@ -56,7 +57,7 @@ public class TransitionProbabilityImpl extends TransitionProbability {
       this.stateSpace = stateSpace;
    }
 
-   protected ImmediateValueFunction<State, Action, Double> randomOutcomeFunction;
+   protected RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction;
    
    @Override
    public double getTransitionProbability(State initialState, Action action, State finalState) {
