@@ -24,13 +24,14 @@
  * SOFTWARE.
  */
 
-package jsdp.app.lotsizing;
+package jsdp.sdp.impl;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import jsdp.sdp.Action;
+import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.State;
 import jsdp.sdp.StateTransitionFunction;
 import jsdp.sdp.TransitionProbability;
@@ -39,55 +40,35 @@ import jsdp.utilities.DiscreteDistributionFactory;
 import umontreal.ssj.probdist.DiscreteDistribution;
 import umontreal.ssj.probdist.Distribution;
 
-public class sS_TransitionProbability extends TransitionProbability {
+public class TransitionProbabilityImpl extends TransitionProbability {
    DiscreteDistribution[] demand;
-   sS_StateSpace[] stateSpace;
+   StateSpaceImpl[] stateSpace;
 
-   public sS_TransitionProbability(Distribution[] demand, sS_StateSpace[] stateSpace, double stepSize){
+   public TransitionProbabilityImpl(Distribution[] demand,
+                                    ImmediateValueFunction<State, Action, Double> randomOutcomeFunction,
+                                    StateSpaceImpl[] stateSpace, 
+                                    double stepSize){
       this.demand = IntStream.iterate(0, i -> i + 1)
                              .limit(demand.length)
                              .mapToObj(i -> DiscreteDistributionFactory.getTruncatedDiscreteDistribution(
-                                               demand[i], 0, sS_State.getMaxInventory()-sS_State.getMinInventory(), stepSize))
+                                               demand[i], 0, StateImpl.getMaxState()-StateImpl.getMinState(), stepSize))
                              .toArray(DiscreteDistribution[]::new);
+      this.randomOutcomeFunction = randomOutcomeFunction;
       this.stateSpace = stateSpace;
    }
 
+   protected ImmediateValueFunction<State, Action, Double> randomOutcomeFunction;
+   
    @Override
    public double getTransitionProbability(State initialState, Action action, State finalState) {
-      double realizedDemand = ((sS_State)initialState).getInitialIntState() +
-                              ((sS_Action)action).getIntAction() -
-                              ((sS_State)finalState).getInitialIntState();
-      int period = ((sS_State)initialState).getPeriod();
-      return this.demand[period].prob((int)Math.round(realizedDemand));
+      int randomOutcome = StateImpl.stateToIntState(this.randomOutcomeFunction.apply(initialState, action, finalState));
+      int period = ((StateImpl)initialState).getPeriod();
+      return this.demand[period].prob(randomOutcome);
    }
    
-   public StateTransitionFunction<State, Action, Double> stateTransitionFunction = 
-         (initialState, action, demand) -> {
-            int initialPeriod = ((sS_State) initialState).getPeriod();
-            int finalIntState = ((sS_State) initialState).getInitialIntState() +    //Initial state
-                                ((sS_Action) action).getIntAction() -               //Action
-                                sS_State.inventoryToState(demand);                  //Random demand
-            if(finalIntState >= sS_State.getMinIntState()){
-               sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(initialPeriod+1,finalIntState);
-               return this.stateSpace[initialPeriod+1].getState(stateDescriptor);
-            }else{
-               return null;
-            }
-         };
-    
+   @Override  
    public ArrayList<State> generateFinalStates(State initialState, Action action) {
-      ArrayList<State> states = new ArrayList<State>();
-      for(int i = 0; i < this.demand[initialState.getPeriod()].getN(); i++){
-         double demandValue = this.demand[initialState.getPeriod()].getValue(i);
-         State finalState = stateTransitionFunction.apply(initialState, action, demandValue);
-         if(finalState != null) 
-            states.add(finalState);
-         else
-            break; 
-      }
-      return states.parallelStream()
-                   .filter(s -> this.getTransitionProbability(initialState, action, s) > 0)
-                   .collect(Collectors.toCollection(ArrayList<State>::new));
+      throw new NullPointerException("Method not implemented");
    }
    
    @Override

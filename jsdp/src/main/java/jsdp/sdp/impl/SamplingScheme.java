@@ -24,19 +24,11 @@
  * SOFTWARE.
  */
 
-package jsdp.app.lotsizing;
+package jsdp.sdp.impl;
 
-import jsdp.sdp.ValueRepository;
-
-public class sS_CostRepository extends ValueRepository {
-	public sS_CostRepository(double fixedOrderingCost, double proportionalOrderingCost, double holdingCost, double penaltyCost){		
-		this.immediateValueFunction = (initialState, action, finalState) -> {
-	      sS_Action a = (sS_Action)action;
-	      sS_State fs = (sS_State)finalState;
-	      double totalCost = a.getIntAction() > 0 ? (fixedOrderingCost + sS_Action.actionToOrderQuantity(a.getIntAction())*proportionalOrderingCost) : 0;
-	      totalCost +=   Math.max(sS_State.stateToInventory(fs.getInitialIntState()),0)*holdingCost+
-	                     Math.max(-sS_State.stateToInventory(fs.getInitialIntState()),0)*penaltyCost;
-	      return totalCost;
-	   };
-	}
+public enum SamplingScheme {
+   NONE,
+   SIMPLE_RANDOM_SAMPLING, 
+   LATIN_HYPERCUBE_SAMPLING, 
+   JENSENS_PARTITIONING 
 }

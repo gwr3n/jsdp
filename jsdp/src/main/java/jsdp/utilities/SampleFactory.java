@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.app.lotsizing.sampling;
+package jsdp.utilities;
 
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;

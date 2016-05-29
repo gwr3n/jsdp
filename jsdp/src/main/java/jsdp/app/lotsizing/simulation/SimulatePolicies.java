@@ -35,8 +35,7 @@ import java.util.stream.IntStream;
 import jsdp.app.lotsizing.sS_ForwardRecursion;
 import jsdp.app.lotsizing.sS_State;
 import jsdp.app.lotsizing.sS_StateDescriptor;
-import jsdp.app.lotsizing.sampling.SampleFactory;
-
+import jsdp.utilities.SampleFactory;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.NormalDist;
 import umontreal.ssj.stat.Tally;

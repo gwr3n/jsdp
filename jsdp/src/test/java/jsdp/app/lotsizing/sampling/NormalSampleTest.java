@@ -36,6 +36,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import jsdp.utilities.SampleFactory;
 import umontreal.ssj.gof.GofStat;
 import umontreal.ssj.probdist.ContinuousDistribution;
 import umontreal.ssj.probdist.Distribution;

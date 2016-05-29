@@ -24,19 +24,36 @@
  * SOFTWARE.
  */
 
-package jsdp.app.lotsizing;
+package jsdp.sdp.impl;
 
-import jsdp.sdp.ValueRepository;
+import jsdp.sdp.StateDescriptor;
 
-public class sS_CostRepository extends ValueRepository {
-	public sS_CostRepository(double fixedOrderingCost, double proportionalOrderingCost, double holdingCost, double penaltyCost){		
-		this.immediateValueFunction = (initialState, action, finalState) -> {
-	      sS_Action a = (sS_Action)action;
-	      sS_State fs = (sS_State)finalState;
-	      double totalCost = a.getIntAction() > 0 ? (fixedOrderingCost + sS_Action.actionToOrderQuantity(a.getIntAction())*proportionalOrderingCost) : 0;
-	      totalCost +=   Math.max(sS_State.stateToInventory(fs.getInitialIntState()),0)*holdingCost+
-	                     Math.max(-sS_State.stateToInventory(fs.getInitialIntState()),0)*penaltyCost;
-	      return totalCost;
-	   };
-	}
+public class StateDescriptorImpl extends StateDescriptor{
+
+   int initialIntState;
+
+   public StateDescriptorImpl(int period, int initialIntState){
+      this.period = period;
+      this.initialIntState = initialIntState;
+   }
+   
+   @Override
+   public boolean equals(Object descriptor){
+      if(descriptor instanceof StateDescriptorImpl)
+         return this.period == ((StateDescriptorImpl)descriptor).period &&
+         this.initialIntState == ((StateDescriptorImpl)descriptor).initialIntState;
+      else
+         return false;
+   }
+
+   @Override
+   public int hashCode(){
+      String hash = "";
+      hash = (hash + period) + "_" + initialIntState;
+      return hash.hashCode();
+   }
+
+   public int getInitialIntState(){
+      return initialIntState;
+   }
 }

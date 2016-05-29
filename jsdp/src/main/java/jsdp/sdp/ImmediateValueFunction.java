@@ -3,6 +3,8 @@ package jsdp.sdp;
 /**
  * A functional interface that captures immediate values.
  * 
+ * TODO: NEED TO RENAME THIS!
+ * 
  * @author Roberto Rossi
  *
  * @param <S> the generic type for a state

@@ -26,9 +26,11 @@
 
 package jsdp.sdp;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * An abstract container that stores all generated {@code State}.
@@ -41,6 +43,9 @@ public abstract class StateSpace<SD> implements Iterable<State>{
 	
 	protected int period;
 	protected Hashtable<SD,State> states = new Hashtable<SD,State>();
+	
+	protected Function<State, ArrayList<Action>> buildActionList;
+	protected Function<State, Action> idempotentAction;
 	
 	/**
 	 * Constructs a container for states associated with a given {@code period}.

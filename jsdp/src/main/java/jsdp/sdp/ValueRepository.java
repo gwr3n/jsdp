@@ -34,10 +34,26 @@ import java.util.Hashtable;
  * @author Roberto Rossi
  *
  */
-public abstract class ValueRepository {	
+public class ValueRepository {	
 	protected Hashtable<StateAction,Double> valueHashTable = new Hashtable<StateAction,Double>();
 	protected Hashtable<State,Double> optimalValueHashTable = new Hashtable<State,Double>();
 	protected Hashtable<State,Action> optimalActionHashTable = new Hashtable<State,Action>();
+	
+	protected ImmediateValueFunction<State, Action, Double> immediateValueFunction;
+	
+	/**
+	 * Creates a new value repository
+	 * 
+	 * @param immediateValueFunction the immediate value of a transition from {@code initialState} to 
+	 * {@code finalState} under a chosen {@code action}.
+	 */
+	public ValueRepository(ImmediateValueFunction<State, Action, Double> immediateValueFunction){
+	   this.setImmediateValue(immediateValueFunction);
+	}
+	
+	protected ValueRepository(){
+	   
+	}
 	
 	/**
 	 * Returns the immediate value of a transition from {@code initialState} to {@code finalState} under a chosen {@code action}.
@@ -51,7 +67,15 @@ public abstract class ValueRepository {
       return this.immediateValueFunction.apply(initialState, action, finalState);
    }
 	
-	protected ImmediateValueFunction<State, Action, Double> immediateValueFunction;
+	/**
+    * Sets the immediate value function of a transition from {@code initialState} to {@code finalState} under a chosen {@code action}.
+    * 
+    * @param immediateValueFunction the immediate value of a transition from {@code initialState} to 
+    * {@code finalState} under a chosen {@code action}.
+    */
+	protected void setImmediateValue(ImmediateValueFunction<State, Action, Double> immediateValueFunction) {
+      this.immediateValueFunction = immediateValueFunction;
+   }
 	
 	/**
 	 * Returns the expected value associated with {@code initialState} and {@code action} under one-step transition probabilities
@@ -63,7 +87,20 @@ public abstract class ValueRepository {
 	 * @return the expected value associated with {@code initialState} and {@code action} under one-step transition probabilities
 	 * described in {@code transitionProbability}.
 	 */
-	public abstract double getExpectedValue(State initialState, Action action, TransitionProbability transitionProbability);
+	public double getExpectedValue(State initialState, Action action, TransitionProbability transitionProbability) {
+      StateAction key = new StateAction(initialState, action);
+      return this.valueHashTable.computeIfAbsent(key, y -> {
+         double normalisationFactor = transitionProbability.getFinalStates(initialState, action).parallelStream()
+                 .mapToDouble(finalState -> transitionProbability.getTransitionProbability(initialState, action, finalState))
+                 .sum();
+         double expectedValue = transitionProbability.getFinalStates(initialState, action).parallelStream()
+                 .mapToDouble(finalState -> 
+                 (this.immediateValueFunction.apply(initialState, action, finalState)+this.getOptimalExpectedValue(finalState))*
+                 transitionProbability.getTransitionProbability(initialState, action, finalState)
+         ).sum()/normalisationFactor;
+         return expectedValue;
+      });
+   }
 	
 	/**
 	 * Associates an optimal expected value {@code expectedValue} to {@code state}.
