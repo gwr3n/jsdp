@@ -34,6 +34,13 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.time.StopWatch;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartFrame;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
 import jsdp.app.inventory.simulation.SimulatePolicies;
 import jsdp.sdp.Action;
@@ -131,7 +138,7 @@ public class CapacitatedStochasticLotSizing {
       // Sampling scheme
       
       SamplingScheme samplingScheme = SamplingScheme.NONE;
-      int maxSampleSize = 30;
+      int maxSampleSize = 50;
       
       
       // Value Function Processing Method: backward recursion
@@ -158,29 +165,77 @@ public class CapacitatedStochasticLotSizing {
       System.out.println("Time elapsed: "+timer);
       
       /*******************************************************************
-       * Simulate
+       * Charting
+       */   
+      int targetPeriod = 0;
+      plotOptimalPolicyAction(targetPeriod, recursion);     //Plot optimal policy action
+      plotOptimalPolicyCost(targetPeriod, recursion);       //Plot optimal policy cost      
+      
+      /*******************************************************************
+       * Simulation
        */
+      double confidence = 0.95;           //Simulation confidence level 
+      double errorTolerance = 0.001;      //Simulation error threshold
+      
+      if(simulate && samplingScheme == SamplingScheme.NONE) 
+         simulate(distributions, 
+               fixedOrderingCost, 
+               holdingCost, 
+               penaltyCost, 
+               proportionalOrderingCost, 
+               initialInventory, 
+               recursion, 
+               confidence, 
+               errorTolerance);
+   }
+   
+   static void plotOptimalPolicyCost(int targetPeriod, BackwardRecursionImpl recursion){
+      XYSeries series = new XYSeries("Optimal policy");
+      for(double i = 0; i <= StateImpl.getMaxState(); i += StateImpl.getStepSize()){
+         StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(targetPeriod, StateImpl.stateToIntState(i));
+         series.add(i,recursion.getExpectedCost(stateDescriptor));
+      }
+      XYDataset xyDataset = new XYSeriesCollection(series);
+      JFreeChart chart = ChartFactory.createXYLineChart("Optimal policy policy - period "+targetPeriod+" expected total cost", "Opening inventory level", "Expected total cost",
+            xyDataset, PlotOrientation.VERTICAL, false, true, false);
+      ChartFrame frame = new ChartFrame("Optimal policy",chart);
+      frame.setVisible(true);
+      frame.setSize(500,400);
+   }
+   
+   static void plotOptimalPolicyAction(int targetPeriod, BackwardRecursionImpl recursion){
+      XYSeries series = new XYSeries("Optimal policy");
+      recursion.getStateSpace()[targetPeriod].entrySet()
+                                  .forEach(s ->{
+                                     double state = ((StateImpl)s.getValue()).getInitialState();
+                                     StateDescriptorImpl descriptor = new StateDescriptorImpl(targetPeriod, StateImpl.stateToIntState(state));
+                                     double optimalAction = recursion.getOptimalAction(descriptor).getAction();
+                                     series.add(state, optimalAction);
+                                  });
+      
+      XYDataset xyDataset = new XYSeriesCollection(series);
+      JFreeChart chart = ChartFactory.createXYLineChart("Optimal policy - period "+targetPeriod+" order quantity", "Opening inventory level", "Order quantity",
+            xyDataset, PlotOrientation.VERTICAL, false, true, false);
+      ChartFrame frame = new ChartFrame("Optimal policy",chart);
+      frame.setVisible(true);
+      frame.setSize(500,400);
+   }
+   
+   static void simulate(Distribution[] distributions,
+                        double fixedOrderingCost,
+                        double holdingCost,
+                        double penaltyCost,
+                        double proportionalOrderingCost,
+                        double initialInventory,
+                        BackwardRecursionImpl recursion,
+                        double confidence,
+                        double errorTolerance){
+      
       
       DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.ENGLISH);
       DecimalFormat df = new DecimalFormat("#.00",otherSymbols);
       
-      if(!simulate || samplingScheme != SamplingScheme.NONE) 
-         return;
-      
-      double[][] optimalPolicy = recursion.getOptimalPolicy(initialInventory);
-      double[] s = optimalPolicy[0];
-      double[] S = optimalPolicy[1];      
-      for(int i = 0; i < distributions.length; i++){
-         System.out.println("S["+(i+1)+"]:"+df.format(S[i])+"\ts["+(i+1)+"]:"+df.format(s[i]));
-      }
-
-      /**
-       * Simulation confidence level and error threshold
-       */
-      double confidence = 0.95;
-      double errorTolerance = 0.001;
-      
-      double[] results = SimulatePolicies.simulateCapacitatedStochaticLotSizing(distributions, 
+      double[] results = SimulatePolicies.simulateStochaticLotSizing(distributions, 
                                                       fixedOrderingCost, 
                                                       holdingCost, 
                                                       penaltyCost, 

@@ -83,7 +83,7 @@ public class SimulatePolicies {
       return centerAndRadius;
    }
    
-   public static double[] simulateCapacitatedStochaticLotSizing(
+   public static double[] simulateStochaticLotSizing(
          Distribution[] demand, 
          double orderCost, 
          double holdingCost, 

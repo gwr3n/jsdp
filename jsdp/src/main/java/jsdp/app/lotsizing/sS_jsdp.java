@@ -330,10 +330,9 @@ public class sS_jsdp {
       frame.setVisible(true);
       frame.setSize(500,400);
 
-      XYLineChart lc = new XYLineChart("(s,S) policy", "Opening inventory level", "Expected total cost", new XYSeriesCollection(series));
-
       if(latexOutput){
          try {
+            XYLineChart lc = new XYLineChart("(s,S) policy", "Opening inventory level", "Expected total cost", new XYSeriesCollection(series));
             File latexFolder = new File("./latex");
             if(!latexFolder.exists()){
                latexFolder.mkdir();
