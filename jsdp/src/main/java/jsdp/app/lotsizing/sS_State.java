@@ -115,12 +115,6 @@ public class sS_State extends State {
    }
 
    @Override
-   public int compareTo(State state) {
-      // TODO Auto-generated method stub
-      return 0;
-   }
-
-   @Override
    public String toString(){
       return "Period: "+this.period+"\tInventory:"+stateToInventory(this.initialIntState);
    }

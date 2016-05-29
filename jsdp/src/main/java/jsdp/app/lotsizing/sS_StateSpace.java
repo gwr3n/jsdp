@@ -33,10 +33,36 @@ import jsdp.sdp.StateSpace;
 
 public class sS_StateSpace extends StateSpace<sS_StateDescriptor>{
 
+   sS_StateSpaceSampleIterator.SamplingScheme samplingScheme = sS_StateSpaceSampleIterator.SamplingScheme.NONE;
+   int maxSampleSize = Integer.MAX_VALUE;
+   
    public sS_StateSpace(int period){
       super(period);
    }
+   
+   public sS_StateSpace(int period, 
+                        sS_StateSpaceSampleIterator.SamplingScheme samplingScheme,
+                        int maxSampleSize){
+      super(period);
+      this.setSamplingScheme(samplingScheme, maxSampleSize);
+   }
+   
+   public void setSamplingScheme(sS_StateSpaceSampleIterator.SamplingScheme samplingScheme, int maxSampleSize){
+      switch(samplingScheme){
+      case NONE:
+         this.samplingScheme = sS_StateSpaceSampleIterator.SamplingScheme.NONE;
+         this.maxSampleSize = Integer.MAX_VALUE;
+         break;
+      default: 
+         this.samplingScheme = samplingScheme;
+         this.maxSampleSize = maxSampleSize;
+      }
+   }
 
+   public boolean exists (sS_StateDescriptor descriptor){
+      return states.get(descriptor) != null;
+   }
+   
    public State getState(sS_StateDescriptor descriptor){
       State value = states.get(descriptor);
       if(value == null){
@@ -44,10 +70,13 @@ public class sS_StateSpace extends StateSpace<sS_StateDescriptor>{
          this.states.put(descriptor, state);
          return state;
       }else
-         return (sS_State)value;
+         return (sS_State) value;
    }
 
    public Iterator<State> iterator() {
-      return new sS_StateSpaceIterator(this);
+      if(period == 0 || this.samplingScheme == sS_StateSpaceSampleIterator.SamplingScheme.NONE)
+         return new sS_StateSpaceIterator(this);
+      else
+         return new sS_StateSpaceSampleIterator(this, this.maxSampleSize);
    }
 }

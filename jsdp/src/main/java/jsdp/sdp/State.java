@@ -34,7 +34,7 @@ import java.util.ArrayList;
  * @author Roberto Rossi
  *
  */
-public abstract class State implements Comparable<State>{
+public abstract class State{
 	
 	protected int period;
 	protected ArrayList<Action> feasibleActions;
@@ -77,7 +77,6 @@ public abstract class State implements Comparable<State>{
 		return this.period;
 	}
 	
-	public abstract int compareTo(State state);
 	public abstract boolean equals(Object state);
 	public abstract int hashCode();
 	

@@ -39,10 +39,14 @@ import org.apache.logging.log4j.LogManager;
 /**
  * A special purpose implementation of a backward recursion algorithm that exploits K-convexity 
  * to quickly process states.
+ * 
+ * @Deprecated
+ * Sample-based approaches are more efficient.
  *  
  * @author Roberto Rossi
  *
  */
+@Deprecated
 public class sS_SequentialBackwardRecursion extends sS_BackwardRecursion {
    static final Logger logger = LogManager.getLogger(sS_BackwardRecursion.class.getName());
 
@@ -60,7 +64,13 @@ public class sS_SequentialBackwardRecursion extends sS_BackwardRecursion {
                                          double proportionalOrderingCost, 
                                          double holdingCost,
                                          double penaltyCost){
-      super(demand,fixedOrderingCost,proportionalOrderingCost,holdingCost,penaltyCost);
+      super(demand,
+            fixedOrderingCost,
+            proportionalOrderingCost,
+            holdingCost,
+            penaltyCost,
+            sS_StateSpaceSampleIterator.SamplingScheme.NONE,
+            Integer.MAX_VALUE);
    }
 
    @Override

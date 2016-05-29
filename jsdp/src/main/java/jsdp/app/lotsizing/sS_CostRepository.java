@@ -43,16 +43,15 @@ public class sS_CostRepository extends ValueRepository {
 		this.proportionalOrderingCost = proportionalOrderingCost;
 		this.holdingCost = holdingCost;
 		this.penaltyCost = penaltyCost;
-	}
-	
-	@Override
-	protected double getImmediateValue(State initialState, Action action, State finalState) {
-		sS_Action a = (sS_Action)action;
-		sS_State fs = (sS_State)finalState;
-		double totalCost = a.getIntAction() > 0 ? (fixedOrderingCost + sS_Action.actionToOrderQuantity(a.getIntAction())*proportionalOrderingCost) : 0;
-		totalCost += 	Math.max(sS_State.stateToInventory(fs.getInitialIntState()),0)*holdingCost+
-						Math.max(-sS_State.stateToInventory(fs.getInitialIntState()),0)*penaltyCost;
-		return totalCost;
+		
+		this.immediateValueFunction = (initialState, action, finalState) -> {
+	      sS_Action a = (sS_Action)action;
+	      sS_State fs = (sS_State)finalState;
+	      double totalCost = a.getIntAction() > 0 ? (fixedOrderingCost + sS_Action.actionToOrderQuantity(a.getIntAction())*proportionalOrderingCost) : 0;
+	      totalCost +=   Math.max(sS_State.stateToInventory(fs.getInitialIntState()),0)*holdingCost+
+	                     Math.max(-sS_State.stateToInventory(fs.getInitialIntState()),0)*penaltyCost;
+	      return totalCost;
+	   };
 	}
 
 	@Override
@@ -64,7 +63,7 @@ public class sS_CostRepository extends ValueRepository {
 					  .sum();
 			double expectedTotalCost = transitionProbability.getFinalStates(initialState, action).parallelStream()
 					  .mapToDouble(finalState -> 
-					  (this.getImmediateValue(initialState, action, finalState)+this.getOptimalExpectedValue(finalState))*
+					  (this.immediateValueFunction.apply(initialState, action, finalState)+this.getOptimalExpectedValue(finalState))*
 					  transitionProbability.getTransitionProbability(initialState, action, finalState)
 			).sum()/normalisationFactor;
 			return expectedTotalCost;

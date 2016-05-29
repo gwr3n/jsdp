@@ -64,41 +64,6 @@ public class GamblersRuin {
       this.pmf = pmf;
    }
    
-   @FunctionalInterface
-   interface StateTransitionFunction <S, A, R> { 
-      public S apply (S s, A a, R r);
-   }
-   
-   public StateTransitionFunction<State, Double, Double> stateTransition = 
-         (state, action, randomOutcome) -> new State(state.period + 1, state.money - action + action*randomOutcome);
-
-   public Function<State, Double> rewardFunction = state -> state.money >= this.targetWealth ? 1.0 : 0.0;    
-         
-   Map<State, Double> cacheActions = new HashMap<>();
-   Map<State, Double> cacheValueFunction = new HashMap<>();
-   double f(State state){
-      return cacheValueFunction.computeIfAbsent(state, s -> {
-         if(s.period == this.betHorizon + 1){
-            return rewardFunction.apply(s);
-         }else{
-            double val= Arrays.stream(s.getFeasibleActions())
-                              .map(bet -> Arrays.stream(pmf)
-                                                .mapToDouble(p -> p[1]*f(stateTransition.apply(s, bet, p[0])))
-                                                .sum())
-                              .max()
-                              .getAsDouble();
-            double bestBet = Arrays.stream(s.getFeasibleActions())
-                                   .filter(bet -> Arrays.stream(pmf)
-                                                        .mapToDouble(p -> p[1]*f(stateTransition.apply(s, bet, p[0])))
-                                                        .sum() == val)
-                                   .findAny()
-                                   .getAsDouble();
-            cacheActions.putIfAbsent(s, bestBet);
-            return val;
-         }
-      });
-   }
-   
    class State{
       int period;
       double money;
@@ -109,8 +74,7 @@ public class GamblersRuin {
       }
 
       public double[] getFeasibleActions(){
-         return DoubleStream.iterate(0, bet -> bet + 1)
-                            .limit((int) Math.ceil(this.money + 1)).toArray();
+         return actionGenerator.apply(this);
       }
       
       @Override
@@ -135,13 +99,68 @@ public class GamblersRuin {
       }
    }
    
+   Function<State, double[]> actionGenerator;
+   
+   @FunctionalInterface
+   interface StateTransitionFunction <S, A, R> { 
+      public S apply (S s, A a, R r);
+   }
+   
+   public StateTransitionFunction<State, Double, Double> stateTransition;
+
+   public Function<State, Double> immediateValueFunction;
+         
+   Map<State, Double> cacheActions = new HashMap<>();
+   Map<State, Double> cacheValueFunction = new HashMap<>();
+   double f(State state){
+      return cacheValueFunction.computeIfAbsent(state, s -> {
+         if(s.period == this.betHorizon + 1){
+            return immediateValueFunction.apply(s);
+         }else{
+            double val= Arrays.stream(s.getFeasibleActions())
+                              .map(bet -> Arrays.stream(pmf)
+                                                .mapToDouble(p -> p[1]*immediateValueFunction.apply(s)+
+                                                                  p[1]*f(stateTransition.apply(s, bet, p[0])))
+                                                .sum())
+                              .max()
+                              .getAsDouble();
+            double bestBet = Arrays.stream(s.getFeasibleActions())
+                                   .filter(bet -> Arrays.stream(pmf)
+                                                        .mapToDouble(p -> p[1]*immediateValueFunction.apply(s)+
+                                                                          p[1]*f(stateTransition.apply(s, bet, p[0])))
+                                                        .sum() == val)
+                                   .findAny()
+                                   .getAsDouble();
+            cacheActions.putIfAbsent(s, bestBet);
+            return val;
+         }
+      });
+   }
+   
    public static void main(String [] args){
-      double pmf[][] = {{0,0.6},{2,0.4}};
-      int initialPeriod = 1;
-      int bettingHorizon = 4;
-      double initialWealth = 2;
       double targetWealth = 6;
+      int bettingHorizon = 4;
+      double pmf[][] = {{0,0.6},{2,0.4}};
       GamblersRuin ruin = new GamblersRuin(targetWealth, bettingHorizon, pmf);
+      
+      ruin.actionGenerator = s ->{
+         return DoubleStream.iterate(0, bet -> bet + 1)
+                            .limit((int) Math.ceil(Math.min(targetWealth/2, s.money + 1)))
+                            .toArray();
+      };
+      
+      ruin.stateTransition = (state, action, randomOutcome) -> 
+         ruin.new State(state.period + 1, state.money - action + action*randomOutcome);
+      
+      ruin.immediateValueFunction = state -> {
+            if(state.period == ruin.betHorizon + 1)
+               return state.money >= ruin.targetWealth ? 1.0 : 0.0;    
+            else
+               return 0.0;   
+         };
+      
+      int initialPeriod = 1;
+      double initialWealth = 2;
       State initialState = ruin.new State(initialPeriod, initialWealth);
       System.out.println("f_1(2)="+ruin.f(initialState));
       System.out.println("b_2(1)="+ruin.cacheActions.get(ruin.new State(2, 1)));

@@ -26,6 +26,8 @@
 
 package jsdp.app.lotsizing;
 
+import java.util.Iterator;
+
 import jsdp.sdp.Action;
 import jsdp.sdp.BackwardRecursion;
 import jsdp.sdp.State;
@@ -58,7 +60,9 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 								double fixedOrderingCost, 
 								double proportionalOrderingCost, 
 								double holdingCost,
-								double penaltyCost){
+								double penaltyCost,
+								sS_StateSpaceSampleIterator.SamplingScheme samplingScheme,
+								int maxSampleSize){
 		super(OptimisationDirection.MIN);
 		this.demand = demand;
 		this.horizonLength = demand.length;
@@ -70,7 +74,7 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 		
 		this.stateSpace = new sS_StateSpace[this.horizonLength+1];
 		for(int i = 0; i < this.horizonLength + 1; i++) 
-			this.stateSpace[i] = new sS_StateSpace(i);
+			this.stateSpace[i] = new sS_StateSpace(i, samplingScheme, maxSampleSize);
 		this.transitionProbability = new sS_TransitionProbability(demand,(sS_StateSpace[])this.getStateSpace(),sS_State.getStepSize());
 		this.valueRepository = new sS_CostRepository(fixedOrderingCost, proportionalOrderingCost, holdingCost, penaltyCost);
 	}
@@ -129,11 +133,14 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 	}
 	
 	public sS_State find_s(int period){
-		sS_StateSpaceIterator iterator = (sS_StateSpaceIterator)this.getStateSpace()[period].iterator();
+		Iterator<State> iterator = this.getStateSpace()[period].iterator();
+		//Iterator<State> iterator = new sS_StateSpaceIterator((sS_StateSpace)this.getStateSpace()[period]);
 		sS_State state = null;
 		do{
 			state = (sS_State) iterator.next();
 			Action action = this.getValueRepository().getOptimalAction(state);
+			if(action == null)
+			   continue;
 			if(((sS_Action)action).getIntAction() > 0){
 				return state;
 			}

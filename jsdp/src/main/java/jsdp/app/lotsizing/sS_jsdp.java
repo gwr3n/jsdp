@@ -76,7 +76,7 @@ public class sS_jsdp {
 
    public static void main(String[] args) {
       //Factor must be 1 for discrete distributions
-      sS_State.setStateBoundaries(0.5, -150, 300);
+      sS_State.setStateBoundaries(1, -50, 100);
 
       double fixedOrderingCost = 50; 
       double proportionalOrderingCost = 0; 
@@ -85,17 +85,19 @@ public class sS_jsdp {
 
       double[] demand = {20,30,20,40};
 
-      Distribution[] distributions = IntStream.iterate(0, i -> i + 1)
+      /*Distribution[] distributions = IntStream.iterate(0, i -> i + 1)
                                               .limit(demand.length)
                                               .mapToObj(i -> new NormalDist(demand[i],demand[i]*0.4))
-                                              .toArray(Distribution[]::new);
+                                              .toArray(Distribution[]::new);*/
 
-      /*Distribution[] distributions = IntStream.iterate(0, i -> i + 1)
+      Distribution[] distributions = IntStream.iterate(0, i -> i + 1)
                                                 .limit(demand.length)
                                                 .mapToObj(i -> new PoissonDist(demand[i]))
-                                                .toArray(Distribution[]::new);*/
+                                                .toArray(Distribution[]::new);
 
       double initialInventory = 0;
+      sS_StateSpaceSampleIterator.SamplingScheme samplingScheme = sS_StateSpaceSampleIterator.SamplingScheme.JENSENS_PARTITIONING;
+      int maxSampleSize = 15;
 
       System.out.println("--------------Forward recursion--------------");
       simpleTestForward(fixedOrderingCost, 
@@ -110,17 +112,23 @@ public class sS_jsdp {
                          holdingCost, 
                          penaltyCost, 
                          distributions, 
-                         initialInventory);
+                         initialInventory,
+                         samplingScheme,
+                         maxSampleSize);
       System.out.println("--------------Cost function plot--------------");
       int targetPeriod = 0;
+      boolean printCostFunctionValues = false;
+      boolean latexOutput = false;
       plotCostFunction(targetPeriod, 
                        fixedOrderingCost, 
                        proportionalOrderingCost, 
                        holdingCost, 
                        penaltyCost, 
                        distributions,
-                       false,
-                       false);
+                       printCostFunctionValues,
+                       latexOutput,
+                       samplingScheme,
+                       maxSampleSize);
    }
 
    public static void simpleTestBackward(double fixedOrderingCost,
@@ -128,7 +136,9 @@ public class sS_jsdp {
                                          double holdingCost,
                                          double penaltyCost,
                                          Distribution[] distributions,
-                                         double initialInventory){
+                                         double initialInventory,
+                                         sS_StateSpaceSampleIterator.SamplingScheme samplingScheme,
+                                         int maxSampleSize){
 
       /**
        * Simulation confidence level and error threshold
@@ -143,7 +153,9 @@ public class sS_jsdp {
                                            penaltyCost,
                                            initialInventory,
                                            confidence,
-                                           errorTolerance);
+                                           errorTolerance,
+                                           samplingScheme,
+                                           maxSampleSize);
    }
 
    public static void simpleTestForward(double fixedOrderingCost,
@@ -176,13 +188,17 @@ public class sS_jsdp {
                                                            double penaltyCost,
                                                            double initialInventory,
                                                            double confidence,
-                                                           double errorTolerance){
+                                                           double errorTolerance,
+                                                           sS_StateSpaceSampleIterator.SamplingScheme samplingScheme,
+                                                           int maxSampleSize){
 
       sS_BackwardRecursion recursion = new sS_BackwardRecursion(distributions,
                                                                 fixedOrderingCost,
                                                                 proportionalOrderingCost,
                                                                 holdingCost,
-                                                                penaltyCost);
+                                                                penaltyCost,
+                                                                samplingScheme,
+                                                                maxSampleSize);
       /*sS_SequentialBackwardRecursion recursion = new sS_SequentialBackwardRecursion(distributions,
                                                                                     fixedOrderingCost,
                                                                                     proportionalOrderingCost,
@@ -195,13 +211,13 @@ public class sS_jsdp {
       timer.stop();
       System.out.println();
       double ETC = recursion.getExpectedCost(initialInventory);
-      double[][] optimalPolicy = recursion.getOptimalPolicy(initialInventory);
-      double[] s = optimalPolicy[0];
-      double[] S = optimalPolicy[1];
-
       System.out.println("Expected total cost (assuming an initial inventory level "+initialInventory+"): "+ETC);
       System.out.println("Time elapsed: "+timer);
       System.out.println();
+      
+      double[][] optimalPolicy = recursion.getOptimalPolicy(initialInventory);
+      double[] s = optimalPolicy[0];
+      double[] S = optimalPolicy[1];      
       for(int i = 0; i < distributions.length; i++){
          System.out.println("S["+(i+1)+"]:"+S[i]+"\ts["+(i+1)+"]:"+s[i]);
       }
@@ -248,15 +264,15 @@ public class sS_jsdp {
       recursion.runForwardRecursion(((sS_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
       timer.stop();
       double ETC = recursion.getExpectedCost(initialInventory);
-      double[][] optimalPolicy = recursion.getOptimalPolicy(initialInventory);
-      double[] s = optimalPolicy[0];
-      double[] S = optimalPolicy[1];
       double action = sS_State.stateToInventory(recursion.getOptimalAction(initialState).getIntAction());
-
       System.out.println("Expected total cost (assuming an initial inventory level "+initialInventory+"): "+ETC);
       System.out.println("Optimal initial action: "+action);
       System.out.println("Time elapsed: "+timer);
       System.out.println();
+      
+      double[][] optimalPolicy = recursion.getOptimalPolicy(initialInventory);
+      double[] s = optimalPolicy[0];
+      double[] S = optimalPolicy[1];
       for(int i = 0; i < distributions.length; i++){
          System.out.println("S["+(i+1)+"]:"+S[i]+"\ts["+(i+1)+"]:"+s[i]);
       }
@@ -288,13 +304,17 @@ public class sS_jsdp {
                                        double penaltyCost,
                                        Distribution[] distributions,
                                        boolean printCostFunctionValues,
-                                       boolean latexOutput){
+                                       boolean latexOutput,
+                                       sS_StateSpaceSampleIterator.SamplingScheme samplingScheme,
+                                       int maxSampleSize){
 
       sS_BackwardRecursion recursion = new sS_BackwardRecursion(distributions,
                                                                 fixedOrderingCost,
                                                                 proportionalOrderingCost,
                                                                 holdingCost,
-                                                                penaltyCost);
+                                                                penaltyCost,
+                                                                samplingScheme,
+                                                                maxSampleSize);
       recursion.runBackwardRecursion(targetPeriod);
       XYSeries series = new XYSeries("(s,S) policy");
       for(double i = 0; i <= sS_State.getMaxInventory(); i += sS_State.getStepSize()){

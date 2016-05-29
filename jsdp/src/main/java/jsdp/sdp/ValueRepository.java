@@ -47,7 +47,11 @@ public abstract class ValueRepository {
 	 * @param finalState the final state of the stochastic process.
 	 * @return the immediate value of a transition from {@code initialState} to {@code finalState} under a chosen {@code action}.
 	 */
-	protected abstract double getImmediateValue(State initialState, Action action, State finalState);
+	protected double getImmediateValue(State initialState, Action action, State finalState) {
+      return this.immediateValueFunction.apply(initialState, action, finalState);
+   }
+	
+	protected ImmediateValueFunction<State, Action, Double> immediateValueFunction;
 	
 	/**
 	 * Returns the expected value associated with {@code initialState} and {@code action} under one-step transition probabilities

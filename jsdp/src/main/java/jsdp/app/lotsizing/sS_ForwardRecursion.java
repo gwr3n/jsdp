@@ -26,9 +26,13 @@
 
 package jsdp.app.lotsizing;
 
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+
 import jsdp.sdp.Action;
 import jsdp.sdp.ForwardRecursion;
 import jsdp.sdp.State;
+import jsdp.sdp.StateTransitionFunction;
 import umontreal.ssj.probdist.Distribution;
 
 /**

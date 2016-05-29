@@ -27,6 +27,7 @@
 package jsdp.app.lotsizing;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import jsdp.sdp.Action;
@@ -59,7 +60,7 @@ public class sS_TransitionProbability extends TransitionProbability {
       return this.demand[period].prob((int)Math.round(realizedDemand));
    }
    
-   public StateTransitionFunction<State, Action, Double> stateTransition = 
+   public StateTransitionFunction<State, Action, Double> stateTransitionFunction = 
          (initialState, action, demand) -> {
             int initialPeriod = ((sS_State) initialState).getPeriod();
             int finalIntState = ((sS_State) initialState).getInitialIntState() +    //Initial state
@@ -72,21 +73,29 @@ public class sS_TransitionProbability extends TransitionProbability {
                return null;
             }
          };
-         
-   @Override
-   public ArrayList<State> getFinalStates(State initialState, Action action) {
+   
+   @Override  
+   public ArrayList<State> generateFinalStates(State initialState, Action action) {
       ArrayList<State> states = new ArrayList<State>();
       for(int i = 0; i < this.demand[initialState.getPeriod()].getN(); i++){
          double demandValue = this.demand[initialState.getPeriod()].getValue(i);
-         State finalState = stateTransition.apply(initialState, action, demandValue);
+         State finalState = stateTransitionFunction.apply(initialState, action, demandValue);
          if(finalState != null) 
             states.add(finalState);
          else
-            break;
-         if(this.demand[initialState.getPeriod()].cdf(demandValue) >= 1) 
-            break;
+            break; 
       }
-      return states;
+      return states.parallelStream()
+                   .filter(s -> this.getTransitionProbability(initialState, action, s) > 0)
+                   .collect(Collectors.toCollection(ArrayList<State>::new));
+   }
+   
+   @Override
+   public ArrayList<State> getFinalStates(State initialState, Action action) {
+      ArrayList<State> states = new ArrayList<State>();
+      this.stateSpace[initialState.getPeriod()+1].forEach(entry -> states.add(entry));
+      return states.parallelStream().filter(s -> this.getTransitionProbability(initialState, action, s) > 0)
+                                    .collect(Collectors.toCollection(ArrayList<State>::new));
    }
 }
 

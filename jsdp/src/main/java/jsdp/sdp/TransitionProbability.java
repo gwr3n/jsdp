@@ -48,16 +48,29 @@ public abstract class TransitionProbability {
 	 */
 	public abstract double getTransitionProbability(State initialState, Action action, State finalState);
 	
-	/**
-	 * This method constructs an {@code ArrayList<State>} of states towards which the stochastic process may 
-	 * transition in period {@code t+1} if {@code action} is selected in {@code initialState} at period  
-	 * {@code t}.
-	 * 
-	 * @param initialState the initial state of the stochastic process; note that we assume that 
-	 * {@code initialState} is associated with period {@code t}.
-	 * @param action the action selected at period {@code t}.
-	 * @return an {@code ArrayList<State>} of states towards which the stochastic process may 
-	 * transition in period {@code t+1}.
-	 */
-	public abstract ArrayList<State> getFinalStates(State initialState, Action action);
+	  /**
+    * This method constructs an {@code ArrayList<State>} of states towards which the stochastic process may 
+    * transition in period {@code t+1} if {@code action} is selected in {@code initialState} at period  
+    * {@code t}; note that these states may not yet exist in the state space.
+    * 
+    * @param initialState the initial state of the stochastic process; note that we assume that 
+    * {@code initialState} is associated with period {@code t}.
+    * @param action the action selected at period {@code t}.
+    * @return an {@code ArrayList<State>} of states towards which the stochastic process may 
+    * transition in period {@code t+1}.
+    */
+   public abstract ArrayList<State> generateFinalStates(State initialState, Action action);
+   
+   /**
+    * This method retrieves an {@code ArrayList<State>} of existing states towards which the stochastic process may 
+    * transition in period {@code t+1} if {@code action} is selected in {@code initialState} at period  
+    * {@code t}.
+    * 
+    * @param initialState the initial state of the stochastic process; note that we assume that 
+    * {@code initialState} is associated with period {@code t}.
+    * @param action the action selected at period {@code t}.
+    * @return an {@code ArrayList<State>} of states towards which the stochastic process may 
+    * transition in period {@code t+1}.
+    */
+   public abstract ArrayList<State> getFinalStates(State initialState, Action action);
 }
