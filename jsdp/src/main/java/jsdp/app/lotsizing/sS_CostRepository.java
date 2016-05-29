@@ -26,7 +26,6 @@
 
 package jsdp.app.lotsizing;
 
-
 import jsdp.sdp.Action;
 import jsdp.sdp.ValueRepository;
 import jsdp.sdp.State;

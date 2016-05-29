@@ -30,11 +30,13 @@ import java.util.Collections;
 import java.util.Enumeration;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import jsdp.sdp.Action;
+
 import umontreal.ssj.probdist.Distribution;
 
-import org.apache.logging.log4j.LogManager;
+
 
 /**
  * A special purpose implementation of a backward recursion algorithm that exploits K-convexity 
