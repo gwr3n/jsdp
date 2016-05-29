@@ -70,15 +70,11 @@ public class CapacitatedStochasticLotSizing {
       double coefficientOfVariation = 0.4;
       
       // Random variables
-      
-      /*Distribution[] distributions = IntStream.iterate(0, i -> i + 1)
-                                                .limit(meanDemand.length)
-                                                .mapToObj(i -> new PoissonDist(meanDemand[i]))
-                                                .toArray(Distribution[]::new);*/
 
       Distribution[] distributions = IntStream.iterate(0, i -> i + 1)
                                               .limit(meanDemand.length)
                                               .mapToObj(i -> new NormalDist(meanDemand[i],meanDemand[i]*coefficientOfVariation))
+                                              //.mapToObj(i -> new PoissonDist(meanDemand[i]))
                                               .toArray(Distribution[]::new);
       
       double initialInventory = 0;

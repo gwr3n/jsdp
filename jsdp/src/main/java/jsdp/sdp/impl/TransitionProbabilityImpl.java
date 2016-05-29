@@ -33,7 +33,6 @@ import java.util.stream.IntStream;
 import jsdp.sdp.Action;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.State;
-import jsdp.sdp.StateTransitionFunction;
 import jsdp.sdp.TransitionProbability;
 import jsdp.utilities.DiscreteDistributionFactory;
 
