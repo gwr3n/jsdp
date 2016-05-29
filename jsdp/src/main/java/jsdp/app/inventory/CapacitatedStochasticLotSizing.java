@@ -73,7 +73,7 @@ public class CapacitatedStochasticLotSizing {
       double penaltyCost = 4;
       double maxOrderQuantity = 30;
       
-      double[] meanDemand = {20,30,20,40,10};
+      double[] meanDemand = {20,30,20,40,10,20,30,20,40,10,5};
       double coefficientOfVariation = 0.4;
       
       // Random variables
@@ -138,7 +138,7 @@ public class CapacitatedStochasticLotSizing {
       // Sampling scheme
       
       SamplingScheme samplingScheme = SamplingScheme.NONE;
-      int maxSampleSize = 50;
+      int maxSampleSize = 20;
       
       
       // Value Function Processing Method: backward recursion

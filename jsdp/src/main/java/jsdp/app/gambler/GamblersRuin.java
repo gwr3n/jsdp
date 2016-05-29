@@ -138,20 +138,36 @@ public class GamblersRuin {
    }
    
    public static void main(String [] args){
-      double targetWealth = 6;
-      int bettingHorizon = 4;
-      double pmf[][] = {{0,0.6},{2,0.4}};
+      int bettingHorizon = 4;    //Planning horizon length
+      double targetWealth = 6;   //Target wealth
+  
+      /**
+       * Probability mass function: with probability 0.6 we lose the bet amount (multiplier is 0)
+       * with probability 0.4 we double the bet amount (multiplier is 2)
+       */
+      double pmf[][] = {{0,0.6},{2,0.4}}; 
+
       GamblersRuin ruin = new GamblersRuin(targetWealth, bettingHorizon, pmf);
       
-      ruin.actionGenerator = s ->{
+      /**
+       * This function returns the set of actions associated with a given state
+       */
+      ruin.actionGenerator = state ->{
          return DoubleStream.iterate(0, bet -> bet + 1)
-                            .limit((int) Math.ceil(Math.min(targetWealth/2, s.money + 1)))
+                            .limit((int) Math.ceil(Math.min(targetWealth/2, state.money + 1)))
                             .toArray();
       };
       
+      /**
+       * State transition function; given a state, an action and a random outcome, the function
+       * returns the future state
+       */
       ruin.stateTransition = (state, action, randomOutcome) -> 
          ruin.new State(state.period + 1, state.money - action + action*randomOutcome);
       
+      /**
+       * Immediate value function for a given state
+       */
       ruin.immediateValueFunction = state -> {
             if(state.period == ruin.betHorizon + 1)
                return state.money >= ruin.targetWealth ? 1.0 : 0.0;    
@@ -159,10 +175,21 @@ public class GamblersRuin {
                return 0.0;   
          };
       
+      /**
+       * Initial problem conditions
+       */
       int initialPeriod = 1;
       double initialWealth = 2;
       State initialState = ruin.new State(initialPeriod, initialWealth);
+      
+      /**
+       * Run forward recursion and determine the probability of achieving the target wealth when
+       * one follows an optimal policy
+       */
       System.out.println("f_1(2)="+ruin.f(initialState));
+      /**
+       * Recover optimal action for period 2 when initial wealth at the beginning of period 2 is $1.
+       */
       System.out.println("b_2(1)="+ruin.cacheActions.get(ruin.new State(2, 1)));
    }
 }

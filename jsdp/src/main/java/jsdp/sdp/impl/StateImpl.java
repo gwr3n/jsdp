@@ -102,14 +102,6 @@ public class StateImpl extends State {
    protected void buildActionList(){
       throw new NullPointerException("Method not implemented");
    }
-   /*@Override
-   protected void buildActionList(){
-      this.noAction = new ActionImpl(this, 0);
-      this.feasibleActions = new ArrayList<Action>();
-      for(int i = this.initialIntState; i <= maxIntState; i++){
-         feasibleActions.add(new ActionImpl(this, i - this.initialIntState));
-      }
-   }*/
    
    protected void buildActionList(Function<State, ArrayList<Action>> buildActionList,
                                   Function<State, Action> idempotentAction){
