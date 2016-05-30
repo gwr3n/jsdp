@@ -89,9 +89,11 @@ public abstract class BackwardRecursion extends Recursion{
 	}
 	
 	/**
-	 * Runs the backward recursion algorithm for the given stochastic dynamic program up to period {@code period}.
-	 * This implementation of the backward recursion algorithm assumes that the idempotent action is selected in 
-	 * period {@code period}.
+	 * Runs the backward recursion algorithm for the given stochastic dynamic program from period {@code period} 
+	 * up to the end of the planning horizon. This implementation of the backward recursion algorithm assumes 
+	 * that the idempotent action is selected in period {@code period}.
+	 * 
+	 * @param period the starting period. 
 	 */
 	public void runBackwardRecursion(int period){
 		logger.info("Generating states...");

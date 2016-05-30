@@ -74,7 +74,7 @@ public class CapacitatedStochasticLotSizing {
       double penaltyCost = 2;
       double maxOrderQuantity = 50;
       
-      double[] meanDemand = {20,30,20,40};
+      double[] meanDemand = {20,50,20,10,20,50};
       double coefficientOfVariation = 0.4;
       
       // Random variables
@@ -94,8 +94,8 @@ public class CapacitatedStochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      int minIntState = -100;
-      int maxIntState = 150;
+      int minIntState = -200;
+      int maxIntState = 200;
       StateImpl.setStateBoundaries(stepSize, minIntState, maxIntState);
 
       // Actions

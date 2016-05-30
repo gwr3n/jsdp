@@ -56,10 +56,12 @@ public class BackwardRecursionImpl extends BackwardRecursion{
     * Creates an instance of the problem and initialises state space, transition probability and value repository.
     * 
     * @param demand the distribution of random demand in each period, an array of {@code Distribution}.
-    * @param fixedOrderingCost the fixed ordering cost.
-    * @param proportionalOrderingCost the proportional (per unit) ordering cost.
-    * @param holdingCost the proportional (per unit) holding cost; this is paid for each item brought from one period to the next.
-    * @param penaltyCost the proportional (per unit) penalty cost; this is paid for each item short at the end of each period.
+    * @param immediateValueFunction the immediate value function.
+    * @param randomOutcomeFunction the random outcome function.
+    * @param buildActionList the action list builder.
+    * @param idempotentAction the idempotent action; i.e. an action that leaves the system in the same state from period {@code t} to period {@code t+1}.
+    * @param samplingScheme the sampling scheme adopted.
+    * @param maxSampleSize the maximum sample size.
     */
    public BackwardRecursionImpl(Distribution[] demand,
                         ImmediateValueFunction<State, Action, Double> immediateValueFunction,

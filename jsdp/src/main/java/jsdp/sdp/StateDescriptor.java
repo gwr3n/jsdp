@@ -27,7 +27,7 @@
 package jsdp.sdp;
 
 /**
- * An abstract lightweight descriptor to uniquely identify a {@code State}. {@StateDescriptor}
+ * An abstract lightweight descriptor to uniquely identify a {@code State}. {@code StateDescriptor}
  * must implement method {@code hashCode()}, which will be used by the {@code Hashtable} used
  * to store states.
  * 

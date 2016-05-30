@@ -1,6 +1,10 @@
 jsdp.app.gambler
+jsdp.app.inventory
+jsdp.app.inventory.simulation
 jsdp.app.lotsizing
 jsdp.app.lotsizing.sampling
 jsdp.app.lotsizing.simulation
+jsdp.app.maintenance
 jsdp.sdp
+jsdp.sdp.impl
 jsdp.utilities

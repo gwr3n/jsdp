@@ -42,7 +42,7 @@ import umontreal.ssj.probdist.Distribution;
  * A special purpose implementation of a backward recursion algorithm that exploits K-convexity 
  * to quickly process states.
  * 
- * @Deprecated
+ * @deprecated
  * Sample-based approaches are more efficient.
  *  
  * @author Roberto Rossi

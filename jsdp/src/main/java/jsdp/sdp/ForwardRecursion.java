@@ -48,7 +48,11 @@ public abstract class ForwardRecursion extends Recursion{
 	}
 	
 	/**
-	 * Runs the forward recursion algorithm for the given stochastic dynamic program.
+	 * Runs the forward recursion algorithm for the given stochastic dynamic program and
+	 * computes the expected value function starting from state {@code state}.
+	 * 
+	 * @param state the initial state.
+	 * @return the expected value of running the system from state {@code state}.
 	 */
 	public double runForwardRecursion(State state){
 		return this.valueRepository.optimalValueHashTable.computeIfAbsent(state, y -> {

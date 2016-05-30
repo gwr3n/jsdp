@@ -56,6 +56,8 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 	 * @param proportionalOrderingCost the proportional (per unit) ordering cost.
 	 * @param holdingCost the proportional (per unit) holding cost; this is paid for each item brought from one period to the next.
 	 * @param penaltyCost the proportional (per unit) penalty cost; this is paid for each item short at the end of each period.
+	 * @param samplingScheme the sampling scheme used in the generation of the state space.
+	 * @param maxSampleSize the maximum sample size.
 	 */
 	public sS_BackwardRecursion(Distribution[] demand,
 								double fixedOrderingCost, 
