@@ -102,7 +102,7 @@ public class StochasticLotSizing {
       
       double stepSize = 0.8;       //Stepsize must be 1 for discrete distributions
       int minIntState = -100;
-      int maxIntState = 500;
+      int maxIntState = 250;
       StateImpl.setStateBoundaries(stepSize, minIntState, maxIntState);
 
       // Actions
@@ -171,17 +171,28 @@ public class StochasticLotSizing {
       System.out.println("Expected total cost (assuming an initial inventory level "+initialInventory+"): "+ETC);
       System.out.println("Optimal initial action: "+action);
       System.out.println("Time elapsed: "+timer);
+      System.out.println();
       
       /*******************************************************************
        * Charting
        */   
+      System.out.println("--------------Charting--------------");
       int targetPeriod = 0;
       plotOptimalPolicyAction(targetPeriod, recursion);     //Plot optimal policy action
-      plotOptimalPolicyCost(targetPeriod, recursion);       //Plot optimal policy cost 
+      BackwardRecursionImpl recursionPlot = new BackwardRecursionImpl(distributions,
+                                                                      immediateValueFunction,
+                                                                      randomOutcomeFunction,
+                                                                      buildActionList,
+                                                                      idempotentAction,
+                                                                      samplingScheme,
+                                                                      maxSampleSize);
+      plotOptimalPolicyCost(targetPeriod, recursionPlot);       //Plot optimal policy cost 
+      System.out.println();
       
       /*******************************************************************
        * Simulation
        */
+      System.out.println("--------------Simulation--------------");
       double confidence = 0.95;           //Simulation confidence level 
       double errorTolerance = 0.001;      //Simulation error threshold
       
@@ -198,8 +209,9 @@ public class StochasticLotSizing {
    }
    
    static void plotOptimalPolicyCost(int targetPeriod, BackwardRecursionImpl recursion){
+      recursion.runBackwardRecursion(targetPeriod);
       XYSeries series = new XYSeries("Optimal policy");
-      for(double i = 0; i <= StateImpl.getMaxState(); i += StateImpl.getStepSize()){
+      for(double i = StateImpl.getMinState(); i <= StateImpl.getMaxState(); i += StateImpl.getStepSize()){
          StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(targetPeriod, StateImpl.stateToIntState(i));
          series.add(i,recursion.getExpectedCost(stateDescriptor));
       }

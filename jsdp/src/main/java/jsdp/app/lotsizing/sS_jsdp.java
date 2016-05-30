@@ -53,6 +53,7 @@ import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.probdist.NormalDist;
 
 import jsdp.app.lotsizing.simulation.SimulatePolicies;
+import jsdp.sdp.impl.StateImpl;
 
 /**
  *  We formulate the stochastic lot sizing problem as defined in  
@@ -317,7 +318,7 @@ public class sS_jsdp {
                                                                 maxSampleSize);
       recursion.runBackwardRecursion(targetPeriod);
       XYSeries series = new XYSeries("(s,S) policy");
-      for(double i = 0; i <= sS_State.getMaxInventory(); i += sS_State.getStepSize()){
+      for(double i = sS_State.getMinInventory(); i <= sS_State.getMaxInventory(); i += sS_State.getStepSize()){
          sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(targetPeriod, sS_State.inventoryToState(i));
          series.add(i,recursion.getExpectedCost(stateDescriptor));
          if(printCostFunctionValues) 

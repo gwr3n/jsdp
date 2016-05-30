@@ -68,13 +68,13 @@ public class CapacitatedStochasticLotSizing {
       /*******************************************************************
        * Problem parameters
        */
-      double fixedOrderingCost = 100; 
+      double fixedOrderingCost = 20; 
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
-      double penaltyCost = 4;
-      double maxOrderQuantity = 30;
+      double penaltyCost = 2;
+      double maxOrderQuantity = 50;
       
-      double[] meanDemand = {20,30,20,40,10,20,30,20,40,10,5};
+      double[] meanDemand = {20,30,20,40};
       double coefficientOfVariation = 0.4;
       
       // Random variables
@@ -103,7 +103,9 @@ public class CapacitatedStochasticLotSizing {
       Function<State, ArrayList<Action>> buildActionList = s -> {
          StateImpl state = (StateImpl) s;
          ArrayList<Action> feasibleActions = new ArrayList<Action>();
-         for(double i = state.getInitialState(); i <= StateImpl.getMaxState() && i <= state.getInitialState() + maxOrderQuantity; i+= StateImpl.getStepSize()){
+         for(double i = state.getInitialState(); 
+             i <= StateImpl.getMaxState() && i <= state.getInitialState() + maxOrderQuantity; 
+             i += StateImpl.getStepSize()){
             feasibleActions.add(new ActionImpl(state, i - state.getInitialState()));
          }
          return feasibleActions;
@@ -164,17 +166,28 @@ public class CapacitatedStochasticLotSizing {
       System.out.println("Expected total cost (assuming an initial inventory level "+initialInventory+"): "+ETC);
       System.out.println("Optimal initial action: "+action);
       System.out.println("Time elapsed: "+timer);
+      System.out.println();
       
       /*******************************************************************
        * Charting
        */   
+      System.out.println("--------------Charting--------------");
       int targetPeriod = 0;
       plotOptimalPolicyAction(targetPeriod, recursion);     //Plot optimal policy action
-      plotOptimalPolicyCost(targetPeriod, recursion);       //Plot optimal policy cost      
+      BackwardRecursionImpl recursionPlot = new BackwardRecursionImpl(distributions,
+                                                                      immediateValueFunction,
+                                                                      randomOutcomeFunction,
+                                                                      buildActionList,
+                                                                      idempotentAction,
+                                                                      samplingScheme,
+                                                                      maxSampleSize);
+      plotOptimalPolicyCost(targetPeriod, recursionPlot);       //Plot optimal policy cost      
+      System.out.println();
       
       /*******************************************************************
        * Simulation
        */
+      System.out.println("--------------Simulation--------------");
       double confidence = 0.95;           //Simulation confidence level 
       double errorTolerance = 0.001;      //Simulation error threshold
       
@@ -191,8 +204,9 @@ public class CapacitatedStochasticLotSizing {
    }
    
    static void plotOptimalPolicyCost(int targetPeriod, BackwardRecursionImpl recursion){
+      recursion.runBackwardRecursion(targetPeriod);
       XYSeries series = new XYSeries("Optimal policy");
-      for(double i = 0; i <= StateImpl.getMaxState(); i += StateImpl.getStepSize()){
+      for(double i = StateImpl.getMinState(); i <= StateImpl.getMaxState(); i += StateImpl.getStepSize()){
          StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(targetPeriod, StateImpl.stateToIntState(i));
          series.add(i,recursion.getExpectedCost(stateDescriptor));
       }
