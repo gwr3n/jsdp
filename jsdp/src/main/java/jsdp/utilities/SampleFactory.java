@@ -37,34 +37,19 @@ import umontreal.ssj.rng.RandomStream;
 
 public class SampleFactory {
 	
-	private static SampleFactory instance = null;
-	
-	/**
-	 * Returns an instance of {@code SampleFactory}; if no instance exists, it creates a new one.
-	 * 
-	 * @return an instance of {@code SampleFactory}.
-	 */
-	public static SampleFactory getInstance(){
-		return instance == null ? new SampleFactory() : instance;
-	}
-	
-	private RandomStream stream;
-	
-	private SampleFactory(){
-		stream = new MRG32k3aL();
-	}
+	private static RandomStream stream = new MRG32k3aL();
 	
 	/**
 	 * Reinitializes the stream to the beginning of its next substream.
 	 */
-	public void resetNextSubstream(){
+	public static void resetNextSubstream(){
 		stream.resetNextSubstream();
 	}
 	
 	/**
 	 * Reinitializes the stream to its initial state.
 	 */
-	public void resetStartStream(){
+	public static void resetStartStream(){
 		stream.resetStartStream();
 	}
 	
@@ -73,7 +58,7 @@ public class SampleFactory {
 	 * @param distributions array of distributions to be sampled
 	 * @return a Simple Random Sample for the distributions in {@code distributions}
 	 */
-	public double[] getNextSample(Distribution[] distributions){
+	public static double[] getNextSample(Distribution[] distributions){
 		UniformGen uniform = new UniformGen(stream);
 		return IntStream.iterate(0, i -> i + 1)
 		                .limit(distributions.length).mapToDouble(
@@ -93,7 +78,7 @@ public class SampleFactory {
 	 * @param samples number of samples
 	 * @return a Latin Hypercube Sample for the distributions in {@code distributions}
 	 */
-	public double[][] getNextLHSample(Distribution[] distributions, int samples){
+	public static double[][] getNextLHSample(Distribution[] distributions, int samples){
 		double x[][] = new double[distributions.length][samples];
 		x = IntStream.iterate(0, d -> d + 1)
 		             .limit(distributions.length)
@@ -115,7 +100,7 @@ public class SampleFactory {
 	 * @param sample the original sample.
 	 * @return a random shuffle of {@code sample}.
 	 */
-	private double[] shuffle(double[] sample){
+	private static double[] shuffle(double[] sample){
 		for(int i = 0; i < sample.length; i++){
 			int j = UniformIntGen.nextInt(stream, 0, sample.length - 1);
 			double temp = sample[i];

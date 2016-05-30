@@ -58,9 +58,11 @@ public class SimulatePolicies {
       int minRuns = 1000;
       int maxRuns = 1000000;
       
+      SampleFactory.resetStartStream();
+      
       double[] centerAndRadius = new double[2];
       for(int i = 0; i < minRuns || (centerAndRadius[1]>=centerAndRadius[0]*error && i < maxRuns); i++){
-         double[] demandRealizations = SampleFactory.getInstance().getNextSample(demand);
+         double[] demandRealizations = SampleFactory.getNextSample(demand);
          
          double replicationCost = 0;
          double inventory = initialStock;
@@ -105,9 +107,11 @@ public class SimulatePolicies {
       int minRuns = 1000;
       int maxRuns = 1000000;
       
+      SampleFactory.resetStartStream();
+      
       double[] centerAndRadius = new double[2];
       for(int i = 0; i < minRuns || (centerAndRadius[1]>=centerAndRadius[0]*error && i < maxRuns); i++){
-         double[] demandRealizations = SampleFactory.getInstance().getNextSample(demand);
+         double[] demandRealizations = SampleFactory.getNextSample(demand);
          
          double replicationCost = 0;
          double inventory = initialStock;

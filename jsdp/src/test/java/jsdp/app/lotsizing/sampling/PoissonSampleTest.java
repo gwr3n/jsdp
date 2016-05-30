@@ -72,7 +72,9 @@ public class PoissonSampleTest {
 		Arrays.fill(array, 30);
 		Distribution[] distributions = IntStream.iterate(0, i -> i + 1).limit(N).mapToObj(i -> new PoissonDist(array[i])).toArray(Distribution[]::new);
 	    
-		int[] samples = Arrays.stream(SampleFactory.getInstance().getNextSample(distributions)).mapToInt(i -> (int) Math.round(i)).toArray();
+		SampleFactory.resetStartStream();
+		
+		int[] samples = Arrays.stream(SampleFactory.getNextSample(distributions)).mapToInt(i -> (int) Math.round(i)).toArray();
 		IntArrayList list = new IntArrayList(samples);
 		DiscreteDistributionInt distribution = new PoissonDist(30);
 		int[] categories = new int[1];
@@ -103,12 +105,16 @@ public class PoissonSampleTest {
 												.mapToObj(i -> new PoissonDist(arraylambda[i]))
 												.toArray(Distribution[]::new);
 	    
-		double[][] dataLHS = SampleFactory.getInstance().getNextLHSample(distributions, N);
+		SampleFactory.resetStartStream();
+		
+		double[][] dataLHS = SampleFactory.getNextLHSample(distributions, N);
+		
+		SampleFactory.resetNextSubstream();
 		
 		double[][] dataSRS = IntStream.iterate(0, d -> d + 1)
 									.limit(randomVariables)
 									.mapToObj(d -> DoubleStream.iterate(0, i -> i + 1)
-															   .limit(N).map(i -> SampleFactory.getInstance().getNextSample(distributions)[d]).toArray()
+															   .limit(N).map(i -> SampleFactory.getNextSample(distributions)[d]).toArray()
 									).toArray(double[][]::new);
 		
 		
@@ -125,7 +131,7 @@ public class PoissonSampleTest {
 		
 		for(int i = 0; i < randomVariables; i++)
 			assertTrue("LHS Mean: "+empLHS[i].getMean()+"\tSRS Mean: "+empSRS[i].getMean(), 
-					Math.abs(distribution.getMean()-empLHS[i].getMean()) < Math.abs(distribution.getMean()-empSRS[i].getMean()));
+					Math.abs(distribution.getMean()-empLHS[i].getMean()) <= Math.abs(distribution.getMean()-empSRS[i].getMean()));
 
 	}
 

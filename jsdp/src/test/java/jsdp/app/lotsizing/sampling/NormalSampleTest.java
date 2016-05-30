@@ -77,7 +77,9 @@ public class NormalSampleTest {
 		
 		Distribution[] distributions = IntStream.iterate(0, i -> i + 1).limit(N).mapToObj(i -> new NormalDist(arrayMu[i],arraySigma[i])).toArray(Distribution[]::new);
 	    
-		double[] data = SampleFactory.getInstance().getNextSample(distributions);
+		SampleFactory.resetStartStream();
+		
+		double[] data = SampleFactory.getNextSample(distributions);
 		ContinuousDistribution distribution = new NormalDist(30,3);
 		double[] sval = new double[3];
 		double[] pval = new double[3];
@@ -99,7 +101,9 @@ public class NormalSampleTest {
 												.mapToObj(i -> new NormalDist(arrayMu[i],arraySigma[i]))
 												.toArray(Distribution[]::new);
 	    
-		double[][] dataLHS = SampleFactory.getInstance().getNextLHSample(distributions, N);
+		SampleFactory.resetStartStream();
+		
+		double[][] dataLHS = SampleFactory.getNextLHSample(distributions, N);
 		ContinuousDistribution distribution = new NormalDist(30,3);
 		double[] sval = new double[3];
 		double[] pval = new double[3];
@@ -127,12 +131,16 @@ public class NormalSampleTest {
 												.mapToObj(i -> new NormalDist(arrayMu[i],arraySigma[i]))
 												.toArray(Distribution[]::new);
 	    
-		double[][] dataLHS = SampleFactory.getInstance().getNextLHSample(distributions, N);
+		SampleFactory.resetStartStream();
+		
+		double[][] dataLHS = SampleFactory.getNextLHSample(distributions, N);
+		
+		SampleFactory.resetNextSubstream();
 		
 		double[][] dataSRS = IntStream.iterate(0, d -> d + 1)
 									.limit(randomVariables)
 									.mapToObj(d -> DoubleStream.iterate(0, i -> i + 1)
-															   .limit(N).map(i -> SampleFactory.getInstance().getNextSample(distributions)[d]).toArray()
+															   .limit(N).map(i -> SampleFactory.getNextSample(distributions)[d]).toArray()
 									).toArray(double[][]::new);
 		
 		
@@ -149,7 +157,7 @@ public class NormalSampleTest {
 		
 		for(int i = 0; i < randomVariables; i++)
 			assertTrue("LHS Mean: "+empLHS[i].getMean()+"\tSRS Mean: "+empSRS[i].getMean(), 
-					Math.abs(distribution.getMean()-empLHS[i].getMean()) < Math.abs(distribution.getMean()-empSRS[i].getMean()));
+					Math.abs(distribution.getMean()-empLHS[i].getMean()) <= Math.abs(distribution.getMean()-empSRS[i].getMean()));
 
 	}
 }
