@@ -29,6 +29,12 @@ package jsdp.sdp.impl;
 import jsdp.sdp.State;
 import jsdp.sdp.StateSpaceIterator;
 
+/**
+ * A concrete implementation of {@code StateSpaceIterator}.
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public class StateSpaceIteratorImpl extends StateSpaceIterator {
 
    StateSpaceImpl stateSpace;

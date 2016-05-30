@@ -34,6 +34,12 @@ import jsdp.sdp.Action;
 import jsdp.sdp.State;
 import jsdp.sdp.StateSpace;
 
+/**
+ * A concrete implementation of {@code StateSpace}.
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
 
    SamplingScheme samplingScheme = SamplingScheme.NONE;
@@ -88,6 +94,6 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
       if(period == 0 || this.samplingScheme == SamplingScheme.NONE)
          return new StateSpaceIteratorImpl(this);
       else
-         return new StateSpaceSampleIteratorImpl(this, this.maxSampleSize);
+         return new StateSpaceSampleIteratorImpl(this, this.samplingScheme, this.maxSampleSize);
    }
 }

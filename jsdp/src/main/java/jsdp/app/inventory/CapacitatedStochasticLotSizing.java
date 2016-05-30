@@ -140,7 +140,7 @@ public class CapacitatedStochasticLotSizing {
       
       // Sampling scheme
       
-      SamplingScheme samplingScheme = SamplingScheme.NONE;
+      SamplingScheme samplingScheme = SamplingScheme.JENSENS_PARTITIONING;
       int maxSampleSize = 20;
       
       

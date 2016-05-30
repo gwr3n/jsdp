@@ -29,6 +29,12 @@ package jsdp.sdp.impl;
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
 
+/**
+ * A concrete implementation of {@code Action}.
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public class ActionImpl extends Action {
    
    int intAction;

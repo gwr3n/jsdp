@@ -32,6 +32,12 @@ import java.util.function.Function;
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
 
+/**
+ * A concrete implementation of {@code State}.
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public class StateImpl extends State {
 
    private int initialIntState;

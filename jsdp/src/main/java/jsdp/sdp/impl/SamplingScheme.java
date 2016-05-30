@@ -26,9 +26,15 @@
 
 package jsdp.sdp.impl;
 
+/**
+ * An enumeration of possible sampling strategies that may be used by the backward recursion algorithm.
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public enum SamplingScheme {
    NONE,
    SIMPLE_RANDOM_SAMPLING, 
-   LATIN_HYPERCUBE_SAMPLING, 
+   STRATIFIED_SAMPLING, 
    JENSENS_PARTITIONING 
 }

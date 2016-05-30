@@ -28,6 +28,12 @@ package jsdp.sdp.impl;
 
 import jsdp.sdp.StateDescriptor;
 
+/**
+ * A concrete implementation of {@code StateDescriptor}.
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public class StateDescriptorImpl extends StateDescriptor{
 
    int initialIntState;

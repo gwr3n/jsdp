@@ -38,36 +38,47 @@ import umontreal.ssj.randvar.UniformIntGen;
 import umontreal.ssj.rng.MRG32k3aL;
 import umontreal.ssj.rng.RandomStream;
 
+/**
+ * A concrete implementation of {@code StateSpaceIterator} .
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public class StateSpaceSampleIteratorImpl extends StateSpaceIterator {
 
-   RandomStream stream;
+   private static RandomStream stream = new MRG32k3aL();
    
    StateSpaceImpl stateSpace;
    StateDescriptorImpl currentStateDescriptor;
    
    int[] sampledStates;
    
-   int maxSamples;
    int pointer;
 
-   public StateSpaceSampleIteratorImpl(StateSpaceImpl stateSpace, int maxSamples){
+   public StateSpaceSampleIteratorImpl(StateSpaceImpl stateSpace, SamplingScheme samplingScheme, int maxSamples){
       this.stateSpace = stateSpace;
-      this.maxSamples = maxSamples;
       
-      stream = new MRG32k3aL();
       stream.resetStartStream();
       for(int i = 0; i < stateSpace.getPeriod(); i++){
          stream.resetNextSubstream();
       }
       
-      //sampledStates = this.getNextSample(maxSamples);
-      //sampledStates = this.getNextStratifiedSample(maxSamples);
-      sampledStates = this.getNextJensensSample(maxSamples);
-      
+      switch(samplingScheme){
+      case SIMPLE_RANDOM_SAMPLING:
+         sampledStates = this.getNextSample(maxSamples);
+         break;
+      case STRATIFIED_SAMPLING:
+         sampledStates = this.getNextStratifiedSample(maxSamples);
+         break;
+      case JENSENS_PARTITIONING:
+         sampledStates = this.getNextJensensSample(maxSamples);
+         break;
+      default:
+         sampledStates = this.getNextJensensSample(maxSamples);
+      }
+
       Arrays.sort(sampledStates); 
-      
       pointer = sampledStates.length - 1;
-      
       currentStateDescriptor = new StateDescriptorImpl(this.stateSpace.getPeriod(), sampledStates[pointer]);
    }
    
