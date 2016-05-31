@@ -24,17 +24,19 @@
  * SOFTWARE.
  */
 
-package jsdp.sdp.impl;
+package jsdp.sdp;
+
+import java.util.Iterator;
 
 /**
- * An enumeration of possible sampling strategies that may be used by the backward recursion algorithm.
+ * An abstraction representing an {@code Iterator} for a given {@code StateSpace}.
  * 
  * @author Roberto Rossi
  *
  */
-public enum SamplingScheme {
-   NONE,
-   SIMPLE_RANDOM_SAMPLING, 
-   STRATIFIED_SAMPLING, 
-   JENSENS_PARTITIONING 
+public abstract class ActionIterator implements Iterator<Action> {
+   
+   public abstract boolean hasNext();
+   public abstract Action next();
+
 }

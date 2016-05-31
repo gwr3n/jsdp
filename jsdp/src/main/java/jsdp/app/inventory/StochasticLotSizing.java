@@ -43,12 +43,13 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import jsdp.app.inventory.simulation.SimulatePolicies;
+import jsdp.app.inventory.simulation.sS_Policy;
 import jsdp.sdp.Action;
+import jsdp.sdp.ActionIterator;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.State;
-import jsdp.sdp.impl.*;
-
+import jsdp.sdp.impl.unidimensional.*;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.probdist.NormalDist;
@@ -110,9 +111,9 @@ public class StochasticLotSizing {
       Function<State, ArrayList<Action>> buildActionList = s -> {
          StateImpl state = (StateImpl) s;
          ArrayList<Action> feasibleActions = new ArrayList<Action>();
-         for(double i = state.getInitialState(); i <= StateImpl.getMaxState(); i+= StateImpl.getStepSize()){
-            feasibleActions.add(new ActionImpl(state, i - state.getInitialState()));
-         }
+         ActionIterator feasibleActionsIterator = new  ActionIteratorImpl(state);
+         while(feasibleActionsIterator.hasNext())
+            feasibleActions.add(feasibleActionsIterator.next());
          return feasibleActions;
       };
       
@@ -253,7 +254,8 @@ public class StochasticLotSizing {
       DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.ENGLISH);
       DecimalFormat df = new DecimalFormat("#.00",otherSymbols);
       
-      double[][] optimalPolicy = recursion.getOptimalPolicy(initialInventory);
+      sS_Policy policy = new sS_Policy(recursion, distributions.length);
+      double[][] optimalPolicy = policy.getOptimalPolicy(initialInventory);
       double[] s = optimalPolicy[0];
       double[] S = optimalPolicy[1];      
       for(int i = 0; i < distributions.length; i++){

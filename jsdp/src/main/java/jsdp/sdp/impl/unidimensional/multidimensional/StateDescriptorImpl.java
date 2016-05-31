@@ -24,44 +24,44 @@
  * SOFTWARE.
  */
 
-package jsdp.sdp.impl;
+package jsdp.sdp.impl.unidimensional.multidimensional;
 
-import jsdp.sdp.State;
-import jsdp.sdp.StateSpaceIterator;
+import java.util.Arrays;
+
+import jsdp.sdp.StateDescriptor;
 
 /**
- * A concrete implementation of {@code StateSpaceIterator}.
+ * A concrete implementation of {@code StateDescriptor}.
  * 
  * @author Roberto Rossi
  *
  */
-public class StateSpaceIteratorImpl extends StateSpaceIterator {
+public class StateDescriptorImpl extends StateDescriptor{
 
-   StateSpaceImpl stateSpace;
-   StateDescriptorImpl currentStateDescriptor;
+   int[] initialIntState;
 
-   public StateSpaceIteratorImpl(StateSpaceImpl stateSpace){
-      this.stateSpace = stateSpace;
-      currentStateDescriptor = new StateDescriptorImpl(this.stateSpace.getPeriod(), StateImpl.getMaxIntState());
+   public StateDescriptorImpl(int period, int[] initialIntState){
+      this.period = period;
+      this.initialIntState = Arrays.copyOf(initialIntState, initialIntState.length);
    }
-
-   public boolean hasNext() {
-      if(currentStateDescriptor.getInitialIntState() <= StateImpl.getMaxIntState() && 
-            currentStateDescriptor.getInitialIntState() >= StateImpl.getMinIntState())
-         return true;
+   
+   @Override
+   public boolean equals(Object descriptor){
+      if(descriptor instanceof StateDescriptorImpl)
+         return this.period == ((StateDescriptorImpl)descriptor).period &&
+                Arrays.equals(this.initialIntState, ((StateDescriptorImpl)descriptor).initialIntState);
       else
          return false;
    }
 
-   public State next() {
-      if(currentStateDescriptor.getInitialIntState() <= StateImpl.getMaxIntState() && 
-            currentStateDescriptor.getInitialIntState() >= StateImpl.getMinIntState()){
-         State state = stateSpace.getState(currentStateDescriptor);
-         currentStateDescriptor = new StateDescriptorImpl(currentStateDescriptor.getPeriod(), 
-               currentStateDescriptor.getInitialIntState() - 1);
-         return state;
-      }else{
-         return null;
-      }
+   @Override
+   public int hashCode(){
+      String hash = "";
+      hash = (hash + period) + "_" + Arrays.toString(initialIntState);
+      return hash.hashCode();
+   }
+
+   public int[] getInitialIntState(){
+      return this.initialIntState;
    }
 }

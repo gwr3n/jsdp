@@ -24,33 +24,50 @@
  * SOFTWARE.
  */
 
-package jsdp.app.lotsizing;
+package jsdp.sdp.impl.unidimensional.multidimensional;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.function.Function;
 
+import jsdp.sdp.Action;
 import jsdp.sdp.State;
 import jsdp.sdp.StateSpace;
 
-public class sS_StateSpace extends StateSpace<sS_StateDescriptor>{
+/**
+ * A concrete implementation of {@code StateSpace}.
+ * 
+ * @author Roberto Rossi
+ *
+ */
+public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
 
-   sS_StateSpaceSampleIterator.SamplingScheme samplingScheme = sS_StateSpaceSampleIterator.SamplingScheme.NONE;
+   SamplingScheme samplingScheme = SamplingScheme.NONE;
    int maxSampleSize = Integer.MAX_VALUE;
    
-   public sS_StateSpace(int period){
+   public StateSpaceImpl(int period,
+                         Function<State, ArrayList<Action>> buildActionList,
+                         Function<State, Action> idempotentAction){
       super(period);
+      this.buildActionList = buildActionList;
+      this.idempotentAction = idempotentAction;
    }
    
-   public sS_StateSpace(int period, 
-                        sS_StateSpaceSampleIterator.SamplingScheme samplingScheme,
-                        int maxSampleSize){
+   public StateSpaceImpl(int period, 
+                         Function<State, ArrayList<Action>> buildActionList,
+                         Function<State, Action> idempotentAction,
+                         SamplingScheme samplingScheme,
+                         int maxSampleSize){
       super(period);
+      this.buildActionList = buildActionList;
+      this.idempotentAction = idempotentAction;
       this.setSamplingScheme(samplingScheme, maxSampleSize);
    }
    
-   public void setSamplingScheme(sS_StateSpaceSampleIterator.SamplingScheme samplingScheme, int maxSampleSize){
+   public void setSamplingScheme(SamplingScheme samplingScheme, int maxSampleSize){
       switch(samplingScheme){
       case NONE:
-         this.samplingScheme = sS_StateSpaceSampleIterator.SamplingScheme.NONE;
+         this.samplingScheme = SamplingScheme.NONE;
          this.maxSampleSize = Integer.MAX_VALUE;
          break;
       default: 
@@ -59,28 +76,26 @@ public class sS_StateSpace extends StateSpace<sS_StateDescriptor>{
       }
    }
 
-   public boolean exists (sS_StateDescriptor descriptor){
+   public boolean exists (StateDescriptorImpl descriptor){
       return states.get(descriptor) != null;
    }
    
-   public State getState(sS_StateDescriptor descriptor){
+   public State getState(StateDescriptorImpl descriptor){
       State value = states.get(descriptor);
       if(value == null){
-         State state = new sS_State(descriptor);
+         State state = new StateImpl(descriptor, this.buildActionList, this.idempotentAction);
          this.states.put(descriptor, state);
          return state;
       }else
-         return (sS_State) value;
-   }
-   
-   public sS_StateSpaceSampleIterator.SamplingScheme getSamplingScheme(){
-      return this.samplingScheme;
+         return (StateImpl) value;
    }
 
    public Iterator<State> iterator() {
-      if(period == 0 || this.samplingScheme == sS_StateSpaceSampleIterator.SamplingScheme.NONE)
-         return new sS_StateSpaceIterator(this);
+      if(this.period == 0)
+         return null;
+      else if(this.samplingScheme == SamplingScheme.NONE)
+         return new StateSpaceIteratorImpl(this);
       else
-         return new sS_StateSpaceSampleIterator(this, this.maxSampleSize);
+         return new StateSpaceSampleIteratorImpl(this, this.samplingScheme, this.maxSampleSize);
    }
 }

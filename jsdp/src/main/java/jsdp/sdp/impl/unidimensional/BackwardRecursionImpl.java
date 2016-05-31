@@ -24,10 +24,9 @@
  * SOFTWARE.
  */
 
-package jsdp.sdp.impl;
+package jsdp.sdp.impl.unidimensional;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.function.Function;
 
 import jsdp.sdp.Action;
@@ -87,28 +86,8 @@ public class BackwardRecursionImpl extends BackwardRecursion{
       return (TransitionProbabilityImpl) this.transitionProbability; 
    }
    
-   public double[][] getOptimalPolicy(double initialInventory){
-      double[][] optimalPolicy = new double[2][];
-      double[] S = new double[demand.length];
-      double[] s = new double[demand.length];
-      for(int i = 0; i < demand.length; i++){
-         if(i == 0) {
-            StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(0, StateImpl.stateToIntState(initialInventory));
-            s[i] = StateImpl.intStateToState(this.find_s(i).getInitialIntState());
-            S[i] = ActionImpl.intActionToAction(this.getOptimalAction(stateDescriptor).getIntAction())+initialInventory;
-         }
-         else{
-            s[i] = StateImpl.intStateToState(this.find_s(i).getInitialIntState());
-            S[i] = StateImpl.intStateToState(this.find_S(i).getInitialIntState());
-         }
-      }
-      optimalPolicy[0] = s;
-      optimalPolicy[1] = S;
-      return optimalPolicy;
-   }
-   
-   public double getExpectedCost(double initialInventory){
-      StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(0, StateImpl.stateToIntState(initialInventory));
+   public double getExpectedCost(double initialState){
+      StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(0, StateImpl.stateToIntState(initialState));
       return getExpectedCost(stateDescriptor);
    }
    
@@ -120,28 +99,5 @@ public class BackwardRecursionImpl extends BackwardRecursion{
    public ActionImpl getOptimalAction(StateDescriptorImpl stateDescriptor){
       State state = ((StateSpaceImpl)this.getStateSpace(stateDescriptor.getPeriod())).getState(stateDescriptor);
       return (ActionImpl) this.getValueRepository().getOptimalAction(state);
-   }
-
-   public StateImpl find_S(int period){
-      StateImpl s = this.find_s(period);
-      int i = ((ActionImpl)this.getValueRepository().getOptimalAction(s)).getIntAction()+s.getInitialIntState();
-      StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(period, i);
-      StateImpl state = (StateImpl) ((StateSpaceImpl)this.getStateSpace()[period]).getState(stateDescriptor);
-      return state;
-   }
-   
-   public StateImpl find_s(int period){
-      Iterator<State> iterator = this.getStateSpace()[period].iterator();
-      StateImpl state = null;
-      do{
-         state = (StateImpl) iterator.next();
-         Action action = this.getValueRepository().getOptimalAction(state);
-         if(action == null)
-            continue;
-         if(((ActionImpl)action).getIntAction() > 0){
-            return state;
-         }
-      }while(iterator.hasNext());
-      return state;
    }
 }

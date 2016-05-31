@@ -54,15 +54,19 @@ public abstract class BackwardRecursion extends Recursion{
 	 * Generates the complete state space for the discrete time, discrete space, stochastic dynamic program.
 	 */
 	protected void generateStates(){
-		CountDownLatch latch = new CountDownLatch(horizonLength + 1);
+		CountDownLatch latch = new CountDownLatch(horizonLength);
 		for(int i = horizonLength; i >= 0; i--){
 			Iterator<State> iterator = this.getStateSpace(i).iterator();
-			Runnable r = () -> {
-				while(iterator.hasNext()) 
-					iterator.next();
-				latch.countDown();
-				};
-			new Thread(r).start();
+			if(iterator != null){
+   			Runnable r = () -> {
+   				while(iterator.hasNext()) 
+   					iterator.next();
+   				latch.countDown();
+   				};
+   			new Thread(r).start();
+			}else{
+			   logger.info("Skipping state generation for period "+i);
+			}
 		}
 		try {
 			latch.await();

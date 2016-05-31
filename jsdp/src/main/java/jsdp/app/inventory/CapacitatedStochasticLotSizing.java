@@ -47,8 +47,7 @@ import jsdp.sdp.Action;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.State;
-import jsdp.sdp.impl.*;
-
+import jsdp.sdp.impl.unidimensional.*;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.probdist.NormalDist;

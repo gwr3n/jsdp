@@ -24,14 +24,13 @@
  * SOFTWARE.
  */
 
-package jsdp.sdp.impl;
+package jsdp.sdp.impl.unidimensional;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import jsdp.sdp.Action;
-import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.State;
 import jsdp.sdp.TransitionProbability;

@@ -24,42 +24,44 @@
  * SOFTWARE.
  */
 
-package jsdp.sdp.impl;
+package jsdp.sdp.impl.unidimensional;
 
-import jsdp.sdp.StateDescriptor;
+import jsdp.sdp.State;
+import jsdp.sdp.StateSpaceIterator;
 
 /**
- * A concrete implementation of {@code StateDescriptor}.
+ * A concrete implementation of {@code StateSpaceIterator}.
  * 
  * @author Roberto Rossi
  *
  */
-public class StateDescriptorImpl extends StateDescriptor{
+public class StateSpaceIteratorImpl extends StateSpaceIterator {
 
-   int initialIntState;
+   StateSpaceImpl stateSpace;
+   StateDescriptorImpl currentStateDescriptor;
 
-   public StateDescriptorImpl(int period, int initialIntState){
-      this.period = period;
-      this.initialIntState = initialIntState;
+   public StateSpaceIteratorImpl(StateSpaceImpl stateSpace){
+      this.stateSpace = stateSpace;
+      currentStateDescriptor = new StateDescriptorImpl(this.stateSpace.getPeriod(), StateImpl.getMaxIntState());
    }
-   
-   @Override
-   public boolean equals(Object descriptor){
-      if(descriptor instanceof StateDescriptorImpl)
-         return this.period == ((StateDescriptorImpl)descriptor).period &&
-         this.initialIntState == ((StateDescriptorImpl)descriptor).initialIntState;
+
+   public boolean hasNext() {
+      if(currentStateDescriptor.getInitialIntState() <= StateImpl.getMaxIntState() && 
+            currentStateDescriptor.getInitialIntState() >= StateImpl.getMinIntState())
+         return true;
       else
          return false;
    }
 
-   @Override
-   public int hashCode(){
-      String hash = "";
-      hash = (hash + period) + "_" + initialIntState;
-      return hash.hashCode();
-   }
-
-   public int getInitialIntState(){
-      return initialIntState;
+   public State next() {
+      if(currentStateDescriptor.getInitialIntState() <= StateImpl.getMaxIntState() && 
+            currentStateDescriptor.getInitialIntState() >= StateImpl.getMinIntState()){
+         State state = stateSpace.getState(currentStateDescriptor);
+         currentStateDescriptor = new StateDescriptorImpl(currentStateDescriptor.getPeriod(), 
+               currentStateDescriptor.getInitialIntState() - 1);
+         return state;
+      }else{
+         return null;
+      }
    }
 }

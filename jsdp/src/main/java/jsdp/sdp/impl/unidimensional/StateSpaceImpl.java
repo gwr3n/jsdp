@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.sdp.impl;
+package jsdp.sdp.impl.unidimensional;
 
 import java.util.ArrayList;
 import java.util.Iterator;

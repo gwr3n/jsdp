@@ -1,5 +1,7 @@
 package jsdp.sdp;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * An abstraction for a recursive solution method for the stochastic dynamic program.
@@ -9,6 +11,8 @@ package jsdp.sdp;
  */
 public abstract class Recursion {
 	
+   static final Logger logger = LogManager.getLogger(Recursion.class.getName());
+   
 	public enum OptimisationDirection {
 		MIN,
 		MAX
@@ -94,15 +98,17 @@ public abstract class Recursion {
 		 * @param currentValue the action expected value.
 		 */
 		public synchronized void update(Action currentAction, double currentValue){
+		   if(currentAction == null)
+		      throw new NullPointerException("Current action cannot be null");
 			switch(direction){
 			case MIN:
-				if(currentValue < bestValue){
+				if(bestAction == null || Double.isNaN(this.bestValue) || currentValue < bestValue){
 					bestValue = currentValue;
 					bestAction = currentAction;
 				}
 				return;
 			case MAX:
-				if(currentValue > bestValue){
+				if(bestAction == null || Double.isNaN(this.bestValue) || currentValue > bestValue){
 					bestValue = currentValue;
 					bestAction = currentAction;
 				}
@@ -116,6 +122,8 @@ public abstract class Recursion {
 		 * @return the best action stored.
 		 */
 		public Action getBestAction(){
+		   if(Double.isNaN(this.bestValue))
+            logger.error("Number of samples probably too low");
 			return this.bestAction;
 		}
 		
@@ -125,6 +133,8 @@ public abstract class Recursion {
 		 * @return the value associated with the best action stored.
 		 */
 		public double getBestValue(){
+	       if(Double.isNaN(this.bestValue))
+	            logger.error("Number of samples probably too low");
 			return this.bestValue;
 		}
 	}

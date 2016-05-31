@@ -53,7 +53,7 @@ import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.probdist.NormalDist;
 
 import jsdp.app.lotsizing.simulation.SimulatePolicies;
-import jsdp.sdp.impl.StateImpl;
+import jsdp.sdp.impl.unidimensional.StateImpl;
 
 /**
  *  We formulate the stochastic lot sizing problem as defined in  
@@ -98,7 +98,7 @@ public class sS_jsdp {
 
       double initialInventory = 0;
       sS_StateSpaceSampleIterator.SamplingScheme samplingScheme = sS_StateSpaceSampleIterator.SamplingScheme.JENSENS_PARTITIONING;
-      int maxSampleSize = 15;
+      int maxSampleSize = 25;
 
       System.out.println("--------------Forward recursion--------------");
       simpleTestForward(fixedOrderingCost, 

@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.sdp.impl;
+package jsdp.sdp.impl.unidimensional;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.State;

@@ -26,9 +26,9 @@
 
 package jsdp.app.inventory.simulation;
 
-import jsdp.sdp.impl.BackwardRecursionImpl;
-import jsdp.sdp.impl.StateDescriptorImpl;
-import jsdp.sdp.impl.StateImpl;
+import jsdp.sdp.impl.unidimensional.BackwardRecursionImpl;
+import jsdp.sdp.impl.unidimensional.StateDescriptorImpl;
+import jsdp.sdp.impl.unidimensional.StateImpl;
 import jsdp.utilities.SampleFactory;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.stat.Tally;
