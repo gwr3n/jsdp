@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.sdp.impl.unidimensional.multidimensional;
+package jsdp.sdp.impl.multidimensional;
 
 /**
  * An enumeration of possible sampling strategies that may be used by the backward recursion algorithm.

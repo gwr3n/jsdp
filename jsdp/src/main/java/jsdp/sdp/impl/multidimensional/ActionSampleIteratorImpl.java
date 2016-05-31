@@ -24,85 +24,82 @@
  * SOFTWARE.
  */
 
-package jsdp.sdp.impl.unidimensional.multidimensional;
+package jsdp.sdp.impl.multidimensional;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-import jsdp.sdp.State;
-import jsdp.sdp.StateSpaceIterator;
-
-import umontreal.ssj.randvar.UniformIntGen;
+import jsdp.sdp.Action;
+import jsdp.sdp.ActionIterator;
 import umontreal.ssj.rng.MRG32k3aL;
 import umontreal.ssj.rng.RandomStream;
 
 /**
- * A concrete implementation of {@code StateSpaceIterator} .
+ * A concrete implementation of {@code StateSpaceIterator}.
  * 
  * @author Roberto Rossi
  *
  */
-public class StateSpaceSampleIteratorImpl extends StateSpaceIterator {
-
+public class ActionSampleIteratorImpl extends ActionIterator{
+   
    private static RandomStream stream = new MRG32k3aL();
+
+   StateImpl state;
+   ActionImpl currentAction;
    
-   StateSpaceImpl stateSpace;
-   StateDescriptorImpl currentStateDescriptor;
-   
-   int[] sampledStates;
+   int[] sampledActions;
    
    int pointer;
-
-   public StateSpaceSampleIteratorImpl(StateSpaceImpl stateSpace, SamplingScheme samplingScheme, int maxSamples){
-      this.stateSpace = stateSpace;
+   
+   public ActionSampleIteratorImpl(StateImpl state, int maxSamples){
+      this.state = state;
       
       stream.resetStartStream();
-      for(int i = 0; i < stateSpace.getPeriod(); i++){
-         stream.resetNextSubstream();
-      }
       
-      switch(samplingScheme){
-      case SIMPLE_RANDOM_SAMPLING:
-         sampledStates = this.getNextSample(maxSamples);
-         break;
-      case STRATIFIED_SAMPLING:
-         sampledStates = this.getNextStratifiedSample(maxSamples);
-         break;
-      case JENSENS_PARTITIONING:
-         sampledStates = this.getNextJensensSample(maxSamples);
-         break;
-      default:
-         sampledStates = this.getNextJensensSample(maxSamples);
-      }
-
-      Arrays.sort(sampledStates); 
-      pointer = sampledStates.length - 1;
-      currentStateDescriptor = new StateDescriptorImpl(this.stateSpace.getPeriod(), getIntState(sampledStates[pointer]));
+      sampledActions = this.getNextJensensSample(maxSamples);
+      Arrays.sort(sampledActions); 
+      pointer = sampledActions.length - 1;
+      
+      /*Arrays.stream(sampledActions).mapToObj(action -> getIntAction(action, state)).forEach(elem -> {
+         if(state.getPeriod() == 0) 
+            System.out.println(state+" "+Arrays.toString(elem));  
+      });*/
+      
+      currentAction = new ActionImpl(this.state, getIntAction(sampledActions[pointer], this.state));
    }
    
-   private static int getResidualStateSpaceCardinality(int j){
-      int cardinality = 1;
-      for(int i = j; i < StateImpl.getStateDimension(); i++){
-         cardinality *= StateImpl.getMaxIntState()[i] - StateImpl.getMinIntState()[i] + 1;
-      }
-      return cardinality;
-   }
-   
-   private static int getStateSpaceCardinality(){
+   private static int getActionSpaceCardinality(StateImpl state){
       int cardinality = 1;
       for(int i = 0; i < StateImpl.getStateDimension(); i++){
-         cardinality *= StateImpl.getMaxIntState()[i] - StateImpl.getMinIntState()[i] + 1;
+         cardinality *= StateImpl.getMaxIntState()[i] - state.getInitialIntState()[i] + 1;
       }
       return cardinality;
+   }
+   
+   private static int getResidualStateSpaceCardinality(int j, StateImpl state){
+      int cardinality = 1;
+      for(int i = j; i < StateImpl.getStateDimension(); i++){
+         cardinality *= StateImpl.getMaxIntState()[i] - state.getInitialIntState()[i] + 1;
+      }
+      return cardinality;
+   }
+   
+   private static int[] getIntAction(int actionPointer, StateImpl state){
+      int[] intState = new int[StateImpl.getStateDimension()];
+      for(int i = 0; i < StateImpl.getStateDimension(); i++){
+         intState[i] = Math.floorDiv(Math.floorMod(actionPointer, getResidualStateSpaceCardinality(i, state)), i < StateImpl.getStateDimension() - 1 ? getResidualStateSpaceCardinality(i+1, state) : 1);
+      }
+      return intState;
    }
    
    public int[] getNextSample(int samples){
-      int x[] = new int[samples];
+      throw new NullPointerException("Method not implemented");
+      /*int x[] = new int[samples];
       x = IntStream.iterate(0, i -> i + 1)
                    .limit(samples)
-                   .map(i -> UniformIntGen.nextInt(stream, 0, getStateSpaceCardinality()))
+                   .map(i -> UniformIntGen.nextInt(stream, 0, getActionSpaceCardinality(this.state)))
                    .toArray();  
       Set<Integer> set = new HashSet<Integer>();
       for(int i : x){
@@ -110,12 +107,13 @@ public class StateSpaceSampleIteratorImpl extends StateSpaceIterator {
       }
       Integer[] array = new Integer[set.size()];
       set.toArray(array);
-      return Arrays.stream(array).mapToInt(i -> i).toArray();
+      return Arrays.stream(array).mapToInt(i -> i).toArray();*/
    }
    
    public int[] getNextStratifiedSample(int samples){
-      int x[] = new int[samples];
-      int stateSpaceSize = getStateSpaceCardinality();
+      throw new NullPointerException("Method not implemented");
+      /*int x[] = new int[samples];
+      int stateSpaceSize = getActionSpaceCardinality(this.state);
       if(samples > stateSpaceSize) throw new NullPointerException("Samples larger than state space");
       x = IntStream.iterate(0, i -> i + stateSpaceSize/samples)
                    .limit(samples)
@@ -127,16 +125,16 @@ public class StateSpaceSampleIteratorImpl extends StateSpaceIterator {
       }
       Integer[] array = new Integer[set.size()];
       set.toArray(array);
-      return Arrays.stream(array).mapToInt(i -> i).toArray();
+      return Arrays.stream(array).mapToInt(i -> i).toArray();*/
    }
    
    public int[] getNextJensensSample(int samples){
       int x[] = new int[samples];
-      int stateSpaceSize = getStateSpaceCardinality();
-      if(samples > stateSpaceSize) throw new NullPointerException("Samples larger than state space");
-      x = IntStream.iterate(0, i -> i + stateSpaceSize/samples)
-                   .limit(samples)
-                   .map(i -> i + stateSpaceSize/(2*samples))
+      int stateSpaceSize = getActionSpaceCardinality(this.state);
+      //if(samples > stateSpaceSize) throw new NullPointerException("Samples larger than state space");
+      x = IntStream.iterate(0, i -> i + Math.max(stateSpaceSize/samples,1))
+                   .limit(Math.min(samples, stateSpaceSize))
+                   .map(i -> i + Math.max(stateSpaceSize/(2*samples),1))
                    .toArray();  
       Set<Integer> set = new HashSet<Integer>();
       for(int i : x){
@@ -147,27 +145,19 @@ public class StateSpaceSampleIteratorImpl extends StateSpaceIterator {
       return Arrays.stream(array).mapToInt(i -> i).toArray();
    }
    
-   private static int[] getIntState(int stateSpacePointer){
-      int[] intState = new int[StateImpl.getStateDimension()];
-      for(int i = 0; i < StateImpl.getStateDimension(); i++){
-         intState[i] = Math.floorDiv(Math.floorMod(stateSpacePointer, getResidualStateSpaceCardinality(i)), i < StateImpl.getStateDimension() - 1 ? getResidualStateSpaceCardinality(i+1) : 1) + StateImpl.getMinIntState()[i];
-      }
-      return intState;
-   }
-
    public boolean hasNext() {
       if(pointer >= 0)
          return true;
       else
          return false;
    }
-
-   public State next() {
+   
+   public Action next() {
       if(pointer >= 0){
-         State state = stateSpace.getState(currentStateDescriptor);
-         currentStateDescriptor = pointer - 1 >= 0 ? new StateDescriptorImpl(this.stateSpace.getPeriod(), getIntState(sampledStates[pointer - 1])) : null;
+         Action action = currentAction;
+         currentAction = pointer - 1 >= 0 ? new ActionImpl(this.state, getIntAction(sampledActions[pointer - 1], this.state)) : null;
          pointer--;
-         return state;
+         return action;
       }else{
          return null;
       }

@@ -77,12 +77,12 @@ public class StochasticLotSizing {
       /*******************************************************************
        * Problem parameters
        */
-      double fixedOrderingCost = 100; 
+      double fixedOrderingCost = 20; 
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
-      double penaltyCost = 4;
+      double penaltyCost = 2;
       
-      double[] meanDemand = {20,30,20,40,10,30,30,40,10,30,60};
+      double[] meanDemand = {20,50,20,10,20,50};
       double coefficientOfVariation = 0.4;
       
       // Random variables
@@ -101,9 +101,9 @@ public class StochasticLotSizing {
       
       // State space
       
-      double stepSize = 0.8;       //Stepsize must be 1 for discrete distributions
-      int minIntState = -100;
-      int maxIntState = 250;
+      double stepSize = 1;       //Stepsize must be 1 for discrete distributions
+      int minIntState = -200;
+      int maxIntState = 200;
       StateImpl.setStateBoundaries(stepSize, minIntState, maxIntState);
 
       // Actions
@@ -147,7 +147,7 @@ public class StochasticLotSizing {
       // Sampling scheme
       
       SamplingScheme samplingScheme = SamplingScheme.JENSENS_PARTITIONING;
-      int maxSampleSize = 50;
+      int maxSampleSize = 100;
       
       
       // Value Function Processing Method: backward recursion
@@ -178,7 +178,7 @@ public class StochasticLotSizing {
        * Charting
        */   
       System.out.println("--------------Charting--------------");
-      int targetPeriod = 0;
+      int targetPeriod = 0;                                 //If targetPeriod > 0 then no sampling!
       plotOptimalPolicyAction(targetPeriod, recursion);     //Plot optimal policy action
       BackwardRecursionImpl recursionPlot = new BackwardRecursionImpl(distributions,
                                                                       immediateValueFunction,
@@ -187,7 +187,7 @@ public class StochasticLotSizing {
                                                                       idempotentAction,
                                                                       samplingScheme,
                                                                       maxSampleSize);
-      plotOptimalPolicyCost(targetPeriod, recursionPlot);       //Plot optimal policy cost 
+      plotOptimalPolicyCost(targetPeriod, recursionPlot);   //Plot optimal policy cost 
       System.out.println();
       
       /*******************************************************************
