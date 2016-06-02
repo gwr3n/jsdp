@@ -26,7 +26,7 @@
 
 package jsdp.sdp;
 
-import java.util.Hashtable;
+import gnu.trove.map.hash.THashMap;
 
 /**
  * An abstraction representing a repository for the value associated with each {@code State}.
@@ -35,9 +35,9 @@ import java.util.Hashtable;
  *
  */
 public class ValueRepository {	
-	protected Hashtable<StateAction,Double> valueHashTable = new Hashtable<StateAction,Double>();
-	protected Hashtable<State,Double> optimalValueHashTable = new Hashtable<State,Double>();
-	protected Hashtable<State,Action> optimalActionHashTable = new Hashtable<State,Action>();
+	protected THashMap<StateAction,Double> valueHashTable = new THashMap<StateAction,Double>();
+	protected THashMap<State,Double> optimalValueHashTable = new THashMap<State,Double>();
+	protected THashMap<State,Action> optimalActionHashTable = new THashMap<State,Action>();
 	
 	protected ImmediateValueFunction<State, Action, Double> immediateValueFunction;
 	
@@ -50,6 +50,21 @@ public class ValueRepository {
 	public ValueRepository(ImmediateValueFunction<State, Action, Double> immediateValueFunction){
 	   this.setImmediateValue(immediateValueFunction);
 	}
+	
+	/**
+	 * Creates a new value repository
+	 * 
+	 * @param immediateValueFunction the immediate value of a transition from {@code initialState} to 
+    * {@code finalState} under a chosen {@code action}.
+	 * @param stateSpaceSizeLowerBound a lower bound for the sdp state space size, used to initialise the internal hash maps
+	 * @param loadFactor the internal hash maps load factor
+	 */
+	public ValueRepository(ImmediateValueFunction<State, Action, Double> immediateValueFunction, int stateSpaceSizeLowerBound, float loadFactor){
+      this(immediateValueFunction);
+      valueHashTable = new THashMap<StateAction,Double>(stateSpaceSizeLowerBound,loadFactor);
+      optimalValueHashTable = new THashMap<State,Double>(stateSpaceSizeLowerBound,loadFactor);
+      optimalActionHashTable = new THashMap<State,Action>(stateSpaceSizeLowerBound,loadFactor);
+   }
 	
 	protected ValueRepository(){}
 	
@@ -167,8 +182,8 @@ public class ValueRepository {
 		
 		public int hashCode(){
 			String hash = "";
-	        hash = hash + initialState.hashCode() + action.hashCode();
-	        return hash.hashCode();
+	      hash = hash + initialState.hashCode() + action.hashCode();
+	      return hash.hashCode();
 		}
 	}
 }

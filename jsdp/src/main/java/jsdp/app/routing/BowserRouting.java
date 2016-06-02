@@ -116,7 +116,15 @@ public class BowserRouting {
          return travelCost + penaltyCost;
       };
       
-      BR_ForwardRecursion recursion = new BR_ForwardRecursion(T, machineLocation, fuelConsumption, immediateValueFunction, buildActionList);
+      int stateSpaceSizeLowerBound = 10000000;
+      float loadFactor = 0.8F;
+      BR_ForwardRecursion recursion = new BR_ForwardRecursion(T, 
+                                                              machineLocation, 
+                                                              fuelConsumption, 
+                                                              immediateValueFunction, 
+                                                              buildActionList,
+                                                              stateSpaceSizeLowerBound,
+                                                              loadFactor);
       
       int period = 0;
       int bowserInitialTankLevel = 0;

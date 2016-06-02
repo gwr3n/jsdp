@@ -27,10 +27,11 @@
 package jsdp.sdp;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+
+import gnu.trove.map.hash.THashMap;
 
 /**
  * An abstract container that stores all generated {@code State}.
@@ -42,7 +43,7 @@ import java.util.function.Function;
 public abstract class StateSpace<SD> implements Iterable<State>{
 	
 	protected int period;
-	protected Hashtable<SD,State> states = new Hashtable<SD,State>();
+	protected THashMap<SD,State> states = new THashMap<SD,State>();
 	
 	protected Function<State, ArrayList<Action>> buildActionList;
 	protected Function<State, Action> idempotentAction;
@@ -55,6 +56,18 @@ public abstract class StateSpace<SD> implements Iterable<State>{
 	public StateSpace(int period){
 		this.period = period;
 	}
+	
+	/**
+	 * Constructs a container for states associated with a given {@code period}.
+	 * 
+	 * @param period the period associated with this container.
+	 * @param stateSpaceSizeLowerBound a lower bound for the sdp state space size, used to initialise the internal hash maps
+	 * @param loadFactor the internal hash maps load factor
+	 */
+	public StateSpace(int period, int stateSpaceSizeLowerBound, float loadFactor){
+      this(period);
+      states = new THashMap<SD,State>(stateSpaceSizeLowerBound,loadFactor);
+   }
 	
 	/**
 	 * Returns the {@code State} associated with a given state descriptor.

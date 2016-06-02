@@ -81,7 +81,6 @@ public class BR_TransitionProbability extends TransitionProbability {
 
    @Override
    public ArrayList<State> getFinalStates(State initialState, Action action) {
-      // TODO Auto-generated method stub
       throw new NullPointerException("Method not implemented");
    }
 
