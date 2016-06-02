@@ -27,10 +27,6 @@
 package jsdp.sdp;
 
 import org.apache.logging.log4j.Logger;
-
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -49,14 +45,7 @@ public abstract class ForwardRecursion extends Recursion{
 	 */
 	public ForwardRecursion(OptimisationDirection direction){
 		super(direction);
-		stats.getContentPane().add(label);
-		stats.setSize(200, 200);
-		stats.setVisible(true);
 	}
-	
-	JFrame stats = new JFrame();
-	JLabel label = new JLabel("0");
-	int counter = 0;
 	
 	/**
 	 * Runs the forward recursion algorithm for the given stochastic dynamic program and
@@ -80,8 +69,6 @@ public abstract class ForwardRecursion extends Recursion{
 					if(normalisationFactor != 0)
 					   currentCost /= normalisationFactor;
 					repository.update(action, currentCost);
-					
-					label.setText("States updated: "+counter++);
 				});
 				this.getValueRepository().setOptimalExpectedValue(y, repository.getBestValue());
 				this.getValueRepository().setOptimalAction(y, repository.getBestAction());
