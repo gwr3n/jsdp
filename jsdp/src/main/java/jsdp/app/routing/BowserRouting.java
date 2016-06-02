@@ -22,8 +22,8 @@ public class BowserRouting {
       int[] tankCapacity = {20, 20, 20};
       int[] initialTankLevel ={0, 0, 0};
       int[][] fuelConsumption ={{2, 4, 3, 4, 4},
-      {2, 1, 3, 1, 4},
-      {4, 3, 3, 4, 2}};
+                                {2, 1, 3, 1, 4},
+                                {4, 3, 3, 4, 2}};
       int[][] connectivity = {
             {1, 1, 0, 0, 0},
             {0, 0, 1, 0, 0},
@@ -42,17 +42,17 @@ public class BowserRouting {
       
       {{0, 0, 0, 0, 1},   
       {0, 0, 0, 1, 0},
-      {0.5, 0.5, 0, 0, 0}},
+      {0, 1, 0, 0, 0}},
       
       {{0, 0, 1, 0, 0},
       {0, 0, 1, 0, 0},
       {0, 0, 1, 0, 0}},
       
-      {{1, 0, 0, 0, 0},
+      {{0, 1, 0, 0, 0},
       {0, 0, 0, 0, 1},
       {0, 0, 0, 1, 0}},
       
-      {{0, 0, 0, 0.2, 0.8},
+      {{0, 0, 0, 0, 1},
       {0, 0, 0, 1, 0},
       {0, 0, 1, 0, 0}},
       
@@ -60,7 +60,7 @@ public class BowserRouting {
       {0, 0, 0, 1, 0},
       {0, 0, 1, 0, 0}}};
       
-      int fuelStockOutPenaltyCost = 10;
+      int fuelStockOutPenaltyCost = 20;
       
       /*******************************************************************
        * Model definition
@@ -140,7 +140,7 @@ public class BowserRouting {
       System.out.println("Time elapsed: "+timer);
       System.out.println();
       
-      /*for(int t = 1; t < N; t++){
+      for(int t = 1; t < N; t++){
          bowserInitialLocation = ((BR_Action)recursion.getOptimalAction(initialState)).getBowserNewLocation();
          bowserInitialTankLevel += ((BR_Action)recursion.getOptimalAction(initialState)).getBowserRefuelQty() - Arrays.stream(((BR_Action)recursion.getOptimalAction(initialState)).getMachineRefuelQty()).sum();
          machinesInitialLocation = getMachineLocationArray(M, machineLocation[t]);
@@ -155,7 +155,7 @@ public class BowserRouting {
          System.out.println(initialState.toString());
          System.out.println("Expected total cost: "+recursion.getExpectedCost(initialState));
          System.out.println("Optimal action: "+recursion.getOptimalAction(initialState).toString());
-      }*/
+      }
    }
    
    public static int[] getMachineLocationArray(int M, double[][] machineLocationMatrix){

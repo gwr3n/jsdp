@@ -26,15 +26,11 @@ public class BR_TransitionProbability extends TransitionProbability {
       for(int i = 0; i < machineLocations.length; i++){
          probability *= this.transitionProbabilities[finalState.getPeriod()][i][machineLocations[i]];
       }
-      //if(probability == 0)
-         //System.out.println(initialState + " " + action + " " + finalState);
       return probability;
    }
 
    @Override
-   public ArrayList<State> generateFinalStates(State initialState, Action action) {
-      // TODO Auto-generated method stub
-      
+   public ArrayList<State> generateFinalStates(State initialState, Action action) {      
       int bowserTankLevel = ((BR_State) initialState).getBowserTankLevel() +
                             ((BR_Action) action).getBowserRefuelQty() - 
                             Arrays.stream(((BR_Action)action).getMachineRefuelQty()).sum();
@@ -47,21 +43,8 @@ public class BR_TransitionProbability extends TransitionProbability {
       
       ArrayList<int[]> machineLocationsArray = new ArrayList<int[]>();
       
-      /*if(((BR_State) initialState).getPeriod() == 1 || ((BR_State) initialState).getPeriod() == 2){
-      System.out.println(((BR_State) initialState).getPeriod());
-      System.out.println(Arrays.deepToString(this.transitionProbabilities[initialState.getPeriod()+1]));
-      }*/
       int[] machineLocations = new int[((BR_State) initialState).getMachineLocation().length];
       generateLocations(machineLocations, 0, this.transitionProbabilities[initialState.getPeriod()+1], machineLocationsArray);
-      
-      /*if(((BR_State) initialState).getPeriod() == 1 || ((BR_State) initialState).getPeriod() == 2){
-      System.out.println(((BR_State) initialState).getPeriod());
-      System.out.println(Arrays.toString(((BR_State) initialState).getMachineLocation()));
-      machineLocationsArray.stream().forEach(a -> System.out.println(Arrays.toString(a)));
-      System.out.println();
-      System.out.println();
-      System.out.println();
-      }*/
       
       ArrayList<State> finalStates = new ArrayList<State>();
       for(int i = 0; i < machineLocationsArray.size(); i++){
@@ -72,10 +55,6 @@ public class BR_TransitionProbability extends TransitionProbability {
                                                                 machineLocationsArray.get(i));
          finalStates.add(this.stateSpace[initialState.getPeriod() + 1].getState(descriptor));
       }
-      //if(initialState.getPeriod() == 3)
-         //finalStates.stream().forEach(s -> System.out.println(s));
-      //if(initialState.getPeriod() == 0)
-         //System.out.println();
       return finalStates;
    }
    
