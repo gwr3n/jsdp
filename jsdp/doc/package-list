@@ -5,6 +5,7 @@ jsdp.app.lotsizing
 jsdp.app.lotsizing.sampling
 jsdp.app.lotsizing.simulation
 jsdp.app.maintenance
+jsdp.app.routing
 jsdp.sdp
 jsdp.sdp.impl.multidimensional
 jsdp.sdp.impl.unidimensional

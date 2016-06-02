@@ -48,12 +48,12 @@ public class ActionImpl extends Action {
    }
    
    public ActionImpl(State state, int intAction){
-      this.state = state;
+      super(state);
       this.intAction = intAction;
    }
    
    public ActionImpl(State state, double action){
-      this.state = state;
+      super(state);
       this.intAction = actionToIntAction(action);
    }
    

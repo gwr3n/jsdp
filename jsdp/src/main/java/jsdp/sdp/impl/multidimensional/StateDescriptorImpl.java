@@ -41,7 +41,7 @@ public class StateDescriptorImpl extends StateDescriptor{
    int[] initialIntState;
 
    public StateDescriptorImpl(int period, int[] initialIntState){
-      this.period = period;
+      super(period);
       this.initialIntState = Arrays.copyOf(initialIntState, initialIntState.length);
    }
    

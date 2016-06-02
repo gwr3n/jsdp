@@ -88,7 +88,7 @@ public abstract class Recursion {
 	 */
 	class BestActionRepository {
 		Action bestAction = null;
-		double bestValue = Double.MAX_VALUE;
+		double bestValue = direction == OptimisationDirection.MIN ? Double.MAX_VALUE : Double.MIN_VALUE;
 		
 		/**
 		 * Compares {@code currentAction} and {@code currentValue} to the best action currently stored and updates

@@ -43,6 +43,10 @@ public abstract class StateDescriptor{
 	@Override
 	public abstract int hashCode();
 	
+	public StateDescriptor(int period){
+	   this.period = period;
+	}
+	
 	/**
 	 * Returns the period associated with this {@code StateDescriptor}.
 	 * @return the period associated with this {@code StateDescriptor}. 

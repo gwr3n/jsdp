@@ -49,7 +49,6 @@ public class BackwardRecursionImpl extends BackwardRecursion{
    double proportionalOrderingCost; 
    double holdingCost;
    double penaltyCost;
-   Distribution[] demand;
    
    /**
     * Creates an instance of the problem and initialises state space, transition probability and value repository.
@@ -70,7 +69,6 @@ public class BackwardRecursionImpl extends BackwardRecursion{
                         SamplingScheme samplingScheme,
                         int maxSampleSize){
       super(OptimisationDirection.MIN);
-      this.demand = demand;
       this.horizonLength = demand.length;
       
       this.stateSpace = new StateSpaceImpl[this.horizonLength+1];

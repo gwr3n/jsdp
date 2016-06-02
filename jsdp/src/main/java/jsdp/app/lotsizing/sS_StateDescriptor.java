@@ -33,7 +33,7 @@ public class sS_StateDescriptor extends StateDescriptor{
    int initialIntState;
 
    public sS_StateDescriptor(int period, int initialIntState){
-      this.period = period;
+      super(period);
       this.initialIntState = initialIntState;
    }
    

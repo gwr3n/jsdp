@@ -51,9 +51,7 @@ public class ValueRepository {
 	   this.setImmediateValue(immediateValueFunction);
 	}
 	
-	protected ValueRepository(){
-	   
-	}
+	protected ValueRepository(){}
 	
 	/**
 	 * Returns the immediate value of a transition from {@code initialState} to {@code finalState} under a chosen {@code action}.

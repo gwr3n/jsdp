@@ -35,7 +35,8 @@ import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.State;
 import jsdp.sdp.ValueRepository;
-
+import jsdp.sdp.impl.multidimensional.StateImpl;
+import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdistmulti.DiscreteDistributionIntMulti;
 
 /**
@@ -50,7 +51,6 @@ public class BackwardRecursionImpl extends BackwardRecursion{
    double proportionalOrderingCost; 
    double holdingCost;
    double penaltyCost;
-   DiscreteDistributionIntMulti[] demand;
    
    /**
     * Creates an instance of the problem and initialises state space, transition probability and value repository.
@@ -71,7 +71,6 @@ public class BackwardRecursionImpl extends BackwardRecursion{
                         SamplingScheme samplingScheme,
                         int maxSampleSize){
       super(OptimisationDirection.MIN);
-      this.demand = demand;
       this.horizonLength = demand.length;
       
       this.stateSpace = new StateSpaceImpl[this.horizonLength+1];
@@ -79,6 +78,35 @@ public class BackwardRecursionImpl extends BackwardRecursion{
          this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, samplingScheme, maxSampleSize);
       this.transitionProbability = new TransitionProbabilityImpl(
             demand,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace());
+      this.valueRepository = new ValueRepository(immediateValueFunction);
+   }
+   
+   /**
+    * Creates an instance of the problem and initialises state space, transition probability and value repository.
+    * 
+    * @param demand the distribution of random demand in each period, an array of {@code Distribution}.
+    * @param immediateValueFunction the immediate value function.
+    * @param randomOutcomeFunction the random outcome function.
+    * @param buildActionList the action list builder.
+    * @param idempotentAction the idempotent action; i.e. an action that leaves the system in the same state from period {@code t} to period {@code t+1}.
+    * @param samplingScheme the sampling scheme adopted.
+    * @param maxSampleSize the maximum sample size.
+    */
+   public BackwardRecursionImpl(Distribution[][] demand,
+                        ImmediateValueFunction<State, Action, Double> immediateValueFunction,
+                        RandomOutcomeFunction<State, Action, double[]> randomOutcomeFunction,
+                        Function<State, ArrayList<Action>> buildActionList,
+                        Function<State, Action> idempotentAction,
+                        SamplingScheme samplingScheme,
+                        int maxSampleSize){
+      super(OptimisationDirection.MIN);
+      this.horizonLength = demand.length;
+      
+      this.stateSpace = new StateSpaceImpl[this.horizonLength+1];
+      for(int i = 0; i < this.horizonLength + 1; i++) 
+         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, samplingScheme, maxSampleSize);
+      this.transitionProbability = new TransitionProbabilityImpl(
+            demand,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace(),StateImpl.getStepSize());
       this.valueRepository = new ValueRepository(immediateValueFunction);
    }
    

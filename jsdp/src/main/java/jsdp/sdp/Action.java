@@ -35,6 +35,10 @@ package jsdp.sdp;
 public abstract class Action {
 	
 	protected State state;
+	
+	public Action(State state){
+	   this.state = state;
+	}
 
 	/**
 	 * Returns the {@code State} associated with this {@code Action}.

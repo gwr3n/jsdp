@@ -42,7 +42,7 @@ public class sS_Action extends Action {
 	}
 	
 	public sS_Action(State state, int intAction){
-		this.state = state;
+		super(state);
 		this.intAction = intAction;
 	}
 	
@@ -61,8 +61,8 @@ public class sS_Action extends Action {
 	@Override
 	public int hashCode(){
 		String hash = "";
-        hash = (hash + intAction);
-        return hash.hashCode();
+      hash = (hash + intAction);
+      return hash.hashCode();
 	}
 	
 	@Override
