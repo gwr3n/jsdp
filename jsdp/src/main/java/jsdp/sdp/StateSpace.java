@@ -29,6 +29,7 @@ package jsdp.sdp;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import gnu.trove.map.hash.THashMap;
@@ -43,22 +44,23 @@ import gnu.trove.map.hash.THashMap;
 public abstract class StateSpace<SD> implements Iterable<State>{
 	
 	protected int period;
-	protected THashMap<SD,State> states = new THashMap<SD,State>();
+	protected Map<SD,State> states;
 	
 	protected Function<State, ArrayList<Action>> buildActionList;
 	protected Function<State, Action> idempotentAction;
 	
 	/**
-	 * Constructs a container for states associated with a given {@code period}.
+	 * Constructs a container for states associated with a given {@code period}. This implementation is based on {@code ConcurrentHashMap}.
 	 * 
 	 * @param period the period associated with this container.
 	 */
 	public StateSpace(int period){
 		this.period = period;
+		states = new ConcurrentHashMap<SD,State>();
 	}
 	
 	/**
-	 * Constructs a container for states associated with a given {@code period}.
+	 * Constructs a container for states associated with a given {@code period}. This implementation is based on Trove4j {@code THashMap}.
 	 * 
 	 * @param period the period associated with this container.
 	 * @param stateSpaceSizeLowerBound a lower bound for the sdp state space size, used to initialise the internal hash maps

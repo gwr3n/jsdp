@@ -26,6 +26,10 @@
 
 package jsdp.sdp;
 
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import gnu.trove.map.hash.THashMap;
 
 /**
@@ -35,24 +39,27 @@ import gnu.trove.map.hash.THashMap;
  *
  */
 public class ValueRepository {	
-	protected THashMap<StateAction,Double> valueHashTable = new THashMap<StateAction,Double>();
-	protected THashMap<State,Double> optimalValueHashTable = new THashMap<State,Double>();
-	protected THashMap<State,Action> optimalActionHashTable = new THashMap<State,Action>();
+	protected Map<StateAction,Double> valueHashTable;
+	protected Map<State,Double> optimalValueHashTable;
+	protected Map<State,Action> optimalActionHashTable;
 	
 	protected ImmediateValueFunction<State, Action, Double> immediateValueFunction;
 	
 	/**
-	 * Creates a new value repository
+	 * Creates a new value repository. This implementation is based on {@code ConcurrentHashMap}.
 	 * 
 	 * @param immediateValueFunction the immediate value of a transition from {@code initialState} to 
 	 * {@code finalState} under a chosen {@code action}.
 	 */
 	public ValueRepository(ImmediateValueFunction<State, Action, Double> immediateValueFunction){
 	   this.setImmediateValue(immediateValueFunction);
+	   valueHashTable = new ConcurrentHashMap<StateAction,Double>();
+	   optimalValueHashTable = new ConcurrentHashMap<State,Double>();
+	   optimalActionHashTable = new ConcurrentHashMap<State,Action>();
 	}
 	
 	/**
-	 * Creates a new value repository
+	 * Creates a new value repository. This implementation is based on Trove4j {@code THashMap}.
 	 * 
 	 * @param immediateValueFunction the immediate value of a transition from {@code initialState} to 
     * {@code finalState} under a chosen {@code action}.

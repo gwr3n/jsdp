@@ -32,4 +32,5 @@
   		<version>3.0.3</version>
   	</dependency>
   </dependencies>
+  <url>http://gwr3n.github.io/jsdp/</url>
 </project>
