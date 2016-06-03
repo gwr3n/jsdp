@@ -28,11 +28,13 @@ public class BR_ForwardRecursion extends ForwardRecursion {
       
       this.stateSpace = new BR_StateSpace[this.horizonLength+1];
       for(int i = 0; i < this.horizonLength + 1; i++) 
-         this.stateSpace[i] = new BR_StateSpace(i, buildActionList, stateSpaceSizeLowerBound, loadFactor);
+         this.stateSpace[i] = new BR_StateSpace(i, buildActionList);
+         //this.stateSpace[i] = new BR_StateSpace(i, buildActionList, stateSpaceSizeLowerBound, loadFactor);   //THashMap
       this.transitionProbability = new BR_TransitionProbability(transitionProbabilities, 
                                                                 fuelConsumption, 
                                                                 (BR_StateSpace[])this.getStateSpace());
-      this.valueRepository = new ValueRepository(immediateValueFunction, stateSpaceSizeLowerBound, loadFactor);
+      this.valueRepository = new ValueRepository(immediateValueFunction);
+      //this.valueRepository = new ValueRepository(immediateValueFunction, stateSpaceSizeLowerBound, loadFactor);   //THashMap
    }
    
    public double getExpectedCost(BR_StateDescriptor stateDescriptor){

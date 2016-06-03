@@ -62,11 +62,6 @@ public class ActionSampleIteratorImpl extends ActionIterator{
       Arrays.sort(sampledActions); 
       pointer = sampledActions.length - 1;
       
-      /*Arrays.stream(sampledActions).mapToObj(action -> getIntAction(action, state)).forEach(elem -> {
-         if(state.getPeriod() == 0) 
-            System.out.println(state+" "+Arrays.toString(elem));  
-      });*/
-      
       currentAction = new ActionImpl(this.state, getIntAction(sampledActions[pointer], this.state));
    }
    

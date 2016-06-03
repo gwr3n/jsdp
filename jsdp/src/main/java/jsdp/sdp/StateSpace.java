@@ -27,6 +27,7 @@
 package jsdp.sdp;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
@@ -56,7 +57,7 @@ public abstract class StateSpace<SD> implements Iterable<State>{
 	 */
 	public StateSpace(int period){
 		this.period = period;
-		states = new Hashtable<SD,State>();
+		states = new Hashtable<SD,State>();  //Replace with Hashtable/HashMap for threadsafe
 	}
 	
 	/**

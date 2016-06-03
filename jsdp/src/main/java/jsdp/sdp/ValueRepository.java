@@ -27,6 +27,7 @@
 package jsdp.sdp;
 
 
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -53,9 +54,9 @@ public class ValueRepository {
 	 */
 	public ValueRepository(ImmediateValueFunction<State, Action, Double> immediateValueFunction){
 	   this.setImmediateValue(immediateValueFunction);
-	   valueHashTable = new Hashtable<StateAction,Double>();
-	   optimalValueHashTable = new Hashtable<State,Double>();
-	   optimalActionHashTable = new Hashtable<State,Action>();
+	   valueHashTable = new Hashtable<StateAction,Double>();   //Replace with Hashtable/HashMap for threadsafe
+	   optimalValueHashTable = new Hashtable<State,Double>();  //Replace with Hashtable/HashMap for threadsafe
+	   optimalActionHashTable = new Hashtable<State,Action>(); //Replace with Hashtable/HashMap for threadsafe
 	}
 	
 	/**

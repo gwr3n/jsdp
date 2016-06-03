@@ -15,6 +15,12 @@ public class BR_StateSpace extends StateSpace<BR_StateDescriptor> {
       super(period, stateSpaceSizeLowerBound, loadFactor);
       this.buildActionList = buildActionList;
    }
+   
+   public BR_StateSpace(int period,
+         Function<State, ArrayList<Action>> buildActionList){
+      super(period);
+      this.buildActionList = buildActionList;
+   }
 
    public boolean exists (BR_StateDescriptor descriptor){
       return states.get(descriptor) != null;
