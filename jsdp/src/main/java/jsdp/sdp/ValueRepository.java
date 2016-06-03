@@ -27,8 +27,8 @@
 package jsdp.sdp;
 
 
+import java.util.Hashtable;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import gnu.trove.map.hash.THashMap;
 
@@ -53,9 +53,9 @@ public class ValueRepository {
 	 */
 	public ValueRepository(ImmediateValueFunction<State, Action, Double> immediateValueFunction){
 	   this.setImmediateValue(immediateValueFunction);
-	   valueHashTable = new ConcurrentHashMap<StateAction,Double>();
-	   optimalValueHashTable = new ConcurrentHashMap<State,Double>();
-	   optimalActionHashTable = new ConcurrentHashMap<State,Action>();
+	   valueHashTable = new Hashtable<StateAction,Double>();
+	   optimalValueHashTable = new Hashtable<State,Double>();
+	   optimalActionHashTable = new Hashtable<State,Action>();
 	}
 	
 	/**

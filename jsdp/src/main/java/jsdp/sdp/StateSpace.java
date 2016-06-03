@@ -27,9 +27,9 @@
 package jsdp.sdp;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import gnu.trove.map.hash.THashMap;
@@ -56,7 +56,7 @@ public abstract class StateSpace<SD> implements Iterable<State>{
 	 */
 	public StateSpace(int period){
 		this.period = period;
-		states = new ConcurrentHashMap<SD,State>();
+		states = new Hashtable<SD,State>();
 	}
 	
 	/**
