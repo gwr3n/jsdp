@@ -41,8 +41,8 @@ import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdistmulti.DiscreteDistributionIntMulti;
 
 public class TransitionProbabilityImpl extends TransitionProbability {
-   DiscreteDistributionIntMulti[] multiVariateDemand;
-   DiscreteDistribution[][] univariateDemands;
+   DiscreteDistributionIntMulti[] multiVariateDistributions;
+   DiscreteDistribution[][] univariateDistributions;
    StateSpaceImpl[] stateSpace;
 
    private enum Mode {
@@ -52,23 +52,23 @@ public class TransitionProbabilityImpl extends TransitionProbability {
    
    Mode distributionMode;
    
-   public TransitionProbabilityImpl(DiscreteDistributionIntMulti[] demand,
+   public TransitionProbabilityImpl(DiscreteDistributionIntMulti[] multiVariateDistributions,
                                     RandomOutcomeFunction<State, Action, double[]> randomOutcomeFunction,
                                     StateSpaceImpl[] stateSpace){
-      this.multiVariateDemand = demand;
+      this.multiVariateDistributions = multiVariateDistributions;
       this.randomOutcomeFunction = randomOutcomeFunction;
       this.stateSpace = stateSpace;
       this.distributionMode = Mode.MULTIVARIATE;
    }
    
-   public TransitionProbabilityImpl(Distribution[][] demand,
+   public TransitionProbabilityImpl(Distribution[][] univariateDistributions,
                                     RandomOutcomeFunction<State, Action, double[]> randomOutcomeFunction,
                                     StateSpaceImpl[] stateSpace,
                                     double[] stepSize){
       
-      this.univariateDemands = IntStream.iterate(0, j -> j + 1).limit(demand.length).mapToObj(j -> 
-         IntStream.iterate(0, i -> i + 1).limit(demand[j].length)
-                  .mapToObj(i -> DiscreteDistributionFactory.getTruncatedDiscreteDistribution(demand[j][i], 0, StateImpl.getMaxState()[i]-StateImpl.getMinState()[i], stepSize[i]))
+      this.univariateDistributions = IntStream.iterate(0, j -> j + 1).limit(univariateDistributions.length).mapToObj(j -> 
+         IntStream.iterate(0, i -> i + 1).limit(univariateDistributions[j].length)
+                  .mapToObj(i -> DiscreteDistributionFactory.getTruncatedDiscreteDistribution(univariateDistributions[j][i], 0, StateImpl.getMaxState()[i]-StateImpl.getMinState()[i], stepSize[i]))
                   .toArray(DiscreteDistribution[]::new)
       ).toArray(DiscreteDistribution[][]::new);
       
@@ -94,15 +94,15 @@ public class TransitionProbabilityImpl extends TransitionProbability {
    private double getMultivariateTransitionProbability(State initialState, Action action, State finalState) {
       int[] randomOutcome = StateImpl.stateToIntState(this.randomOutcomeFunction.apply(initialState, action, finalState));
       int period = ((StateImpl)initialState).getPeriod();
-      return this.multiVariateDemand[period].prob(randomOutcome);
+      return this.multiVariateDistributions[period].prob(randomOutcome);
    }
    
    private double getUnivariateTransitionProbability(State initialState, Action action, State finalState) {
       int[] randomOutcome = StateImpl.stateToIntState(this.randomOutcomeFunction.apply(initialState, action, finalState));
       int period = ((StateImpl)initialState).getPeriod();
       double transitionProbability = 1;
-      for(int i = 0; i < univariateDemands[period].length; i++){
-         transitionProbability *= this.univariateDemands[period][i].prob(randomOutcome[i]);
+      for(int i = 0; i < univariateDistributions[period].length; i++){
+         transitionProbability *= this.univariateDistributions[period][i].prob(randomOutcome[i]);
       }
       return transitionProbability;
    }

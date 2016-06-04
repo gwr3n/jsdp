@@ -40,17 +40,17 @@ import umontreal.ssj.probdist.DiscreteDistribution;
 import umontreal.ssj.probdist.Distribution;
 
 public class TransitionProbabilityImpl extends TransitionProbability {
-   DiscreteDistribution[] demand;
+   DiscreteDistribution[] distributions;
    StateSpaceImpl[] stateSpace;
 
-   public TransitionProbabilityImpl(Distribution[] demand,
+   public TransitionProbabilityImpl(Distribution[] distributions,
                                     RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction,
                                     StateSpaceImpl[] stateSpace, 
                                     double stepSize){
-      this.demand = IntStream.iterate(0, i -> i + 1)
-                             .limit(demand.length)
+      this.distributions = IntStream.iterate(0, i -> i + 1)
+                             .limit(distributions.length)
                              .mapToObj(i -> DiscreteDistributionFactory.getTruncatedDiscreteDistribution(
-                                               demand[i], 0, StateImpl.getMaxState()-StateImpl.getMinState(), stepSize))
+                                               distributions[i], 0, StateImpl.getMaxState()-StateImpl.getMinState(), stepSize))
                              .toArray(DiscreteDistribution[]::new);
       this.randomOutcomeFunction = randomOutcomeFunction;
       this.stateSpace = stateSpace;
@@ -62,7 +62,7 @@ public class TransitionProbabilityImpl extends TransitionProbability {
    public double getTransitionProbability(State initialState, Action action, State finalState) {
       int randomOutcome = StateImpl.stateToIntState(this.randomOutcomeFunction.apply(initialState, action, finalState));
       int period = ((StateImpl)initialState).getPeriod();
-      return this.demand[period].prob(randomOutcome);
+      return this.distributions[period].prob(randomOutcome);
    }
    
    @Override  

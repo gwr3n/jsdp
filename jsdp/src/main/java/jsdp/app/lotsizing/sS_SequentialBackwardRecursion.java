@@ -43,7 +43,7 @@ import umontreal.ssj.probdist.Distribution;
  * to quickly process states.
  * 
  * @deprecated
- * Sample-based approaches are more efficient.
+ * Sample-based approaches and parallelised implementation (i.e. {@code BackwardRecursion}) are more efficient.
  *  
  * @author Roberto Rossi
  *

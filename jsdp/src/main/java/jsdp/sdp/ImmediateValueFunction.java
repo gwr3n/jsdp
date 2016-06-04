@@ -1,7 +1,8 @@
 package jsdp.sdp;
 
 /**
- * A functional interface that captures immediate values.
+ * A functional interface that captures immediate value of a transition from an initial state to 
+ * a final state under a chosen action.
  * 
  * @author Roberto Rossi
  *

@@ -29,7 +29,7 @@ package jsdp.sdp;
 import java.util.Iterator;
 
 /**
- * An abstraction representing an {@code Iterator} for a given {@code StateSpace}.
+ * An abstraction representing an {@code Iterator} for a given action space.
  * 
  * @author Roberto Rossi
  *
