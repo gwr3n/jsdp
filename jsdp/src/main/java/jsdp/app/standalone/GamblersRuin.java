@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.app.gambler;
+package jsdp.app.standalone;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -108,32 +108,35 @@ public class GamblersRuin {
    
    public StateTransitionFunction<State, Double, Double> stateTransition;
 
-   public Function<State, Double> immediateValueFunction;
+   @FunctionalInterface
+   interface ImmediateValueFunction <S, A, R, V> { 
+      public V apply (S s, A a, R r);
+   }
+
+   public ImmediateValueFunction<State, Double, Double, Double> immediateValueFunction;
          
    Map<State, Double> cacheActions = new HashMap<>();
    Map<State, Double> cacheValueFunction = new HashMap<>();
    double f(State state){
       return cacheValueFunction.computeIfAbsent(state, s -> {
-         if(s.period == this.betHorizon + 1){
-            return immediateValueFunction.apply(s);
-         }else{
-            double val= Arrays.stream(s.getFeasibleActions())
-                              .map(bet -> Arrays.stream(pmf)
-                                                .mapToDouble(p -> p[1]*immediateValueFunction.apply(s)+
-                                                                  p[1]*f(stateTransition.apply(s, bet, p[0])))
-                                                .sum())
-                              .max()
-                              .getAsDouble();
-            double bestBet = Arrays.stream(s.getFeasibleActions())
-                                   .filter(bet -> Arrays.stream(pmf)
-                                                        .mapToDouble(p -> p[1]*immediateValueFunction.apply(s)+
-                                                                          p[1]*f(stateTransition.apply(s, bet, p[0])))
-                                                        .sum() == val)
-                                   .findAny()
-                                   .getAsDouble();
-            cacheActions.putIfAbsent(s, bestBet);
-            return val;
-         }
+         double val= Arrays.stream(s.getFeasibleActions())
+                           .map(bet -> Arrays.stream(pmf)
+                                             .mapToDouble(p -> p[1]*immediateValueFunction.apply(s, bet, p[0])+
+                                                               (s.period < this.betHorizon ?
+                                                               p[1]*f(stateTransition.apply(s, bet, p[0])) : 0))
+                                             .sum())
+                           .max()
+                           .getAsDouble();
+         double bestBet = Arrays.stream(s.getFeasibleActions())
+                                .filter(bet -> Arrays.stream(pmf)
+                                                     .mapToDouble(p -> p[1]*immediateValueFunction.apply(s, bet, p[0])+
+                                                                       (s.period < this.betHorizon ?
+                                                                       p[1]*f(stateTransition.apply(s, bet, p[0])) : 0))
+                                                     .sum() == val)
+                                .findAny()
+                                .getAsDouble();
+         cacheActions.putIfAbsent(s, bestBet);
+         return val;
       });
    }
    
@@ -168,9 +171,9 @@ public class GamblersRuin {
       /**
        * Immediate value function for a given state
        */
-      ruin.immediateValueFunction = state -> {
-            if(state.period == ruin.betHorizon + 1)
-               return state.money >= ruin.targetWealth ? 1.0 : 0.0;    
+      ruin.immediateValueFunction = (state, action, randomOutcome) -> {
+            if(state.period == ruin.betHorizon)
+               return state.money - action + action*randomOutcome >= ruin.targetWealth ? 1.0 : 0.0;    
             else
                return 0.0;   
          };

@@ -56,34 +56,20 @@ public abstract class ForwardRecursion extends Recursion{
 	 */
 	public double runForwardRecursion(State state){
 		return this.valueRepository.optimalValueHashTable.computeIfAbsent(state, y -> {
-			if(y.getPeriod() >= horizonLength - 1){
-				BestActionRepository repository = new BestActionRepository();
-				y.getFeasibleActions().stream().forEach(action -> {
-					double normalisationFactor = this.getTransitionProbability().generateFinalStates(y, action).stream()
-							  .mapToDouble(finalState -> transitionProbability.getTransitionProbability(y, action, finalState))
-							  .sum();
-					double currentCost = this.getTransitionProbability().generateFinalStates(y, action).stream()
-							 				 .mapToDouble(c -> this.getValueRepository().getImmediateValue(y, action, c)*
-							 						 	          this.getTransitionProbability().getTransitionProbability(y, action, c))
-							 				 .sum();
-					if(normalisationFactor != 0)
-					   currentCost /= normalisationFactor;
-					repository.update(action, currentCost);
-				});
-				this.getValueRepository().setOptimalExpectedValue(y, repository.getBestValue());
-				this.getValueRepository().setOptimalAction(y, repository.getBestAction());
-				logger.trace(repository.getBestAction()+"\tCost: "+repository.getBestValue());
-				return repository.getBestValue();
-			}else{
-				BestActionRepository repository = new BestActionRepository();
-				y.getFeasibleActions().stream().forEach(action -> {
-					double normalisationFactor = this.getTransitionProbability().generateFinalStates(y, action).stream()
-							  .mapToDouble(finalState -> transitionProbability.getTransitionProbability(y, action, finalState))
-							  .sum();
-					double currentCost = this.getTransitionProbability().generateFinalStates(y, action).stream()
-							 				 .mapToDouble(c -> (this.getValueRepository().getImmediateValue(y, action, c)+runForwardRecursion(c))*
-							 						 	          this.getTransitionProbability().getTransitionProbability(y, action, c))
-							 				 .sum();
+		   BestActionRepository repository = new BestActionRepository();
+		   y.getFeasibleActions().stream().forEach(action -> {
+		      double normalisationFactor = this.getTransitionProbability()
+		                                       .generateFinalStates(y, action)
+		                                       .stream()
+		                                       .mapToDouble(finalState -> transitionProbability.getTransitionProbability(y, action, finalState))
+		                                       .sum();
+				double currentCost = this.getTransitionProbability()
+				                         .generateFinalStates(y, action)
+				                         .stream()
+				                         .mapToDouble(c -> ( this.getValueRepository().getImmediateValue(y, action, c)+
+						 				                           (y.getPeriod() < horizonLength - 1 ? runForwardRecursion(c) : 0) )*
+						 						 	                this.getTransitionProbability().getTransitionProbability(y, action, c))
+				                         .sum();
 					if(normalisationFactor != 0)
                   currentCost /= normalisationFactor;
 					repository.update(action, currentCost);
@@ -92,7 +78,6 @@ public abstract class ForwardRecursion extends Recursion{
 				this.getValueRepository().setOptimalAction(y, repository.getBestAction());
 				logger.trace(repository.getBestAction()+"\tCost: "+repository.getBestValue());
 				return repository.getBestValue();
-			}
 		});
 	}
 }

@@ -1,10 +1,10 @@
-jsdp.app.gambler
 jsdp.app.inventory
 jsdp.app.inventory.simulation
 jsdp.app.lotsizing
 jsdp.app.lotsizing.simulation
 jsdp.app.maintenance
 jsdp.app.routing
+jsdp.app.standalone
 jsdp.sdp
 jsdp.sdp.impl.multidimensional
 jsdp.sdp.impl.unidimensional
