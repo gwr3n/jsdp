@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.app.inventory.univariate.impl;
+package jsdp.impl.univariate;
 
 import jsdp.sdp.State;
 import jsdp.sdp.StateSpaceIterator;

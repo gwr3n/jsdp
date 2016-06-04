@@ -24,12 +24,12 @@
  * SOFTWARE.
  */
 
-package jsdp.app.inventory.multivariate.impl;
+package jsdp.impl.multivariate;
 
 import java.util.ArrayList;
 import java.util.function.Function;
 
-import jsdp.app.inventory.multivariate.impl.StateImpl;
+import jsdp.impl.multivariate.StateImpl;
 import jsdp.sdp.Action;
 import jsdp.sdp.BackwardRecursion;
 import jsdp.sdp.ImmediateValueFunction;

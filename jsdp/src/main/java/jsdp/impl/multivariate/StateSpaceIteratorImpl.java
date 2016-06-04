@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.app.inventory.multivariate.impl;
+package jsdp.impl.multivariate;
 
 import jsdp.sdp.State;
 import jsdp.sdp.StateSpaceIterator;
@@ -70,30 +70,6 @@ public class StateSpaceIteratorImpl extends StateSpaceIterator {
       }
       return intState;
    }
-   
-   /*public static void main(String args[]){
-      for(int i = 120; i >= 0; i--){
-         System.out.println(Arrays.toString(getNextIntStateTEST(i)));
-      }
-   }
-   
-   static int[] max = {5,4,3,2};
-   
-   private static int getResidualStateSpaceCardinalityTEST(int j){
-      int cardinality = 1;
-      for(int i = j; i < 4; i++){
-         cardinality *= max[i];
-      }
-      return cardinality;
-   }
-   
-   private static int[] getNextIntStateTEST(int stateSpacePointer){
-      int[] intState = new int[4];
-      for(int i = 0; i < 4; i++){
-         intState[i] = Math.floorDiv(Math.floorMod(stateSpacePointer, getResidualStateSpaceCardinalityTEST(i)), i < 4 - 1 ? getResidualStateSpaceCardinalityTEST(i+1) : 1);
-      }
-      return intState;
-   }*/
    
    public boolean hasNext() {
       if(stateSpacePointer >= 0)

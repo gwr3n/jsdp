@@ -24,9 +24,10 @@
  * SOFTWARE.
  */
 
-package jsdp.app.inventory.univariate.impl;
+package jsdp.impl.multivariate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.function.Function;
 
 import jsdp.sdp.Action;
@@ -40,11 +41,11 @@ import jsdp.sdp.State;
  */
 public class StateImpl extends State {
 
-   private int initialIntState;
+   private int initialIntState[];
 
-   private static double stepSize;
-   private static int minIntState;
-   private static int maxIntState;
+   private static double[] stepSize;
+   private static int[] minIntState;
+   private static int[] maxIntState;
 
    /**
     * Initializes the state space boundaries. Note that {@code stepSize} must be one if 
@@ -54,37 +55,68 @@ public class StateImpl extends State {
     * @param minIntState the minimum integer value used to encode a state
     * @param maxIntState the maximum integer value used to encode a state
     */
-   public static void setStateBoundaries(double stepSize, int minIntState, int maxIntState){
-      StateImpl.stepSize = stepSize;
-      StateImpl.minIntState = minIntState;
-      StateImpl.maxIntState = maxIntState;
+   public static void setStateBoundaries(double[] stepSize, int[] minIntState, int[] maxIntState){
+      if(stepSize.length != minIntState.length || stepSize.length != maxIntState.length)
+         throw new NullPointerException("Array sizes do not agree");
+      StateImpl.stepSize = Arrays.copyOf(stepSize, stepSize.length);
+      StateImpl.minIntState = Arrays.copyOf(minIntState, minIntState.length);
+      StateImpl.maxIntState = Arrays.copyOf(maxIntState, maxIntState.length);
+   }
+   
+   public static int getStateDimension(){
+      return stepSize.length;
    }
 
-   public static double getStepSize(){
+   public static double[] getStepSize(){
       return StateImpl.stepSize;
    }
+   
+   private static double[] arrayProduct(int[] integerArray, double[] doubleArray){
+      if(integerArray.length != doubleArray.length)
+         throw new NullPointerException("Array sizes do not agree");
+      double[] result = new double[integerArray.length];
+      for(int i = 0; i < integerArray.length; i++){
+         result[i] = integerArray[i]*doubleArray[i];
+      }
+      return result;
+   } 
 
-   public static double intStateToState(int intState){
-      return intState*stepSize;
+   public static double[] intStateToState(int[] intState){
+      return arrayProduct(intState, stepSize);
+   }
+   
+   private static double[] arrayDivision(double[] doubleArray1, double[] doubleArray2){
+      if(doubleArray1.length != doubleArray2.length)
+         throw new NullPointerException("Array sizes do not agree");
+      double[] result = new double[doubleArray1.length];
+      for(int i = 0; i < doubleArray1.length; i++){
+         result[i] = doubleArray1[i]/doubleArray2[i];
+      }
+      return result;
+   } 
+
+   public static int[] stateToIntState(double[] state){
+      double[] result = arrayDivision(state, stepSize);
+      int[] intResult = new int[result.length];
+      for(int i = 0; i < result.length; i++){
+         intResult[i] = (int) Math.max(Math.min(Math.round(result[i]), StateImpl.maxIntState[i]), StateImpl.minIntState[i]);
+      }
+      return intResult;
    }
 
-   public static int stateToIntState(double state){
-      return (int) Math.max(Math.min(Math.round(state/stepSize), StateImpl.maxIntState), StateImpl.minIntState);
-   }
-
-   public static int getMinIntState(){
+   public static int[] getMinIntState(){
       return StateImpl.minIntState;
    }
 
-   public static int getMaxIntState(){
+   public static int[] getMaxIntState(){
       return StateImpl.maxIntState;
    }
 
-   public static double getMinState(){
+   public static double[] getMinState(){
       return intStateToState(minIntState);
    }
 
-   public static double getMaxState(){
+   public static double[] getMaxState(){
       return intStateToState(maxIntState);
    }
 
@@ -92,15 +124,15 @@ public class StateImpl extends State {
                     Function<State, ArrayList<Action>> buildActionList,
                     Function<State, Action> idempotentAction){
       super(descriptor.getPeriod());
-      this.initialIntState = descriptor.getInitialIntState();
+      this.initialIntState = Arrays.copyOf(descriptor.getInitialIntState(), descriptor.getInitialIntState().length);
       this.buildActionList(buildActionList, idempotentAction);
    }
 
-   public int getInitialIntState(){
+   public int[] getInitialIntState(){
       return this.initialIntState;
    }
    
-   public double getInitialState(){
+   public double[] getInitialState(){
       return intStateToState(this.initialIntState);
    }
 
@@ -118,19 +150,20 @@ public class StateImpl extends State {
    @Override
    public boolean equals(Object state){
       if(state instanceof StateImpl)
-         return this.period == ((StateImpl)state).period && this.initialIntState == ((StateImpl)state).initialIntState;
+         return this.period == ((StateImpl)state).period && 
+                Arrays.equals(this.initialIntState, ((StateImpl)state).initialIntState);
       else return false;
    }
 
    @Override
    public int hashCode(){
       String hash = "";
-      hash = (hash + period) + initialIntState;
+      hash = (hash + period) + Arrays.toString(initialIntState);
       return hash.hashCode();
    }
 
    @Override
    public String toString(){
-      return "Period: "+this.period+"\tInventory:"+intStateToState(this.initialIntState);
+      return "Period: "+this.period+"\tInventory:"+Arrays.toString(intStateToState(this.initialIntState));
    }
 }

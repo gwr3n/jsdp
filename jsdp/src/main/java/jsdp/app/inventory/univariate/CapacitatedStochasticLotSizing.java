@@ -42,12 +42,13 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import jsdp.app.inventory.univariate.impl.*;
-import jsdp.app.inventory.univariate.simulation.SimulatePolicies;
 import jsdp.sdp.Action;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.State;
+import jsdp.impl.univariate.*;
+import jsdp.app.inventory.univariate.simulation.SimulatePolicies;
+
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.probdist.NormalDist;

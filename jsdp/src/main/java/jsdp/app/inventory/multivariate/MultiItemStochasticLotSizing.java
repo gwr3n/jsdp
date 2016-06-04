@@ -33,12 +33,13 @@ import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.time.StopWatch;
 
-import jsdp.app.inventory.multivariate.impl.*;
 import jsdp.sdp.Action;
 import jsdp.sdp.ActionIterator;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.State;
+import jsdp.impl.multivariate.*;
+
 import umontreal.ssj.probdistmulti.DiscreteDistributionIntMulti;
 import umontreal.ssj.probdistmulti.SafeMultinomialDist;
 import umontreal.ssj.probdist.BinomialDist;

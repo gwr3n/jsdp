@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.app.inventory.multivariate.impl;
+package jsdp.impl.multivariate;
 
 /**
  * An enumeration of possible sampling strategies that may be used by the backward recursion algorithm.

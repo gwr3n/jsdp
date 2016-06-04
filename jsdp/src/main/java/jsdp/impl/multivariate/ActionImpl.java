@@ -24,7 +24,9 @@
  * SOFTWARE.
  */
 
-package jsdp.app.inventory.univariate.impl;
+package jsdp.impl.multivariate;
+
+import java.util.Arrays;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
@@ -37,38 +39,63 @@ import jsdp.sdp.State;
  */
 public class ActionImpl extends Action {
    
-   int intAction;
+   int[] intAction;
    
-   public static double intActionToAction(int action){
-      return action*StateImpl.getStepSize();
+   private static double[] arrayProduct(int[] integerArray, double[] doubleArray){
+      if(integerArray.length != doubleArray.length)
+         throw new NullPointerException("Array sizes do not agree");
+      double[] result = new double[integerArray.length];
+      for(int i = 0; i < integerArray.length; i++){
+         result[i] = integerArray[i]*doubleArray[i];
+      }
+      return result;
+   } 
+   
+   public static double[] intActionToAction(int[] action){
+      return arrayProduct(action, StateImpl.getStepSize());
    }
    
-   public static int actionToIntAction(double action){
-      return (int) Math.round(action/StateImpl.getStepSize());
+   private static double[] arrayDivision(double[] doubleArray1, double[] doubleArray2){
+      if(doubleArray1.length != doubleArray2.length)
+         throw new NullPointerException("Array sizes do not agree");
+      double[] result = new double[doubleArray1.length];
+      for(int i = 0; i < doubleArray1.length; i++){
+         result[i] = doubleArray1[i]/doubleArray2[i];
+      }
+      return result;
+   } 
+   
+   public static int[] actionToIntAction(double[] action){
+      double[] result = arrayDivision(action, StateImpl.getStepSize());
+      int[] intResult = new int[result.length];
+      for(int i = 0; i < result.length; i++){
+         intResult[i] = (int) Math.round(result[i]);
+      }
+      return intResult;
    }
    
-   public ActionImpl(State state, int intAction){
+   public ActionImpl(State state, int[] intAction){
       super(state);
-      this.intAction = intAction;
+      this.intAction = Arrays.copyOf(intAction, intAction.length);
    }
    
-   public ActionImpl(State state, double action){
+   public ActionImpl(State state, double[] action){
       super(state);
       this.intAction = actionToIntAction(action);
    }
    
-   public int getIntAction(){
+   public int[] getIntAction(){
       return this.intAction;
    }
    
-   public double getAction(){
+   public double[] getAction(){
       return intActionToAction(this.intAction);
    }
    
    @Override
    public boolean equals(Object action){
       if(action instanceof ActionImpl)
-         return this.intAction == ((ActionImpl)action).intAction;
+         return Arrays.equals(this.intAction, ((ActionImpl)action).intAction);
       else
          return false;
    }
@@ -76,13 +103,13 @@ public class ActionImpl extends Action {
    @Override
    public int hashCode(){
       String hash = "";
-        hash = (hash + intAction);
+        hash = (hash + Arrays.toString(intAction));
         return hash.hashCode();
    }
    
    @Override
    public String toString(){
-      return state+"\tAction: "+ intActionToAction(this.intAction);
+      return state+"\tAction: "+ Arrays.toString(intActionToAction(this.intAction));
    }
 }
 

@@ -24,17 +24,42 @@
  * SOFTWARE.
  */
 
-package jsdp.app.inventory.univariate.impl;
+package jsdp.impl.univariate;
+
+import jsdp.sdp.StateDescriptor;
 
 /**
- * An enumeration of possible sampling strategies that may be used by the backward recursion algorithm.
+ * A concrete implementation of {@code StateDescriptor}.
  * 
  * @author Roberto Rossi
  *
  */
-public enum SamplingScheme {
-   NONE,
-   SIMPLE_RANDOM_SAMPLING, 
-   STRATIFIED_SAMPLING, 
-   JENSENS_PARTITIONING 
+public class StateDescriptorImpl extends StateDescriptor{
+
+   int initialIntState;
+
+   public StateDescriptorImpl(int period, int initialIntState){
+      super(period);
+      this.initialIntState = initialIntState;
+   }
+   
+   @Override
+   public boolean equals(Object descriptor){
+      if(descriptor instanceof StateDescriptorImpl)
+         return this.period == ((StateDescriptorImpl)descriptor).period &&
+         this.initialIntState == ((StateDescriptorImpl)descriptor).initialIntState;
+      else
+         return false;
+   }
+
+   @Override
+   public int hashCode(){
+      String hash = "";
+      hash = (hash + period) + "_" + initialIntState;
+      return hash.hashCode();
+   }
+
+   public int getInitialIntState(){
+      return initialIntState;
+   }
 }

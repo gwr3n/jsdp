@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.app.inventory.univariate.impl;
+package jsdp.impl.univariate;
 
 import java.util.ArrayList;
 import java.util.Iterator;

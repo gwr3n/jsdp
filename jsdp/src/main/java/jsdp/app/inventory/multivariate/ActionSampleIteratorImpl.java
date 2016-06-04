@@ -24,13 +24,15 @@
  * SOFTWARE.
  */
 
-package jsdp.app.inventory.multivariate.impl;
+package jsdp.app.inventory.multivariate;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.IntStream;
 
+import jsdp.impl.multivariate.ActionImpl;
+import jsdp.impl.multivariate.StateImpl;
 import jsdp.sdp.Action;
 import jsdp.sdp.ActionIterator;
 import umontreal.ssj.rng.MRG32k3aL;

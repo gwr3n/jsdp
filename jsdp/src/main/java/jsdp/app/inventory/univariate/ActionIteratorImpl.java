@@ -24,8 +24,10 @@
  * SOFTWARE.
  */
 
-package jsdp.app.inventory.univariate.impl;
+package jsdp.app.inventory.univariate;
 
+import jsdp.impl.univariate.ActionImpl;
+import jsdp.impl.univariate.StateImpl;
 import jsdp.sdp.Action;
 import jsdp.sdp.ActionIterator;
 

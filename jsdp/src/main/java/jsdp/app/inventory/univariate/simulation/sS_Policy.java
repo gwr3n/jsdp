@@ -2,11 +2,11 @@ package jsdp.app.inventory.univariate.simulation;
 
 import java.util.Iterator;
 
-import jsdp.app.inventory.univariate.impl.ActionImpl;
-import jsdp.app.inventory.univariate.impl.BackwardRecursionImpl;
-import jsdp.app.inventory.univariate.impl.StateDescriptorImpl;
-import jsdp.app.inventory.univariate.impl.StateImpl;
-import jsdp.app.inventory.univariate.impl.StateSpaceImpl;
+import jsdp.impl.univariate.ActionImpl;
+import jsdp.impl.univariate.BackwardRecursionImpl;
+import jsdp.impl.univariate.StateDescriptorImpl;
+import jsdp.impl.univariate.StateImpl;
+import jsdp.impl.univariate.StateSpaceImpl;
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
 
