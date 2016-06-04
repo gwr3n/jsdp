@@ -51,9 +51,8 @@ import umontreal.ssj.charts.XYLineChart;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.probdist.NormalDist;
-
+import jsdp.app.inventory.univariate.impl.StateImpl;
 import jsdp.app.lotsizing.simulation.SimulatePolicies;
-import jsdp.sdp.impl.unidimensional.StateImpl;
 
 /**
  *  We formulate the stochastic lot sizing problem as defined in  
