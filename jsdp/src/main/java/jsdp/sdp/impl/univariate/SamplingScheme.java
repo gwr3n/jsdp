@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.impl.univariate;
+package jsdp.sdp.impl.univariate;
 
 /**
  * An enumeration of possible sampling strategies that may be used by the backward recursion algorithm.

@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.utilities;
+package jsdp.utilities.probdist;
 
 import java.util.Arrays;
 import java.util.stream.DoubleStream;

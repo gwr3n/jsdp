@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.impl.univariate;
+package jsdp.sdp.impl.multivariate;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -91,7 +91,9 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
    }
 
    public Iterator<State> iterator() {
-      if(period == 0 || this.samplingScheme == SamplingScheme.NONE)
+      if(this.period == 0)
+         return null;
+      else if(this.samplingScheme == SamplingScheme.NONE)
          return new StateSpaceIteratorImpl(this);
       else
          return new StateSpaceSampleIteratorImpl(this, this.samplingScheme, this.maxSampleSize);

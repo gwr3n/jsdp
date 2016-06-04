@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.impl.univariate;
+package jsdp.sdp.impl.univariate;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.State;

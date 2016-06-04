@@ -38,10 +38,9 @@ import jsdp.sdp.ActionIterator;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.State;
-import jsdp.impl.multivariate.*;
-
+import jsdp.sdp.impl.multivariate.*;
+import jsdp.utilities.probdist.SafeMultinomialDist;
 import umontreal.ssj.probdistmulti.DiscreteDistributionIntMulti;
-import umontreal.ssj.probdistmulti.SafeMultinomialDist;
 import umontreal.ssj.probdist.BinomialDist;
 import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.probdist.Distribution;

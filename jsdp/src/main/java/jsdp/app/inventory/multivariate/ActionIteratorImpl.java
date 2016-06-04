@@ -26,10 +26,10 @@
 
 package jsdp.app.inventory.multivariate;
 
-import jsdp.impl.multivariate.ActionImpl;
-import jsdp.impl.multivariate.StateImpl;
 import jsdp.sdp.Action;
 import jsdp.sdp.ActionIterator;
+import jsdp.sdp.impl.multivariate.ActionImpl;
+import jsdp.sdp.impl.multivariate.StateImpl;
 
 /**
  * A concrete implementation of {@code StateSpaceIterator}.

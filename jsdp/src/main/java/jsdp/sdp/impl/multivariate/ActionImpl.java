@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.impl.multivariate;
+package jsdp.sdp.impl.multivariate;
 
 import java.util.Arrays;
 

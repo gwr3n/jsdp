@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.impl.univariate;
+package jsdp.sdp.impl.multivariate;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -79,14 +79,30 @@ public class StateSpaceSampleIteratorImpl extends StateSpaceIterator {
 
       Arrays.sort(sampledStates); 
       pointer = sampledStates.length - 1;
-      currentStateDescriptor = new StateDescriptorImpl(this.stateSpace.getPeriod(), sampledStates[pointer]);
+      currentStateDescriptor = new StateDescriptorImpl(this.stateSpace.getPeriod(), getIntState(sampledStates[pointer]));
+   }
+   
+   private static int getResidualStateSpaceCardinality(int j){
+      int cardinality = 1;
+      for(int i = j; i < StateImpl.getStateDimension(); i++){
+         cardinality *= StateImpl.getMaxIntState()[i] - StateImpl.getMinIntState()[i] + 1;
+      }
+      return cardinality;
+   }
+   
+   private static int getStateSpaceCardinality(){
+      int cardinality = 1;
+      for(int i = 0; i < StateImpl.getStateDimension(); i++){
+         cardinality *= StateImpl.getMaxIntState()[i] - StateImpl.getMinIntState()[i] + 1;
+      }
+      return cardinality;
    }
    
    public int[] getNextSample(int samples){
       int x[] = new int[samples];
       x = IntStream.iterate(0, i -> i + 1)
                    .limit(samples)
-                   .map(i -> UniformIntGen.nextInt(stream, StateImpl.getMinIntState(), StateImpl.getMaxIntState()))
+                   .map(i -> UniformIntGen.nextInt(stream, 0, getStateSpaceCardinality()))
                    .toArray();  
       Set<Integer> set = new HashSet<Integer>();
       for(int i : x){
@@ -99,11 +115,11 @@ public class StateSpaceSampleIteratorImpl extends StateSpaceIterator {
    
    public int[] getNextStratifiedSample(int samples){
       int x[] = new int[samples];
-      int stateSpaceSize = StateImpl.getMaxIntState() - StateImpl.getMinIntState() + 1;
+      int stateSpaceSize = getStateSpaceCardinality();
       if(samples > stateSpaceSize) throw new NullPointerException("Samples larger than state space");
       x = IntStream.iterate(0, i -> i + stateSpaceSize/samples)
                    .limit(samples)
-                   .map(i -> UniformIntGen.nextInt(stream, i, i + stateSpaceSize/samples) + StateImpl.getMinIntState())
+                   .map(i -> UniformIntGen.nextInt(stream, i, i + stateSpaceSize/samples))
                    .toArray();  
       Set<Integer> set = new HashSet<Integer>();
       for(int i : x){
@@ -116,11 +132,11 @@ public class StateSpaceSampleIteratorImpl extends StateSpaceIterator {
    
    public int[] getNextJensensSample(int samples){
       int x[] = new int[samples];
-      int stateSpaceSize = StateImpl.getMaxIntState() - StateImpl.getMinIntState() + 1;
+      int stateSpaceSize = getStateSpaceCardinality();
       if(samples > stateSpaceSize) throw new NullPointerException("Samples larger than state space");
       x = IntStream.iterate(0, i -> i + stateSpaceSize/samples)
                    .limit(samples)
-                   .map(i -> i + stateSpaceSize/(2*samples) + StateImpl.getMinIntState())
+                   .map(i -> i + stateSpaceSize/(2*samples))
                    .toArray();  
       Set<Integer> set = new HashSet<Integer>();
       for(int i : x){
@@ -129,6 +145,14 @@ public class StateSpaceSampleIteratorImpl extends StateSpaceIterator {
       Integer[] array = new Integer[set.size()];
       set.toArray(array);
       return Arrays.stream(array).mapToInt(i -> i).toArray();
+   }
+   
+   private static int[] getIntState(int stateSpacePointer){
+      int[] intState = new int[StateImpl.getStateDimension()];
+      for(int i = 0; i < StateImpl.getStateDimension(); i++){
+         intState[i] = Math.floorDiv(Math.floorMod(stateSpacePointer, getResidualStateSpaceCardinality(i)), i < StateImpl.getStateDimension() - 1 ? getResidualStateSpaceCardinality(i+1) : 1) + StateImpl.getMinIntState()[i];
+      }
+      return intState;
    }
 
    public boolean hasNext() {
@@ -141,7 +165,7 @@ public class StateSpaceSampleIteratorImpl extends StateSpaceIterator {
    public State next() {
       if(pointer >= 0){
          State state = stateSpace.getState(currentStateDescriptor);
-         currentStateDescriptor = pointer - 1 >= 0 ? new StateDescriptorImpl(this.stateSpace.getPeriod(), sampledStates[pointer - 1]) : null;
+         currentStateDescriptor = pointer - 1 >= 0 ? new StateDescriptorImpl(this.stateSpace.getPeriod(), getIntState(sampledStates[pointer - 1])) : null;
          pointer--;
          return state;
       }else{

@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.impl.multivariate;
+package jsdp.sdp.impl.multivariate;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -34,8 +34,7 @@ import jsdp.sdp.Action;
 import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.State;
 import jsdp.sdp.TransitionProbability;
-import jsdp.utilities.DiscreteDistributionFactory;
-
+import jsdp.utilities.probdist.DiscreteDistributionFactory;
 import umontreal.ssj.probdist.DiscreteDistribution;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdistmulti.DiscreteDistributionIntMulti;

@@ -24,47 +24,44 @@
  * SOFTWARE.
  */
 
-package umontreal.ssj.probdistmulti;
+package jsdp.sdp.impl.multivariate;
 
 import java.util.Arrays;
 
-import umontreal.ssj.probdistmulti.MultinomialDist;
+import jsdp.sdp.StateDescriptor;
 
 /**
- * A "safe" implementation of a MultinomialDist; this implementation
- * rather than throwing an exception, returns a probability 0.0 for states 
- * that are outside the multinomial support (i.e. states with negative values). 
+ * A concrete implementation of {@code StateDescriptor}.
  * 
  * @author Roberto Rossi
  *
  */
-public class SafeMultinomialDist extends MultinomialDist{
-   
-   /**
-    * Creates a `MultinomialDist` object with parameters @f$n@f$ and
-    * (@f$p_1@f$,…,@f$p_d@f$) such that @f$\sum_{i=1}^d p_i = 1@f$. We
-    * have @f$p_i = @f$ `p[i-1]`.
-    * 
-    * @param n number of trials
-    * @param p multinomial probabilities
-    */
-   public SafeMultinomialDist (int n, double p[]) {
-      super(n, p);
+public class StateDescriptorImpl extends StateDescriptor{
+
+   int[] initialIntState;
+
+   public StateDescriptorImpl(int period, int[] initialIntState){
+      super(period);
+      this.initialIntState = Arrays.copyOf(initialIntState, initialIntState.length);
    }
    
    @Override
-   public double prob (int x[]) {
-      if(Arrays.stream(x).filter(element -> element < 0).findAny().isPresent())
-         return 0;
+   public boolean equals(Object descriptor){
+      if(descriptor instanceof StateDescriptorImpl)
+         return this.period == ((StateDescriptorImpl)descriptor).period &&
+                Arrays.equals(this.initialIntState, ((StateDescriptorImpl)descriptor).initialIntState);
       else
-         return super.prob(x);
+         return false;
    }
 
    @Override
-   public double cdf (int x[]) {
-      if(Arrays.stream(x).filter(element -> element < 0).findAny().isPresent())
-         return 0;
-      else
-         return super.cdf(x);
+   public int hashCode(){
+      String hash = "";
+      hash = (hash + period) + "_" + Arrays.toString(initialIntState);
+      return hash.hashCode();
+   }
+
+   public int[] getInitialIntState(){
+      return this.initialIntState;
    }
 }

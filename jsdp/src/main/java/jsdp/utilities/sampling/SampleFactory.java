@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.utilities;
+package jsdp.utilities.sampling;
 
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;

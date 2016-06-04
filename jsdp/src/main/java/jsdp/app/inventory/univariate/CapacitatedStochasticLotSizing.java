@@ -46,7 +46,7 @@ import jsdp.sdp.Action;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.State;
-import jsdp.impl.univariate.*;
+import jsdp.sdp.impl.univariate.*;
 import jsdp.app.inventory.univariate.simulation.SimulatePolicies;
 
 import umontreal.ssj.probdist.Distribution;

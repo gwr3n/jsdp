@@ -26,10 +26,10 @@
 
 package jsdp.app.inventory.univariate;
 
-import jsdp.impl.univariate.ActionImpl;
-import jsdp.impl.univariate.StateImpl;
 import jsdp.sdp.Action;
 import jsdp.sdp.ActionIterator;
+import jsdp.sdp.impl.univariate.ActionImpl;
+import jsdp.sdp.impl.univariate.StateImpl;
 
 public class ActionIteratorImpl extends ActionIterator {
 
@@ -58,5 +58,4 @@ public class ActionIteratorImpl extends ActionIterator {
       currentAction = new ActionImpl(state, this.actionPointer - state.getInitialState());
       return action;
    }
-
 }

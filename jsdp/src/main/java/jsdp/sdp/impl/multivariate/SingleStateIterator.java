@@ -1,4 +1,4 @@
-package jsdp.impl.multivariate;
+package jsdp.sdp.impl.multivariate;
 
 import jsdp.sdp.State;
 import jsdp.sdp.StateSpaceIterator;

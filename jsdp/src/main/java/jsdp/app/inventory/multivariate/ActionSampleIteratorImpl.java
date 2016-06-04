@@ -31,10 +31,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-import jsdp.impl.multivariate.ActionImpl;
-import jsdp.impl.multivariate.StateImpl;
 import jsdp.sdp.Action;
 import jsdp.sdp.ActionIterator;
+import jsdp.sdp.impl.multivariate.ActionImpl;
+import jsdp.sdp.impl.multivariate.StateImpl;
 import umontreal.ssj.rng.MRG32k3aL;
 import umontreal.ssj.rng.RandomStream;
 
