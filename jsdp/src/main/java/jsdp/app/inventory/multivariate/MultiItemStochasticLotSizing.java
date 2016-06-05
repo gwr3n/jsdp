@@ -100,9 +100,9 @@ public class MultiItemStochasticLotSizing {
       // State space
       
       double stepSize[] = {1,1};       //Stepsize must be 1 for discrete distributions
-      int minIntState[] = {-5,-5};
-      int maxIntState[] = {20,20};
-      StateImpl.setStateBoundaries(stepSize, minIntState, maxIntState);
+      double minState[] = {-5,-5};
+      double maxState[] = {20,20};
+      StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
       // Actions
       
@@ -182,7 +182,7 @@ public class MultiItemStochasticLotSizing {
       timer.stop();
       System.out.println();
       double ETC = recursion.getExpectedCost(initialInventory);
-      StateDescriptorImpl initialState = new StateDescriptorImpl(0, StateImpl.stateToIntState(initialInventory));
+      StateDescriptorImpl initialState = new StateDescriptorImpl(0, initialInventory);
       double[] action = StateImpl.intStateToState(recursion.getOptimalAction(initialState).getIntAction());
       System.out.println("Expected total cost (assuming an initial inventory level "+Arrays.toString(initialInventory)+"): "+ETC);
       System.out.println("Optimal initial action: "+Arrays.toString(action));

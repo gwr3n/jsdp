@@ -138,7 +138,7 @@ public class BackwardRecursionImpl extends BackwardRecursion{
    }
    
    public double getExpectedCost(double initialState){
-      StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(0, StateImpl.stateToIntState(initialState));
+      StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(0, initialState);
       return getExpectedCost(stateDescriptor);
    }
    

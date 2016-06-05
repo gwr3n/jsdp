@@ -51,13 +51,13 @@ public class StateImpl extends State {
     * {@code DiscreteDistributionInt} are used.
     * 
     * @param stepSize the discretization step used to encode the state space
-    * @param minIntState the minimum integer value used to encode a state
-    * @param maxIntState the maximum integer value used to encode a state
+    * @param minState the minimum value used to encode a state
+    * @param maxState the maximum value used to encode a state
     */
-   public static void setStateBoundaries(double stepSize, int minIntState, int maxIntState){
+   public static void setStateBoundaries(double stepSize, double minState, double maxState){
       StateImpl.stepSize = stepSize;
-      StateImpl.minIntState = minIntState;
-      StateImpl.maxIntState = maxIntState;
+      StateImpl.minIntState = (int)Math.round(minState/stepSize);
+      StateImpl.maxIntState = (int)Math.round(maxState/stepSize);
    }
 
    public static double getStepSize(){

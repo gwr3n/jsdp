@@ -95,9 +95,9 @@ public class CapacitatedStochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      int minIntState = -200;
-      int maxIntState = 200;
-      StateImpl.setStateBoundaries(stepSize, minIntState, maxIntState);
+      double minState = -200;
+      double maxState = 200;
+      StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
       // Actions
       
@@ -164,7 +164,7 @@ public class CapacitatedStochasticLotSizing {
       timer.stop();
       System.out.println();
       double ETC = recursion.getExpectedCost(initialInventory);
-      StateDescriptorImpl initialState = new StateDescriptorImpl(0, StateImpl.stateToIntState(initialInventory));
+      StateDescriptorImpl initialState = new StateDescriptorImpl(0, initialInventory);
       double action = StateImpl.intStateToState(recursion.getOptimalAction(initialState).getIntAction());
       System.out.println("Expected total cost (assuming an initial inventory level "+initialInventory+"): "+ETC);
       System.out.println("Optimal initial action: "+action);
@@ -212,7 +212,7 @@ public class CapacitatedStochasticLotSizing {
       recursion.runBackwardRecursion(targetPeriod);
       XYSeries series = new XYSeries("Optimal policy");
       for(double i = StateImpl.getMinState(); i <= StateImpl.getMaxState(); i += StateImpl.getStepSize()){
-         StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(targetPeriod, StateImpl.stateToIntState(i));
+         StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(targetPeriod, i);
          series.add(i,recursion.getExpectedCost(stateDescriptor));
       }
       XYDataset xyDataset = new XYSeriesCollection(series);
@@ -228,7 +228,7 @@ public class CapacitatedStochasticLotSizing {
       recursion.getStateSpace()[targetPeriod].entrySet()
                                   .forEach(s ->{
                                      double state = ((StateImpl)s.getValue()).getInitialState();
-                                     StateDescriptorImpl descriptor = new StateDescriptorImpl(targetPeriod, StateImpl.stateToIntState(state));
+                                     StateDescriptorImpl descriptor = new StateDescriptorImpl(targetPeriod, state);
                                      double optimalAction = recursion.getOptimalAction(descriptor).getAction();
                                      series.add(state, optimalAction);
                                   });

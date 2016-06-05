@@ -43,6 +43,11 @@ public class StateDescriptorImpl extends StateDescriptor{
       this.initialIntState = initialIntState;
    }
    
+   public StateDescriptorImpl(int period, double initialState){
+      super(period);
+      this.initialIntState = StateImpl.stateToIntState(initialState);
+   }
+   
    @Override
    public boolean equals(Object descriptor){
       if(descriptor instanceof StateDescriptorImpl)

@@ -29,6 +29,7 @@ package jsdp.sdp.impl.multivariate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
@@ -52,15 +53,15 @@ public class StateImpl extends State {
     * {@code DiscreteDistributionInt} are used.
     * 
     * @param stepSize the discretization step used to encode the state space
-    * @param minIntState the minimum integer value used to encode a state
-    * @param maxIntState the maximum integer value used to encode a state
+    * @param minState the minimum value used to encode a state
+    * @param maxState the maximum value used to encode a state
     */
-   public static void setStateBoundaries(double[] stepSize, int[] minIntState, int[] maxIntState){
-      if(stepSize.length != minIntState.length || stepSize.length != maxIntState.length)
+   public static void setStateBoundaries(double[] stepSize, double[] minState, double[] maxState){
+      if(stepSize.length != minState.length || stepSize.length != maxState.length)
          throw new NullPointerException("Array sizes do not agree");
       StateImpl.stepSize = Arrays.copyOf(stepSize, stepSize.length);
-      StateImpl.minIntState = Arrays.copyOf(minIntState, minIntState.length);
-      StateImpl.maxIntState = Arrays.copyOf(maxIntState, maxIntState.length);
+      StateImpl.minIntState = IntStream.iterate(0, i -> i + 1).limit(minState.length).map(i -> (int)Math.round(minState[i]/stepSize[i])).toArray();
+      StateImpl.maxIntState = IntStream.iterate(0, i -> i + 1).limit(maxState.length).map(i -> (int)Math.round(maxState[i]/stepSize[i])).toArray();
    }
    
    public static int getStateDimension(){

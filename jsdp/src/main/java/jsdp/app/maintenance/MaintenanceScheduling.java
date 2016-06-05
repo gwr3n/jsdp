@@ -49,7 +49,7 @@ public class MaintenanceScheduling {
          }
       }
       
-      double initialMachineState = 3;
+      double initialMachineState = 0;
 
       /*******************************************************************
        * Model definition
@@ -58,9 +58,9 @@ public class MaintenanceScheduling {
       // State space
 
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      int minIntState = 0;
-      int maxIntState = 3;
-      StateImpl.setStateBoundaries(stepSize, minIntState, maxIntState);
+      double minState = 0;
+      double maxState = 3;
+      StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
       // Actions
 
@@ -83,7 +83,7 @@ public class MaintenanceScheduling {
       ImmediateValueFunction<State, Action, Double> immediateValueFunction = (initialState, action, finalState) -> {
          StateImpl is = (StateImpl)initialState;
          ActionImpl a = (ActionImpl)action;
-         StateImpl fs = (StateImpl)finalState;
+         //StateImpl fs = (StateImpl)finalState;
          double cost = 0;
          if(a.getAction() == 1){
             cost += maintenanceCost[(int)is.getInitialState()];
@@ -97,7 +97,7 @@ public class MaintenanceScheduling {
       // Random Outcome Function
 
       RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction = (initialState, action, finalState) -> {
-         StateImpl is = (StateImpl)initialState;
+         //StateImpl is = (StateImpl)initialState;
          ActionImpl a = (ActionImpl)action;
          StateImpl fs = (StateImpl)finalState;
          if(a.getAction() == 1){
@@ -138,7 +138,7 @@ public class MaintenanceScheduling {
       double ETC = recursion.getExpectedCost(initialMachineState);
       System.out.println("Expected total cost (assuming initial state "+initialMachineState+"): "+ETC);
       for(int i = 0; i < states.length; i++){
-         StateDescriptorImpl initialState = new StateDescriptorImpl(0, StateImpl.stateToIntState(states[i]));
+         StateDescriptorImpl initialState = new StateDescriptorImpl(0, states[i]);
          double action = StateImpl.intStateToState(recursion.getOptimalAction(initialState).getIntAction());
          System.out.println("Optimal action in state "+states[i]+": "+action);
       }

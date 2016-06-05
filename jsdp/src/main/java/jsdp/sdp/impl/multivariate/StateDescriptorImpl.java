@@ -29,6 +29,7 @@ package jsdp.sdp.impl.multivariate;
 import java.util.Arrays;
 
 import jsdp.sdp.StateDescriptor;
+import jsdp.sdp.impl.multivariate.StateImpl;
 
 /**
  * A concrete implementation of {@code StateDescriptor}.
@@ -43,6 +44,11 @@ public class StateDescriptorImpl extends StateDescriptor{
    public StateDescriptorImpl(int period, int[] initialIntState){
       super(period);
       this.initialIntState = Arrays.copyOf(initialIntState, initialIntState.length);
+   }
+   
+   public StateDescriptorImpl(int period, double[] initialState){
+      super(period);
+      this.initialIntState = StateImpl.stateToIntState(initialState);
    }
    
    @Override

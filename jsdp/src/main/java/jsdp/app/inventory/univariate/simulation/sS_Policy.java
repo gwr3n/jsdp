@@ -26,7 +26,7 @@ public class sS_Policy {
       double[] s = new double[this.horizonLength];
       for(int i = 0; i < this.horizonLength; i++){
          if(i == 0) {
-            StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(0, StateImpl.stateToIntState(initialInventory));
+            StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(0, initialInventory);
             s[i] = StateImpl.intStateToState(this.find_s(i).getInitialIntState());
             S[i] = ActionImpl.intActionToAction(recursion.getOptimalAction(stateDescriptor).getIntAction())+initialInventory;
          }
