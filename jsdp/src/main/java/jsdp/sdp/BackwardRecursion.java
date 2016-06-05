@@ -138,7 +138,6 @@ public abstract class BackwardRecursion extends Recursion{
 				this.getValueRepository().setOptimalExpectedValue(state, repository.getBestValue());
 				this.getValueRepository().setOptimalAction(state, repository.getBestAction());
 				logger.trace(repository.getBestAction()+"\tCost: "+repository.getBestValue());
-				//System.out.println(repository.getBestAction()+"\tCost: "+repository.getBestCost());
 			});
 	}
 }

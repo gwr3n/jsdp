@@ -47,9 +47,9 @@ import umontreal.ssj.probdist.Distribution;
 public class BackwardRecursionImpl extends BackwardRecursion{
    
    /**
-    * Creates an instance of the problem and initialises state space, transition probability and value repository.
+    * Creates an instance of the problem and initializes state space, transition probability and value repository.
     * 
-    * @param demand the distribution of random demand in each period, an array of {@code Distribution}.
+    * @param demand the state-independent distribution of random demand in each period, an array of {@code Distribution}.
     * @param immediateValueFunction the immediate value function.
     * @param randomOutcomeFunction the random outcome function.
     * @param buildActionList the action list builder.
@@ -57,14 +57,16 @@ public class BackwardRecursionImpl extends BackwardRecursion{
     * @param samplingScheme the sampling scheme adopted.
     * @param maxSampleSize the maximum sample size.
     */
-   public BackwardRecursionImpl(Distribution[] demand,
-                        ImmediateValueFunction<State, Action, Double> immediateValueFunction,
-                        RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction,
-                        Function<State, ArrayList<Action>> buildActionList,
-                        Function<State, Action> idempotentAction,
-                        SamplingScheme samplingScheme,
-                        int maxSampleSize){
-      super(OptimisationDirection.MIN);
+   public BackwardRecursionImpl(OptimisationDirection optimisationDirection,
+                                Distribution[] demand,
+                                ImmediateValueFunction<State, Action, Double> immediateValueFunction,
+                                RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction,
+                                Function<State, ArrayList<Action>> buildActionList,
+                                Function<State, Action> idempotentAction,
+                                double discountFactor,
+                                SamplingScheme samplingScheme,
+                                int maxSampleSize){
+      super(optimisationDirection);
       this.horizonLength = demand.length;
       
       this.stateSpace = new StateSpaceImpl[this.horizonLength+1];
@@ -72,7 +74,62 @@ public class BackwardRecursionImpl extends BackwardRecursion{
          this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, samplingScheme, maxSampleSize);
       this.transitionProbability = new TransitionProbabilityImpl(
             demand,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace(),StateImpl.getStepSize());
-      this.valueRepository = new ValueRepository(immediateValueFunction);
+      this.valueRepository = new ValueRepository(immediateValueFunction, discountFactor);
+   }
+   
+   /**
+    * Creates an instance of the problem and initializes state space, transition probability and value repository.
+    * 
+    * @param demand the state dependent distribution of random demand in each period, a two-dimensional array of {@code Distribution}, first index is the time period, second index is the state index.
+    * @param immediateValueFunction the immediate value function.
+    * @param randomOutcomeFunction the random outcome function.
+    * @param buildActionList the action list builder.
+    * @param idempotentAction the idempotent action; i.e. an action that leaves the system in the same state from period {@code t} to period {@code t+1}.
+    * @param samplingScheme the sampling scheme adopted.
+    * @param maxSampleSize the maximum sample size.
+    */
+   public BackwardRecursionImpl(OptimisationDirection optimisationDirection,
+         Distribution[][] demand,
+         ImmediateValueFunction<State, Action, Double> immediateValueFunction,
+         RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction,
+         Function<State, ArrayList<Action>> buildActionList,
+         Function<State, Action> idempotentAction,
+         double discountFactor,
+         SamplingScheme samplingScheme,
+         int maxSampleSize){
+      super(optimisationDirection);
+      throw new NullPointerException("Method not implemented!");
+   }
+   
+   /**
+    * Creates an instance of the problem and initializes state space, transition probability and value repository.
+    * 
+    * @param demand the state and action dependent distribution of random demand in each period, a three-dimensional array of {@code Distribution}, first index is the time period, second index is the action index, third index is the state index.
+    * @param immediateValueFunction the immediate value function.
+    * @param randomOutcomeFunction the random outcome function.
+    * @param buildActionList the action list builder.
+    * @param idempotentAction the idempotent action; i.e. an action that leaves the system in the same state from period {@code t} to period {@code t+1}.
+    * @param samplingScheme the sampling scheme adopted.
+    * @param maxSampleSize the maximum sample size.
+    */
+   public BackwardRecursionImpl(OptimisationDirection optimisationDirection,
+         Distribution[][][] demand,
+         ImmediateValueFunction<State, Action, Double> immediateValueFunction,
+         RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction,
+         Function<State, ArrayList<Action>> buildActionList,
+         Function<State, Action> idempotentAction,
+         double discountFactor,
+         SamplingScheme samplingScheme,
+         int maxSampleSize){
+      super(optimisationDirection);
+      this.horizonLength = demand.length;
+
+      this.stateSpace = new StateSpaceImpl[this.horizonLength+1];
+      for(int i = 0; i < this.horizonLength + 1; i++) 
+         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, samplingScheme, maxSampleSize);
+      this.transitionProbability = new TransitionProbabilityImpl(
+            demand,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace(),StateImpl.getStepSize());
+      this.valueRepository = new ValueRepository(immediateValueFunction, discountFactor);
    }
    
    @Override

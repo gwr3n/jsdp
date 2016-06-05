@@ -164,6 +164,6 @@ public class StateImpl extends State {
 
    @Override
    public String toString(){
-      return "Period: "+this.period+"\tInventory:"+Arrays.toString(intStateToState(this.initialIntState));
+      return "Period: "+this.period+"\tState:"+Arrays.toString(intStateToState(this.initialIntState));
    }
 }

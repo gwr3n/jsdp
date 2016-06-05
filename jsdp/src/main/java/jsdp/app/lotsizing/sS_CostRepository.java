@@ -37,6 +37,6 @@ public class sS_CostRepository extends ValueRepository {
 	      totalCost +=   Math.max(sS_State.stateToInventory(fs.getInitialIntState()),0)*holdingCost+
 	                     Math.max(-sS_State.stateToInventory(fs.getInitialIntState()),0)*penaltyCost;
 	      return totalCost;
-	   });
+	   }, 1.0);
 	}
 }

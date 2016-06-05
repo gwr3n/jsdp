@@ -44,6 +44,8 @@ public class ValueRepository {
 	protected Map<State,Double> optimalValueHashTable;
 	protected Map<State,Action> optimalActionHashTable;
 	
+	protected double discountFactor;
+	
 	protected ImmediateValueFunction<State, Action, Double> immediateValueFunction;
 	
 	/**
@@ -52,11 +54,12 @@ public class ValueRepository {
 	 * @param immediateValueFunction the immediate value of a transition from {@code initialState} to 
 	 * {@code finalState} under a chosen {@code action}.
 	 */
-	public ValueRepository(ImmediateValueFunction<State, Action, Double> immediateValueFunction){
+	public ValueRepository(ImmediateValueFunction<State, Action, Double> immediateValueFunction, double discountFactor){
 	   this.setImmediateValue(immediateValueFunction);
-	   valueHashTable = new Hashtable<StateAction,Double>();   //Replace with Hashtable/HashMap for threadsafe
-	   optimalValueHashTable = new Hashtable<State,Double>();  //Replace with Hashtable/HashMap for threadsafe
-	   optimalActionHashTable = new Hashtable<State,Action>(); //Replace with Hashtable/HashMap for threadsafe
+	   this.valueHashTable = new Hashtable<StateAction,Double>();   //Replace with Hashtable/HashMap for threadsafe
+	   this.optimalValueHashTable = new Hashtable<State,Double>();  //Replace with Hashtable/HashMap for threadsafe
+	   this.optimalActionHashTable = new Hashtable<State,Action>(); //Replace with Hashtable/HashMap for threadsafe
+	   this.discountFactor = discountFactor;
 	}
 	
 	/**
@@ -67,8 +70,8 @@ public class ValueRepository {
 	 * @param stateSpaceSizeLowerBound a lower bound for the sdp state space size, used to initialise the internal hash maps
 	 * @param loadFactor the internal hash maps load factor
 	 */
-	public ValueRepository(ImmediateValueFunction<State, Action, Double> immediateValueFunction, int stateSpaceSizeLowerBound, float loadFactor){
-      this(immediateValueFunction);
+	public ValueRepository(ImmediateValueFunction<State, Action, Double> immediateValueFunction, double discountFactor, int stateSpaceSizeLowerBound, float loadFactor){
+      this(immediateValueFunction, discountFactor);
       valueHashTable = new THashMap<StateAction,Double>(stateSpaceSizeLowerBound,loadFactor);
       optimalValueHashTable = new THashMap<State,Double>(stateSpaceSizeLowerBound,loadFactor);
       optimalActionHashTable = new THashMap<State,Action>(stateSpaceSizeLowerBound,loadFactor);
@@ -99,6 +102,15 @@ public class ValueRepository {
    }
 	
 	/**
+	 * Returns the discount factor for the problem value function
+	 * 
+	 * @return the discount factor
+	 */
+	public double getDiscountFactor(){
+      return this.discountFactor;
+   }
+	
+	/**
 	 * Returns the expected value associated with {@code initialState} and {@code action} under one-step transition probabilities
 	 * described in {@code transitionProbability}.
 	 * 
@@ -116,7 +128,7 @@ public class ValueRepository {
                  .sum();
          double expectedValue = transitionProbability.getFinalStates(initialState, action).parallelStream()
                  .mapToDouble(finalState -> 
-                 (this.immediateValueFunction.apply(initialState, action, finalState)+this.getOptimalExpectedValue(finalState))*
+                 (this.immediateValueFunction.apply(initialState, action, finalState)+this.discountFactor*this.getOptimalExpectedValue(finalState))*
                  transitionProbability.getTransitionProbability(initialState, action, finalState)
          ).sum()/normalisationFactor;
          return expectedValue;

@@ -58,14 +58,16 @@ public class BackwardRecursionImpl extends BackwardRecursion{
     * @param samplingScheme the sampling scheme adopted.
     * @param maxSampleSize the maximum sample size.
     */
-   public BackwardRecursionImpl(DiscreteDistributionIntMulti[] demand,
-                        ImmediateValueFunction<State, Action, Double> immediateValueFunction,
-                        RandomOutcomeFunction<State, Action, double[]> randomOutcomeFunction,
-                        Function<State, ArrayList<Action>> buildActionList,
-                        Function<State, Action> idempotentAction,
-                        SamplingScheme samplingScheme,
-                        int maxSampleSize){
-      super(OptimisationDirection.MIN);
+   public BackwardRecursionImpl(OptimisationDirection optimisationDirection,
+                                DiscreteDistributionIntMulti[] demand,
+                                ImmediateValueFunction<State, Action, Double> immediateValueFunction,
+                                RandomOutcomeFunction<State, Action, double[]> randomOutcomeFunction,
+                                Function<State, ArrayList<Action>> buildActionList,
+                                Function<State, Action> idempotentAction,
+                                double discountFactor,
+                                SamplingScheme samplingScheme,
+                                int maxSampleSize){
+      super(optimisationDirection);
       this.horizonLength = demand.length;
       
       this.stateSpace = new StateSpaceImpl[this.horizonLength+1];
@@ -73,7 +75,7 @@ public class BackwardRecursionImpl extends BackwardRecursion{
          this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, samplingScheme, maxSampleSize);
       this.transitionProbability = new TransitionProbabilityImpl(
             demand,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace());
-      this.valueRepository = new ValueRepository(immediateValueFunction);
+      this.valueRepository = new ValueRepository(immediateValueFunction, discountFactor);
    }
    
    /**
@@ -87,14 +89,16 @@ public class BackwardRecursionImpl extends BackwardRecursion{
     * @param samplingScheme the sampling scheme adopted.
     * @param maxSampleSize the maximum sample size.
     */
-   public BackwardRecursionImpl(Distribution[][] demand,
-                        ImmediateValueFunction<State, Action, Double> immediateValueFunction,
-                        RandomOutcomeFunction<State, Action, double[]> randomOutcomeFunction,
-                        Function<State, ArrayList<Action>> buildActionList,
-                        Function<State, Action> idempotentAction,
-                        SamplingScheme samplingScheme,
-                        int maxSampleSize){
-      super(OptimisationDirection.MIN);
+   public BackwardRecursionImpl(OptimisationDirection optimisationDirection,
+                                Distribution[][] demand,
+                                ImmediateValueFunction<State, Action, Double> immediateValueFunction,
+                                RandomOutcomeFunction<State, Action, double[]> randomOutcomeFunction,
+                                Function<State, ArrayList<Action>> buildActionList,
+                                Function<State, Action> idempotentAction,
+                                double discountFactor,
+                                SamplingScheme samplingScheme,
+                                int maxSampleSize){
+      super(optimisationDirection);
       this.horizonLength = demand.length;
       
       this.stateSpace = new StateSpaceImpl[this.horizonLength+1];
@@ -102,7 +106,7 @@ public class BackwardRecursionImpl extends BackwardRecursion{
          this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, samplingScheme, maxSampleSize);
       this.transitionProbability = new TransitionProbabilityImpl(
             demand,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace(),StateImpl.getStepSize());
-      this.valueRepository = new ValueRepository(immediateValueFunction);
+      this.valueRepository = new ValueRepository(immediateValueFunction, discountFactor);
    }
    
    @Override

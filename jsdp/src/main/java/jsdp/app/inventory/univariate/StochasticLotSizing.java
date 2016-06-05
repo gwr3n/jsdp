@@ -47,6 +47,7 @@ import jsdp.sdp.ActionIterator;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.State;
+import jsdp.sdp.Recursion.OptimisationDirection;
 import jsdp.sdp.impl.univariate.*;
 import jsdp.app.inventory.univariate.simulation.SimulatePolicies;
 import jsdp.app.inventory.univariate.simulation.sS_Policy;
@@ -152,12 +153,14 @@ public class StochasticLotSizing {
       
       
       // Value Function Processing Method: backward recursion
-      
-      BackwardRecursionImpl recursion = new BackwardRecursionImpl(distributions,
+      double discountFactor = 1.0;
+      BackwardRecursionImpl recursion = new BackwardRecursionImpl(OptimisationDirection.MIN,
+                                                                  distributions,
                                                                   immediateValueFunction,
                                                                   randomOutcomeFunction,
                                                                   buildActionList,
                                                                   idempotentAction,
+                                                                  discountFactor,
                                                                   samplingScheme,
                                                                   maxSampleSize);
 
@@ -181,11 +184,13 @@ public class StochasticLotSizing {
       System.out.println("--------------Charting--------------");
       int targetPeriod = 0;                                 //If targetPeriod > 0 then no sampling!
       plotOptimalPolicyAction(targetPeriod, recursion);     //Plot optimal policy action
-      BackwardRecursionImpl recursionPlot = new BackwardRecursionImpl(distributions,
+      BackwardRecursionImpl recursionPlot = new BackwardRecursionImpl(OptimisationDirection.MIN,
+                                                                      distributions,
                                                                       immediateValueFunction,
                                                                       randomOutcomeFunction,
                                                                       buildActionList,
                                                                       idempotentAction,
+                                                                      discountFactor,
                                                                       samplingScheme,
                                                                       maxSampleSize);
       plotOptimalPolicyCost(targetPeriod, recursionPlot);   //Plot optimal policy cost 

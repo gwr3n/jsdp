@@ -37,6 +37,7 @@ import jsdp.sdp.Action;
 import jsdp.sdp.ActionIterator;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.RandomOutcomeFunction;
+import jsdp.sdp.Recursion.OptimisationDirection;
 import jsdp.sdp.State;
 import jsdp.sdp.impl.multivariate.*;
 import jsdp.utilities.probdist.SafeMultinomialDist;
@@ -163,12 +164,14 @@ public class MultiItemStochasticLotSizing {
       
       
       // Value Function Processing Method: backward recursion
-      
-      BackwardRecursionImpl recursion = new BackwardRecursionImpl(distributions,
+      double discountFactor = 1.0;
+      BackwardRecursionImpl recursion = new BackwardRecursionImpl(OptimisationDirection.MIN,
+                                                                  distributions,
                                                                   immediateValueFunction,
                                                                   randomOutcomeFunction,
                                                                   buildActionList,
                                                                   idempotentAction,
+                                                                  discountFactor,
                                                                   samplingScheme,
                                                                   maxSampleSize);
 
