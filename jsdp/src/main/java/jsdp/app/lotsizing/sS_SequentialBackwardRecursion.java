@@ -52,6 +52,8 @@ import umontreal.ssj.probdist.Distribution;
 public class sS_SequentialBackwardRecursion extends sS_BackwardRecursion {
    static final Logger logger = LogManager.getLogger(sS_BackwardRecursion.class.getName());
 
+   protected double proportionalOrderingCost;
+   
    /**
     * Creates an instance of a backward recursion algorithm that exploits K-convexity to quickly process states.
     * 
@@ -62,17 +64,22 @@ public class sS_SequentialBackwardRecursion extends sS_BackwardRecursion {
     * @param penaltyCost the proportional (per unit) penalty cost; this is paid for each item short at the end of each period.
     */
    public sS_SequentialBackwardRecursion(Distribution[] demand,
+                                         double minDemand,
+                                         double maxDemand,
                                          double fixedOrderingCost, 
                                          double proportionalOrderingCost, 
                                          double holdingCost,
                                          double penaltyCost){
       super(demand,
+            minDemand,
+            maxDemand,
             fixedOrderingCost,
             proportionalOrderingCost,
             holdingCost,
             penaltyCost,
             sS_StateSpaceSampleIterator.SamplingScheme.NONE,
             Integer.MAX_VALUE);
+      this.proportionalOrderingCost = proportionalOrderingCost;
    }
 
    @Override

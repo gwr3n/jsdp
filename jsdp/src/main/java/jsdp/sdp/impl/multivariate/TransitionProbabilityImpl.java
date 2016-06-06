@@ -28,82 +28,73 @@ package jsdp.sdp.impl.multivariate;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.State;
 import jsdp.sdp.TransitionProbability;
-import jsdp.utilities.probdist.DiscreteDistributionFactory;
-import umontreal.ssj.probdist.DiscreteDistribution;
-import umontreal.ssj.probdist.Distribution;
+import jsdp.utilities.probdist.MultiINIDistribution;
+
 import umontreal.ssj.probdistmulti.DiscreteDistributionIntMulti;
 
 public class TransitionProbabilityImpl extends TransitionProbability {
    DiscreteDistributionIntMulti[] multiVariateDistributions;
-   DiscreteDistribution[][] univariateDistributions;
    StateSpaceImpl[] stateSpace;
 
-   private enum Mode {
-      MULTIVARIATE,
-      INDEPENDENT_UNIVARIATE
+   private enum DistributionType{
+      STATE_ACTION_DEPENDENT,
+      STATE_DEPENDENT,
+      STATE_INDEPENDENT
    };
    
-   Mode distributionMode;
+   private DistributionType distributionType;
    
    public TransitionProbabilityImpl(DiscreteDistributionIntMulti[] multiVariateDistributions,
                                     RandomOutcomeFunction<State, Action, double[]> randomOutcomeFunction,
                                     StateSpaceImpl[] stateSpace){
+      this.distributionType = DistributionType.STATE_INDEPENDENT;
       this.multiVariateDistributions = multiVariateDistributions;
       this.randomOutcomeFunction = randomOutcomeFunction;
       this.stateSpace = stateSpace;
-      this.distributionMode = Mode.MULTIVARIATE;
    }
    
-   public TransitionProbabilityImpl(Distribution[][] univariateDistributions,
+   public TransitionProbabilityImpl(MultiINIDistribution[] multiVariateDistributions,
                                     RandomOutcomeFunction<State, Action, double[]> randomOutcomeFunction,
-                                    StateSpaceImpl[] stateSpace,
-                                    double[] stepSize){
-      
-      this.univariateDistributions = IntStream.iterate(0, j -> j + 1).limit(univariateDistributions.length).mapToObj(j -> 
-         IntStream.iterate(0, i -> i + 1).limit(univariateDistributions[j].length)
-                  .mapToObj(i -> DiscreteDistributionFactory.getTruncatedDiscreteDistribution(univariateDistributions[j][i], 0, StateImpl.getMaxState()[i]-StateImpl.getMinState()[i], stepSize[i]))
-                  .toArray(DiscreteDistribution[]::new)
-      ).toArray(DiscreteDistribution[][]::new);
-      
+                                    StateSpaceImpl[] stateSpace){
+      this.distributionType = DistributionType.STATE_INDEPENDENT;
+      this.multiVariateDistributions = multiVariateDistributions;
       this.randomOutcomeFunction = randomOutcomeFunction;
       this.stateSpace = stateSpace;
-      this.distributionMode = Mode.INDEPENDENT_UNIVARIATE;
    }
 
    protected RandomOutcomeFunction<State, Action, double[]> randomOutcomeFunction;
    
    @Override
    public double getTransitionProbability(State initialState, Action action, State finalState) {
-      switch(this.distributionMode){
-      case INDEPENDENT_UNIVARIATE:
-         return getUnivariateTransitionProbability(initialState, action, finalState);
-      case MULTIVARIATE:
-         return getMultivariateTransitionProbability(initialState, action, finalState);
+      switch(distributionType){
+      case STATE_ACTION_DEPENDENT:
+         return this.getStateActionDependentTransitionProbability(initialState, action, finalState);
+      case STATE_INDEPENDENT:
+         return this.getStateIndependentTransitionProbability(initialState, action, finalState);
+      case STATE_DEPENDENT: 
+         return this.getStateDependentTransitionProbability(initialState, action, finalState);
       default:
-         return Double.NaN;
+         throw new NullPointerException("Method not implemented");
       }
    }
    
-   private double getMultivariateTransitionProbability(State initialState, Action action, State finalState) {
+   private double getStateActionDependentTransitionProbability(State initialState, Action action, State finalState) {
+      throw new NullPointerException("Method not implemented");
+   }
+   
+   private double getStateIndependentTransitionProbability(State initialState, Action action, State finalState) {
       int[] randomOutcome = StateImpl.stateToIntState(this.randomOutcomeFunction.apply(initialState, action, finalState));
       int period = ((StateImpl)initialState).getPeriod();
       return this.multiVariateDistributions[period].prob(randomOutcome);
    }
    
-   private double getUnivariateTransitionProbability(State initialState, Action action, State finalState) {
-      int[] randomOutcome = StateImpl.stateToIntState(this.randomOutcomeFunction.apply(initialState, action, finalState));
-      int period = ((StateImpl)initialState).getPeriod();
-      double transitionProbability = 1;
-      for(int i = 0; i < univariateDistributions[period].length; i++){
-         transitionProbability *= this.univariateDistributions[period][i].prob(randomOutcome[i]);
-      }
-      return transitionProbability;
+   private double getStateDependentTransitionProbability(State initialState, Action action, State finalState) {
+      throw new NullPointerException("Method not implemented");
    }
    
    @Override  

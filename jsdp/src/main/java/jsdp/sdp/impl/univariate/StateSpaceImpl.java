@@ -53,12 +53,35 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
       this.idempotentAction = idempotentAction;
    }
    
+   public StateSpaceImpl(int period,
+                         Function<State, ArrayList<Action>> buildActionList,
+                         Function<State, Action> idempotentAction,
+                         int stateSpaceSizeLowerBound, 
+                         float loadFactor){
+      super(period, stateSpaceSizeLowerBound, loadFactor);
+      this.buildActionList = buildActionList;
+      this.idempotentAction = idempotentAction;
+   }
+   
    public StateSpaceImpl(int period, 
                          Function<State, ArrayList<Action>> buildActionList,
                          Function<State, Action> idempotentAction,
                          SamplingScheme samplingScheme,
                          int maxSampleSize){
       super(period);
+      this.buildActionList = buildActionList;
+      this.idempotentAction = idempotentAction;
+      this.setSamplingScheme(samplingScheme, maxSampleSize);
+   }
+   
+   public StateSpaceImpl(int period, 
+                         Function<State, ArrayList<Action>> buildActionList,
+                         Function<State, Action> idempotentAction,
+                         SamplingScheme samplingScheme,
+                         int maxSampleSize,
+                         int stateSpaceSizeLowerBound, 
+                         float loadFactor){
+      super(period, stateSpaceSizeLowerBound, loadFactor);
       this.buildActionList = buildActionList;
       this.idempotentAction = idempotentAction;
       this.setSamplingScheme(samplingScheme, maxSampleSize);

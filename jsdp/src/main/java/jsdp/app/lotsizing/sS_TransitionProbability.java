@@ -42,11 +42,15 @@ public class sS_TransitionProbability extends TransitionProbability {
    DiscreteDistribution[] demand;
    sS_StateSpace[] stateSpace;
 
-   public sS_TransitionProbability(Distribution[] demand, sS_StateSpace[] stateSpace, double stepSize){
+   public sS_TransitionProbability(Distribution[] demand, 
+                                   double minDemand, 
+                                   double maxDemand, 
+                                   sS_StateSpace[] stateSpace, 
+                                   double stepSize){
       this.demand = IntStream.iterate(0, i -> i + 1)
                              .limit(demand.length)
                              .mapToObj(i -> DiscreteDistributionFactory.getTruncatedDiscreteDistribution(
-                                               demand[i], 0, sS_State.getMaxInventory()-sS_State.getMinInventory(), stepSize))
+                                               demand[i], minDemand, maxDemand, stepSize))
                              .toArray(DiscreteDistribution[]::new);
       this.stateSpace = stateSpace;
    }

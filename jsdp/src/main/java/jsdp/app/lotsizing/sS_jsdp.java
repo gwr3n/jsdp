@@ -52,7 +52,6 @@ import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.probdist.NormalDist;
 import jsdp.app.lotsizing.simulation.SimulatePolicies;
-import jsdp.sdp.impl.univariate.StateImpl;
 
 /**
  *  We formulate the stochastic lot sizing problem as defined in  
@@ -94,7 +93,10 @@ public class sS_jsdp {
                                                 .limit(demand.length)
                                                 .mapToObj(i -> new PoissonDist(demand[i]))
                                                 .toArray(Distribution[]::new);
-
+      
+      double minDemand = 0;
+      double maxDemand = sS_State.getMaxInventory()-sS_State.getMinInventory();
+      
       double initialInventory = 0;
       sS_StateSpaceSampleIterator.SamplingScheme samplingScheme = sS_StateSpaceSampleIterator.SamplingScheme.JENSENS_PARTITIONING;
       int maxSampleSize = 25;
@@ -105,6 +107,8 @@ public class sS_jsdp {
                         holdingCost, 
                         penaltyCost, 
                         distributions, 
+                        minDemand,
+                        maxDemand,
                         initialInventory);
       System.out.println("--------------Backward recursion--------------");
       simpleTestBackward(fixedOrderingCost, 
@@ -112,6 +116,8 @@ public class sS_jsdp {
                          holdingCost, 
                          penaltyCost, 
                          distributions, 
+                         minDemand,
+                         maxDemand,
                          initialInventory,
                          samplingScheme,
                          maxSampleSize);
@@ -125,6 +131,8 @@ public class sS_jsdp {
                        holdingCost, 
                        penaltyCost, 
                        distributions,
+                       minDemand,
+                       maxDemand,
                        printCostFunctionValues,
                        latexOutput,
                        samplingScheme,
@@ -136,6 +144,8 @@ public class sS_jsdp {
                                          double holdingCost,
                                          double penaltyCost,
                                          Distribution[] distributions,
+                                         double minDemand,
+                                         double maxDemand,
                                          double initialInventory,
                                          sS_StateSpaceSampleIterator.SamplingScheme samplingScheme,
                                          int maxSampleSize){
@@ -147,6 +157,8 @@ public class sS_jsdp {
       double errorTolerance = 0.001;
 
       solveSampleInstanceBackwardRecursion(distributions,
+                                           minDemand,
+                                           maxDemand,
                                            fixedOrderingCost,
                                            proportionalOrderingCost,
                                            holdingCost,
@@ -163,6 +175,8 @@ public class sS_jsdp {
                                         double holdingCost,
                                         double penaltyCost,
                                         Distribution[] distributions,
+                                        double minDemand,
+                                        double maxDemand,
                                         double initialInventory){
 
       /**
@@ -172,6 +186,8 @@ public class sS_jsdp {
       double errorTolerance = 0.001;
 
       solveSampleInstanceForwardRecursion(distributions,
+                                          minDemand,
+                                          maxDemand,
                                           fixedOrderingCost,
                                           proportionalOrderingCost,
                                           holdingCost,
@@ -182,6 +198,8 @@ public class sS_jsdp {
    }
 
    public static void solveSampleInstanceBackwardRecursion(Distribution[] distributions,
+                                                           double minDemand,
+                                                           double maxDemand,
                                                            double fixedOrderingCost, 
                                                            double proportionalOrderingCost, 
                                                            double holdingCost,
@@ -193,6 +211,8 @@ public class sS_jsdp {
                                                            int maxSampleSize){
 
       sS_BackwardRecursion recursion = new sS_BackwardRecursion(distributions,
+                                                                minDemand,
+                                                                maxDemand,
                                                                 fixedOrderingCost,
                                                                 proportionalOrderingCost,
                                                                 holdingCost,
@@ -243,6 +263,8 @@ public class sS_jsdp {
    }
 
    public static void solveSampleInstanceForwardRecursion(Distribution[] distributions,
+                                                          double minDemand,
+                                                          double maxDemand,
                                                           double fixedOrderingCost, 
                                                           double proportionalOrderingCost, 
                                                           double holdingCost,
@@ -252,6 +274,8 @@ public class sS_jsdp {
                                                           double errorTolerance){
 
       sS_ForwardRecursion recursion = new sS_ForwardRecursion(distributions,
+                                                              minDemand,
+                                                              maxDemand,
                                                               fixedOrderingCost,
                                                               proportionalOrderingCost,
                                                               holdingCost,
@@ -303,12 +327,16 @@ public class sS_jsdp {
                                        double holdingCost,
                                        double penaltyCost,
                                        Distribution[] distributions,
+                                       double minDemand,
+                                       double maxDemand,
                                        boolean printCostFunctionValues,
                                        boolean latexOutput,
                                        sS_StateSpaceSampleIterator.SamplingScheme samplingScheme,
                                        int maxSampleSize){
 
       sS_BackwardRecursion recursion = new sS_BackwardRecursion(distributions,
+                                                                minDemand,
+                                                                maxDemand,
                                                                 fixedOrderingCost,
                                                                 proportionalOrderingCost,
                                                                 holdingCost,

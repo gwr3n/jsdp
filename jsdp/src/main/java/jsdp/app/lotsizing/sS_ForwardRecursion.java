@@ -40,10 +40,6 @@ import umontreal.ssj.probdist.Distribution;
  */
 public class sS_ForwardRecursion extends ForwardRecursion{
 	
-	double fixedOrderingCost; 
-	double proportionalOrderingCost; 
-	double holdingCost;
-	double penaltyCost;
 	Distribution[] demand;
 	
 	/**
@@ -56,6 +52,8 @@ public class sS_ForwardRecursion extends ForwardRecursion{
 	 * @param penaltyCost the proportional (per unit) penalty cost; this is paid for each item short at the end of each period.
 	 */
 	public sS_ForwardRecursion(Distribution[] demand,
+	                           double minDemand,
+	                           double maxDemand,
 			                     double fixedOrderingCost, 
 			                     double proportionalOrderingCost, 
 			                     double holdingCost,
@@ -63,16 +61,10 @@ public class sS_ForwardRecursion extends ForwardRecursion{
 	   super(OptimisationDirection.MIN);
 		this.demand = demand;
 		this.horizonLength = demand.length;
-		
-		this.fixedOrderingCost = fixedOrderingCost;
-		this.proportionalOrderingCost = proportionalOrderingCost;
-		this.holdingCost = holdingCost;
-		this.penaltyCost = penaltyCost;
-		
 		this.stateSpace = new sS_StateSpace[this.horizonLength+1];
 		for(int i = 0; i < this.horizonLength + 1; i++) 
 			this.stateSpace[i] = new sS_StateSpace(i);
-		this.transitionProbability = new sS_TransitionProbability(demand,(sS_StateSpace[])this.getStateSpace(),sS_State.getStepSize());
+		this.transitionProbability = new sS_TransitionProbability(demand,minDemand,maxDemand,(sS_StateSpace[])this.getStateSpace(),sS_State.getStepSize());
 		this.valueRepository = new sS_CostRepository(fixedOrderingCost, proportionalOrderingCost, holdingCost, penaltyCost);
 	}
 	

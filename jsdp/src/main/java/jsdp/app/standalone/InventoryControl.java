@@ -63,9 +63,9 @@ public class InventoryControl {
       int period;
       int initialInventory;
 
-      public State(int period, double initialInventory){
+      public State(int period, int initialInventory){
          this.period = period;
-         this.initialInventory = (int) initialInventory;
+         this.initialInventory = initialInventory;
       }
 
       public double[] getFeasibleActions(){
@@ -169,7 +169,7 @@ public class InventoryControl {
        * returns the future state
        */
       inventory.stateTransition = (state, action, randomOutcome) -> 
-         inventory.new State(state.period + 1, state.initialInventory + action - randomOutcome);
+         inventory.new State(state.period + 1, (int) (state.initialInventory + action - randomOutcome));
       
       /**
        * Immediate value function for a given state

@@ -59,9 +59,9 @@ public class DiscreteDistributionFactory {
 	 * @return a discretized and truncated {@code DiscreteDistribution}
 	 */
 	public static DiscreteDistribution getTruncatedDiscreteDistribution(Distribution distribution, 
-																		double supportLB, 
-																		double supportUB, 
-																		double stepSize){
+																		                 double supportLB, 
+																		                 double supportUB, 
+																		                 double stepSize){
 		if(distribution instanceof DiscreteDistributionInt){
 			if(stepSize != 1) 
 				throw new NullPointerException("Factor must be 1 for Poisson");

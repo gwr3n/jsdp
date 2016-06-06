@@ -42,10 +42,6 @@ import umontreal.ssj.probdist.Distribution;
  */
 public class sS_BackwardRecursion extends BackwardRecursion{
 	
-	double fixedOrderingCost; 
-	double proportionalOrderingCost; 
-	double holdingCost;
-	double penaltyCost;
 	Distribution[] demand;
 	
 	/**
@@ -60,6 +56,8 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 	 * @param maxSampleSize the maximum sample size.
 	 */
 	public sS_BackwardRecursion(Distribution[] demand,
+	                            double minDemand,
+	                            double maxDemand,
 								double fixedOrderingCost, 
 								double proportionalOrderingCost, 
 								double holdingCost,
@@ -70,15 +68,10 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 		this.demand = demand;
 		this.horizonLength = demand.length;
 		
-		this.fixedOrderingCost = fixedOrderingCost;
-		this.proportionalOrderingCost = proportionalOrderingCost;
-		this.holdingCost = holdingCost;
-		this.penaltyCost = penaltyCost;
-		
 		this.stateSpace = new sS_StateSpace[this.horizonLength+1];
 		for(int i = 0; i < this.horizonLength + 1; i++) 
 			this.stateSpace[i] = new sS_StateSpace(i, samplingScheme, maxSampleSize);
-		this.transitionProbability = new sS_TransitionProbability(demand,(sS_StateSpace[])this.getStateSpace(),sS_State.getStepSize());
+		this.transitionProbability = new sS_TransitionProbability(demand,minDemand,maxDemand,(sS_StateSpace[])this.getStateSpace(),sS_State.getStepSize());
 		this.valueRepository = new sS_CostRepository(fixedOrderingCost, proportionalOrderingCost, holdingCost, penaltyCost);
 	}
 	

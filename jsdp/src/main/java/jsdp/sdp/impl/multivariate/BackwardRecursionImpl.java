@@ -27,6 +27,7 @@
 package jsdp.sdp.impl.multivariate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.function.Function;
 
 import jsdp.sdp.Action;
@@ -35,8 +36,8 @@ import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.State;
 import jsdp.sdp.ValueRepository;
-import jsdp.sdp.impl.multivariate.StateImpl;
-import umontreal.ssj.probdist.Distribution;
+import jsdp.utilities.probdist.MultiINIDistribution;
+
 import umontreal.ssj.probdistmulti.DiscreteDistributionIntMulti;
 
 /**
@@ -50,7 +51,8 @@ public class BackwardRecursionImpl extends BackwardRecursion{
    /**
     * Creates an instance of the problem and initialises state space, transition probability and value repository.
     * 
-    * @param demand the distribution of random demand in each period, an array of {@code Distribution}.
+    * @param optimisationDirection the direction of optimisation; either {@code OptimisationDirection.MIN} or {@code OptimisationDirection.MAX}
+    * @param demand the distribution of random demand in each period, an array of {@code DiscreteDistributionIntMulti}.
     * @param immediateValueFunction the immediate value function.
     * @param randomOutcomeFunction the random outcome function.
     * @param buildActionList the action list builder.
@@ -70,42 +72,16 @@ public class BackwardRecursionImpl extends BackwardRecursion{
       super(optimisationDirection);
       this.horizonLength = demand.length;
       
-      this.stateSpace = new StateSpaceImpl[this.horizonLength+1];
-      for(int i = 0; i < this.horizonLength + 1; i++) 
-         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, samplingScheme, maxSampleSize);
-      this.transitionProbability = new TransitionProbabilityImpl(
-            demand,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace());
-      this.valueRepository = new ValueRepository(immediateValueFunction, discountFactor);
-   }
-   
-   /**
-    * Creates an instance of the problem and initialises state space, transition probability and value repository.
-    * 
-    * @param demand the distribution of random demand in each period, an array of {@code Distribution}.
-    * @param immediateValueFunction the immediate value function.
-    * @param randomOutcomeFunction the random outcome function.
-    * @param buildActionList the action list builder.
-    * @param idempotentAction the idempotent action; i.e. an action that leaves the system in the same state from period {@code t} to period {@code t+1}.
-    * @param samplingScheme the sampling scheme adopted.
-    * @param maxSampleSize the maximum sample size.
-    */
-   public BackwardRecursionImpl(OptimisationDirection optimisationDirection,
-                                Distribution[][] demand,
-                                ImmediateValueFunction<State, Action, Double> immediateValueFunction,
-                                RandomOutcomeFunction<State, Action, double[]> randomOutcomeFunction,
-                                Function<State, ArrayList<Action>> buildActionList,
-                                Function<State, Action> idempotentAction,
-                                double discountFactor,
-                                SamplingScheme samplingScheme,
-                                int maxSampleSize){
-      super(optimisationDirection);
-      this.horizonLength = demand.length;
+      Arrays.stream(demand).forEach(d -> {
+         if(d instanceof MultiINIDistribution)
+            ((MultiINIDistribution)d).discretizeDistributions();
+      });
       
       this.stateSpace = new StateSpaceImpl[this.horizonLength+1];
       for(int i = 0; i < this.horizonLength + 1; i++) 
          this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, samplingScheme, maxSampleSize);
       this.transitionProbability = new TransitionProbabilityImpl(
-            demand,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace(),StateImpl.getStepSize());
+            demand,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace());
       this.valueRepository = new ValueRepository(immediateValueFunction, discountFactor);
    }
    

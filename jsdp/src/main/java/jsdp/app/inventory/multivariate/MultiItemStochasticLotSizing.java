@@ -41,6 +41,7 @@ import jsdp.sdp.Recursion.OptimisationDirection;
 import jsdp.sdp.State;
 import jsdp.sdp.impl.multivariate.*;
 import jsdp.utilities.probdist.SafeMultinomialDist;
+import jsdp.utilities.probdist.MultiINIDistribution;
 import umontreal.ssj.probdistmulti.DiscreteDistributionIntMulti;
 import umontreal.ssj.probdist.BinomialDist;
 import umontreal.ssj.probdist.PoissonDist;
@@ -76,20 +77,21 @@ public class MultiItemStochasticLotSizing {
       // Random variables
 
       // Product demand is distributed according to a two-dimensional multinomial distribution
-      DiscreteDistributionIntMulti[] distributions = IntStream.iterate(0, i -> i + 1)
+      /*DiscreteDistributionIntMulti[] distributions = IntStream.iterate(0, i -> i + 1)
                                                               .limit(horizonLength)
                                                               .mapToObj(i -> new SafeMultinomialDist(N[i], p[i]))
-                                                              .toArray(DiscreteDistributionIntMulti[]::new);
+                                                              .toArray(DiscreteDistributionIntMulti[]::new);*/
       
-      // Demand for each product tipe is independently distributed according to a binomial distribution
-      /*Distribution[][] distributions = new Distribution[5][2];
-      
+      // Demand for each product type is independently distributed according to a binomial distribution
+      double[] supportLowerBounds = new double[horizonLength];
+      double[] supportUpperBounds = IntStream.iterate(0, i -> i + 1).limit(horizonLength).mapToDouble(i -> N[i]).toArray();
+      DiscreteDistributionIntMulti[] distributions = new DiscreteDistributionIntMulti[horizonLength];
       distributions = IntStream.iterate(0, i -> i + 1)
             .limit(horizonLength)
-            .mapToObj(i -> new Distribution[] {new BinomialDist(N[i], p[i][0]),new BinomialDist(N[i], p[i][1])})
-            .toArray(Distribution[][]::new);*/
-      
-      
+            .mapToObj(i -> new MultiINIDistribution(new Distribution[] {new BinomialDist(N[i], p[i][0]),new BinomialDist(N[i], p[i][1])},
+                                                    supportLowerBounds,
+                                                    supportUpperBounds))
+            .toArray(DiscreteDistributionIntMulti[]::new);
       
       double[] initialInventory = {0,0};
       

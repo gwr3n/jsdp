@@ -34,6 +34,7 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.time.StopWatch;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.JFreeChart;
@@ -41,6 +42,11 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+
+import com.sun.management.OperatingSystemMXBean;
+
+import java.io.IOException;
+import java.lang.management.ManagementFactory; 
 
 import jsdp.sdp.Action;
 import jsdp.sdp.ActionIterator;
@@ -162,13 +168,38 @@ public class StochasticLotSizing {
                                                                   idempotentAction,
                                                                   discountFactor,
                                                                   samplingScheme,
-                                                                  maxSampleSize);
+                                                                  maxSampleSize,
+                                                                  10000000,
+                                                                  0.8F);
 
+      
       System.out.println("--------------Backward recursion--------------");
       StopWatch timer = new StopWatch();
-      timer.start();
-      recursion.runBackwardRecursion();
-      timer.stop();
+      OperatingSystemMXBean osMBean;
+      try {
+         osMBean = ManagementFactory.newPlatformMXBeanProxy(
+               ManagementFactory.getPlatformMBeanServer(), ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME, OperatingSystemMXBean.class);
+         long nanoBefore = System.nanoTime();
+         long cpuBefore = osMBean.getProcessCpuTime();
+         
+         timer.start();
+         recursion.runBackwardRecursion();
+         timer.stop();
+         
+         long cpuAfter = osMBean.getProcessCpuTime();
+         long nanoAfter = System.nanoTime();
+         
+         long percent;
+         if (nanoAfter > nanoBefore)
+          percent = ((cpuAfter-cpuBefore)*100L)/
+            (nanoAfter-nanoBefore);
+         else percent = 0;
+
+         System.out.println("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)");
+      } catch (IOException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
       System.out.println();
       double ETC = recursion.getExpectedCost(initialInventory);
       StateDescriptorImpl initialState = new StateDescriptorImpl(0, initialInventory);
