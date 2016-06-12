@@ -27,10 +27,10 @@
 package jsdp.sdp;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import gnu.trove.map.hash.THashMap;
@@ -54,22 +54,42 @@ public abstract class StateSpace<SD> implements Iterable<State>{
 	 * Constructs a container for states associated with a given {@code period}. This implementation is based on {@code ConcurrentHashMap}.
 	 * 
 	 * @param period the period associated with this container.
+	 * @param the type of hash used to store the state space
 	 */
-	public StateSpace(int period){
+	public StateSpace(int period, HashType hash){
 		this.period = period;
-		states = new Hashtable<SD,State>();  //Replace with Hashtable/HashMap for threadsafe
+		switch(hash){
+		case HASHTABLE:
+		   states = new Hashtable<SD,State>();
+		   break;
+		case CONCURRENT_HASHMAP:
+		   states = new ConcurrentHashMap<SD,State>();
+		case THASHMAP:
+		   states = new THashMap<SD,State>();
+		}
 	}
 	
-	/**
-	 * Constructs a container for states associated with a given {@code period}. This implementation is based on Trove4j {@code THashMap}.
-	 * 
-	 * @param period the period associated with this container.
-	 * @param stateSpaceSizeLowerBound a lower bound for the sdp state space size, used to initialise the internal hash maps
-	 * @param loadFactor the internal hash maps load factor
-	 */
-	public StateSpace(int period, int stateSpaceSizeLowerBound, float loadFactor){
-      this(period);
-      states = new THashMap<SD,State>(stateSpaceSizeLowerBound,loadFactor);
+   /**
+    * Constructs a container for states associated with a given {@code period}. This implementation is based on {@code ConcurrentHashMap}.
+    * 
+    * @param period the period associated with this container.
+    * @param hash the type of hash used to store the state space
+    * @param stateSpaceSizeLowerBound a lower bound for the sdp state space size, used to initialise the internal hash maps
+    * @param loadFactor the internal hash maps load factor
+    */
+   public StateSpace(int period, HashType hash, int stateSpaceSizeLowerBound, float loadFactor){
+      this.period = period;
+      switch(hash){
+         case HASHTABLE:
+            states = new Hashtable<SD,State>(stateSpaceSizeLowerBound,loadFactor);
+            break;
+         case CONCURRENT_HASHMAP:
+            states = new ConcurrentHashMap<SD,State>(stateSpaceSizeLowerBound,loadFactor);
+            break;
+         case THASHMAP:
+            states = new THashMap<SD,State>(stateSpaceSizeLowerBound,loadFactor);
+            break;
+      }
    }
 	
 	/**

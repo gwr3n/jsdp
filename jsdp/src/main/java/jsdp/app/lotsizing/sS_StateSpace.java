@@ -28,6 +28,7 @@ package jsdp.app.lotsizing;
 
 import java.util.Iterator;
 
+import jsdp.sdp.HashType;
 import jsdp.sdp.State;
 import jsdp.sdp.StateSpace;
 
@@ -37,13 +38,13 @@ public class sS_StateSpace extends StateSpace<sS_StateDescriptor>{
    int maxSampleSize = Integer.MAX_VALUE;
    
    public sS_StateSpace(int period){
-      super(period);
+      super(period, HashType.HASHTABLE);
    }
    
    public sS_StateSpace(int period, 
                         sS_StateSpaceSampleIterator.SamplingScheme samplingScheme,
                         int maxSampleSize){
-      super(period);
+      super(period, HashType.HASHTABLE);
       this.setSamplingScheme(samplingScheme, maxSampleSize);
    }
    

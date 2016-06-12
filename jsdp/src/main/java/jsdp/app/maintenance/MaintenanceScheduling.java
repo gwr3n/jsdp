@@ -6,7 +6,9 @@ import java.util.function.Function;
 
 import org.apache.commons.lang3.time.StopWatch;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import jsdp.sdp.Action;
+import jsdp.sdp.HashType;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.State;
@@ -41,11 +43,19 @@ public class MaintenanceScheduling {
                                               {1.0,0,0,0}}};
       
       DiscreteDistribution[][][] distributions = new DiscreteDistribution[periods][][];
+      double[][][] supportLB = new double[periods][][];
+      double[][][] supportUB = new double[periods][][];
       for(int t = 0; t < periods; t++){
          distributions[t] = new DiscreteDistribution[transitionProbabilities.length][];
+         supportLB[t] = new double[transitionProbabilities.length][];
+         supportUB[t] = new double[transitionProbabilities.length][];      
          for(int a = 0; a < transitionProbabilities.length; a++){
             final int action = a;
             distributions[t][a] = Arrays.stream(states).mapToObj(s -> new DiscreteDistribution(states,transitionProbabilities[action][(int)s],states.length)).toArray(DiscreteDistribution[]::new);
+            supportLB[t][a] = new double[states.length];
+            Arrays.fill(supportLB[t][a], Arrays.stream(states).min().getAsDouble());
+            supportUB[t][a] = new double[states.length];       
+            Arrays.fill(supportUB[t][a], Arrays.stream(states).max().getAsDouble());
          }
       }
       
@@ -121,13 +131,16 @@ public class MaintenanceScheduling {
       double discountFactor = 0.95;
       BackwardRecursionImpl recursion = new BackwardRecursionImpl(OptimisationDirection.MIN,
                                                                   distributions,
+                                                                  supportLB,
+                                                                  supportUB,
                                                                   immediateValueFunction,
                                                                   randomOutcomeFunction,
                                                                   buildActionList,
                                                                   idempotentAction,
                                                                   discountFactor,
                                                                   samplingScheme,
-                                                                  maxSampleSize);
+                                                                  maxSampleSize,
+                                                                  HashType.HASHTABLE);
 
       System.out.println("--------------Backward recursion--------------");
       StopWatch timer = new StopWatch();

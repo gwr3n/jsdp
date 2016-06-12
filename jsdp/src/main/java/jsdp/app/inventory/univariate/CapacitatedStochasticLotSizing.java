@@ -43,6 +43,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import jsdp.sdp.Action;
+import jsdp.sdp.HashType;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.State;
@@ -77,6 +78,7 @@ public class CapacitatedStochasticLotSizing {
       
       double[] meanDemand = {20,50,20,10,20,50};
       double coefficientOfVariation = 0.4;
+      double truncationQuantile = 0.99;
       
       // Random variables
 
@@ -85,7 +87,14 @@ public class CapacitatedStochasticLotSizing {
                                               .mapToObj(i -> new NormalDist(meanDemand[i],meanDemand[i]*coefficientOfVariation))
                                               //.mapToObj(i -> new PoissonDist(meanDemand[i]))
                                               .toArray(Distribution[]::new);
-      
+      double[] supportLB = IntStream.iterate(0, i -> i + 1)
+                                    .limit(meanDemand.length)
+                                    .mapToDouble(i -> 0.0)
+                                    .toArray();
+      double[] supportUB = IntStream.iterate(0, i -> i + 1)
+                                    .limit(meanDemand.length)
+                                    .mapToDouble(i -> NormalDist.inverseF(meanDemand[i],meanDemand[i]*coefficientOfVariation, truncationQuantile))
+                                    .toArray();      
       double initialInventory = 0;
       
       /*******************************************************************
@@ -141,7 +150,7 @@ public class CapacitatedStochasticLotSizing {
       
       // Sampling scheme
       
-      SamplingScheme samplingScheme = SamplingScheme.JENSENS_PARTITIONING;
+      SamplingScheme samplingScheme = SamplingScheme.NONE;
       int maxSampleSize = 200;
       
       
@@ -149,13 +158,16 @@ public class CapacitatedStochasticLotSizing {
       double discountFactor = 1.0;
       BackwardRecursionImpl recursion = new BackwardRecursionImpl(OptimisationDirection.MIN,
                                                                   distributions,
+                                                                  supportLB,
+                                                                  supportUB,                                                                  
                                                                   immediateValueFunction,
                                                                   randomOutcomeFunction,
                                                                   buildActionList,
                                                                   idempotentAction,
                                                                   discountFactor,
                                                                   samplingScheme,
-                                                                  maxSampleSize);
+                                                                  maxSampleSize,
+                                                                  HashType.HASHTABLE);
 
       System.out.println("--------------Backward recursion--------------");
       StopWatch timer = new StopWatch();
@@ -179,13 +191,16 @@ public class CapacitatedStochasticLotSizing {
       plotOptimalPolicyAction(targetPeriod, recursion);     //Plot optimal policy action
       BackwardRecursionImpl recursionPlot = new BackwardRecursionImpl(OptimisationDirection.MIN,
                                                                       distributions,
+                                                                      supportLB,
+                                                                      supportUB,                                                                      
                                                                       immediateValueFunction,
                                                                       randomOutcomeFunction,
                                                                       buildActionList,
                                                                       idempotentAction,
                                                                       discountFactor,
                                                                       samplingScheme,
-                                                                      maxSampleSize);
+                                                                      maxSampleSize,
+                                                                      HashType.HASHTABLE);
       plotOptimalPolicyCost(targetPeriod, recursionPlot);   //Plot optimal policy cost      
       System.out.println();
       

@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.function.Function;
 
 import jsdp.sdp.Action;
+import jsdp.sdp.HashType;
 import jsdp.sdp.State;
 import jsdp.sdp.StateSpace;
 
@@ -47,18 +48,45 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
    
    public StateSpaceImpl(int period,
                          Function<State, ArrayList<Action>> buildActionList,
-                         Function<State, Action> idempotentAction){
-      super(period);
+                         Function<State, Action> idempotentAction,
+                         HashType hash){
+      super(period, hash);
       this.buildActionList = buildActionList;
       this.idempotentAction = idempotentAction;
+   }
+   
+   public StateSpaceImpl(int period,
+                         Function<State, ArrayList<Action>> buildActionList,
+                         Function<State, Action> idempotentAction,
+                         HashType hash,
+                         int stateSpaceSizeLowerBound, 
+                         float loadFactor){
+      super(period, hash, stateSpaceSizeLowerBound, loadFactor);
+      this.buildActionList = buildActionList;
+      this.idempotentAction = idempotentAction;
+   }   
+  
+   public StateSpaceImpl(int period, 
+                         Function<State, ArrayList<Action>> buildActionList,
+                         Function<State, Action> idempotentAction,
+                         SamplingScheme samplingScheme,
+                         int maxSampleSize,
+                         HashType hash){
+      super(period, hash);
+      this.buildActionList = buildActionList;
+      this.idempotentAction = idempotentAction;
+      this.setSamplingScheme(samplingScheme, maxSampleSize);
    }
    
    public StateSpaceImpl(int period, 
                          Function<State, ArrayList<Action>> buildActionList,
                          Function<State, Action> idempotentAction,
                          SamplingScheme samplingScheme,
-                         int maxSampleSize){
-      super(period);
+                         int maxSampleSize,
+                         HashType hash,
+                         int stateSpaceSizeLowerBound, 
+                         float loadFactor){
+      super(period, hash, stateSpaceSizeLowerBound, loadFactor);
       this.buildActionList = buildActionList;
       this.idempotentAction = idempotentAction;
       this.setSamplingScheme(samplingScheme, maxSampleSize);

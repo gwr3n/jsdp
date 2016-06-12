@@ -26,10 +26,9 @@
 
 package jsdp.sdp;
 
-
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import gnu.trove.map.hash.THashMap;
 
@@ -53,13 +52,29 @@ public class ValueRepository {
 	 * 
 	 * @param immediateValueFunction the immediate value of a transition from {@code initialState} to 
 	 * {@code finalState} under a chosen {@code action}.
+	 * @param discountFactor the value function discount factor
+	 * @param hash the type of hash used to store the state space
 	 */
-	public ValueRepository(ImmediateValueFunction<State, Action, Double> immediateValueFunction, double discountFactor){
+	public ValueRepository(ImmediateValueFunction<State, Action, Double> immediateValueFunction, double discountFactor, HashType hash){
 	   this.setImmediateValue(immediateValueFunction);
-	   this.valueHashTable = new Hashtable<StateAction,Double>();   //Replace with Hashtable/HashMap for threadsafe
-	   this.optimalValueHashTable = new Hashtable<State,Double>();  //Replace with Hashtable/HashMap for threadsafe
-	   this.optimalActionHashTable = new Hashtable<State,Action>(); //Replace with Hashtable/HashMap for threadsafe
 	   this.discountFactor = discountFactor;
+	   switch(hash){
+         case HASHTABLE:
+            this.valueHashTable = new Hashtable<StateAction,Double>();
+            this.optimalValueHashTable = new Hashtable<State,Double>();
+            this.optimalActionHashTable = new Hashtable<State,Action>();
+            break;
+         case CONCURRENT_HASHMAP:
+            this.valueHashTable = new ConcurrentHashMap<StateAction,Double>();
+            this.optimalValueHashTable = new ConcurrentHashMap<State,Double>();
+            this.optimalActionHashTable = new ConcurrentHashMap<State,Action>();
+            break;
+         case THASHMAP:
+            this.valueHashTable = new THashMap<StateAction,Double>();
+            this.optimalValueHashTable = new THashMap<State,Double>();
+            this.optimalActionHashTable = new THashMap<State,Action>();
+            break;
+	   }
 	}
 	
 	/**
@@ -67,14 +82,31 @@ public class ValueRepository {
 	 * 
 	 * @param immediateValueFunction the immediate value of a transition from {@code initialState} to 
     * {@code finalState} under a chosen {@code action}.
+    * @param discountFactor the value function discount factor
 	 * @param stateSpaceSizeLowerBound a lower bound for the sdp state space size, used to initialise the internal hash maps
 	 * @param loadFactor the internal hash maps load factor
+	 * @param hash the type of hash used to store the state space
 	 */
-	public ValueRepository(ImmediateValueFunction<State, Action, Double> immediateValueFunction, double discountFactor, int stateSpaceSizeLowerBound, float loadFactor){
-      this(immediateValueFunction, discountFactor);
-      valueHashTable = new THashMap<StateAction,Double>(stateSpaceSizeLowerBound,loadFactor);
-      optimalValueHashTable = new THashMap<State,Double>(stateSpaceSizeLowerBound,loadFactor);
-      optimalActionHashTable = new THashMap<State,Action>(stateSpaceSizeLowerBound,loadFactor);
+	public ValueRepository(ImmediateValueFunction<State, Action, Double> immediateValueFunction, double discountFactor, int stateSpaceSizeLowerBound, float loadFactor, HashType hash){
+	   this.setImmediateValue(immediateValueFunction);
+      this.discountFactor = discountFactor;
+      switch(hash){
+         case HASHTABLE:
+            this.valueHashTable = new Hashtable<StateAction,Double>(stateSpaceSizeLowerBound,loadFactor);
+            this.optimalValueHashTable = new Hashtable<State,Double>(stateSpaceSizeLowerBound,loadFactor);
+            this.optimalActionHashTable = new Hashtable<State,Action>(stateSpaceSizeLowerBound,loadFactor);
+            break;
+         case CONCURRENT_HASHMAP:
+            this.valueHashTable = new ConcurrentHashMap<StateAction,Double>(stateSpaceSizeLowerBound,loadFactor);
+            this.optimalValueHashTable = new ConcurrentHashMap<State,Double>(stateSpaceSizeLowerBound,loadFactor);
+            this.optimalActionHashTable = new ConcurrentHashMap<State,Action>(stateSpaceSizeLowerBound,loadFactor);
+            break;
+         case THASHMAP:
+            this.valueHashTable = new THashMap<StateAction,Double>(stateSpaceSizeLowerBound,loadFactor);
+            this.optimalValueHashTable = new THashMap<State,Double>(stateSpaceSizeLowerBound,loadFactor);
+            this.optimalActionHashTable = new THashMap<State,Action>(stateSpaceSizeLowerBound,loadFactor);
+            break;
+      }
    }
 	
 	protected ValueRepository(){}

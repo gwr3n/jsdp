@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.function.Function;
 
 import jsdp.sdp.Action;
+import jsdp.sdp.HashType;
 import jsdp.sdp.State;
 import jsdp.sdp.StateSpace;
 
@@ -12,13 +13,13 @@ public class BR_StateSpace extends StateSpace<BR_StateDescriptor> {
    
    public BR_StateSpace(int period,
          Function<State, ArrayList<Action>> buildActionList, int stateSpaceSizeLowerBound, float loadFactor){
-      super(period, stateSpaceSizeLowerBound, loadFactor);
+      super(period, HashType.HASHTABLE, stateSpaceSizeLowerBound, loadFactor);
       this.buildActionList = buildActionList;
    }
    
    public BR_StateSpace(int period,
          Function<State, ArrayList<Action>> buildActionList){
-      super(period);
+      super(period, HashType.HASHTABLE);
       this.buildActionList = buildActionList;
    }
 

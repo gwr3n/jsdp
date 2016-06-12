@@ -85,6 +85,8 @@ public class DiscreteDistributionFactory {
 	 * @param supportLB support lower bound
 	 * @param supportUB support upper bound
 	 * @return a discretized {@code DiscreteDistribution}
+	 * 
+	 * TODO: make sure that supportLB % stepSize is 0!
 	 */
 	private static DiscreteDistribution truncatedDiscreteDistributionInt(DiscreteDistributionInt distribution, 
 																	     double supportLB, 
@@ -110,6 +112,8 @@ public class DiscreteDistributionFactory {
 	 * @param supportUB support upper bound
 	 * @param stepSize discretization step
 	 * @return a discretized {@code DiscreteDistribution}
+	 * 
+	 * TODO: make sure that supportLB % stepSize is 0!
 	 */
 	private static DiscreteDistribution discretizeTruncatedContinuousDistribution(ContinuousDistribution distribution, 
 																		 double supportLB,

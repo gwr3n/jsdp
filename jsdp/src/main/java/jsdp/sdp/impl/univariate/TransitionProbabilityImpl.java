@@ -53,6 +53,8 @@ public class TransitionProbabilityImpl extends TransitionProbability {
    private DistributionType distributionType;
    
    public TransitionProbabilityImpl(Distribution[] distributions,
+                                    double[] supportLB,
+                                    double[] supportUB,
                                     RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction,
                                     StateSpaceImpl[] stateSpace, 
                                     double stepSize){
@@ -60,13 +62,15 @@ public class TransitionProbabilityImpl extends TransitionProbability {
       this.stateIndependentDistributions = IntStream.iterate(0, i -> i + 1)
                              .limit(distributions.length)
                              .mapToObj(i -> DiscreteDistributionFactory.getTruncatedDiscreteDistribution(
-                                               distributions[i], 0, StateImpl.getMaxState()-StateImpl.getMinState(), stepSize))
+                                               distributions[i], supportLB[i], supportUB[i], stepSize))
                              .toArray(DiscreteDistribution[]::new);
       this.randomOutcomeFunction = randomOutcomeFunction;
       this.stateSpace = stateSpace;
    }
    
    public TransitionProbabilityImpl(Distribution[][][] distributions,
+                                    double[][][] supportLB,
+                                    double[][][] supportUB,
                                     RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction,
                                     StateSpaceImpl[] stateSpace, 
                                     double stepSize){
@@ -75,10 +79,12 @@ public class TransitionProbabilityImpl extends TransitionProbability {
       for(int t = 0; t < distributions.length; t++){
          for(int a = 0; a < distributions[0].length; a++){
             final Distribution[] d = distributions[t][a];
+            double[] lb = supportLB[t][a];
+            double[] ub = supportUB[t][a];
             this.stateActionDependentDistributions[t][a] = IntStream.iterate(0, i -> i + 1)
                                                                     .limit(d.length)
                                                                     .mapToObj(i -> DiscreteDistributionFactory.getTruncatedDiscreteDistribution(
-                                                                                   d[i], 0, StateImpl.getMaxState()-StateImpl.getMinState(), stepSize))
+                                                                                   d[i], lb[i], ub[i], stepSize))
                                                                     .toArray(DiscreteDistribution[]::new);
          }
       }

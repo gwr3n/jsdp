@@ -31,6 +31,7 @@ import java.util.function.Function;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.BackwardRecursion;
+import jsdp.sdp.HashType;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.State;
@@ -50,37 +51,45 @@ public class BackwardRecursionImpl extends BackwardRecursion{
     * Creates an instance of the problem and initializes state space, transition probability and value repository.
     * 
     * @param demand the state-independent distribution of random demand in each period, an array of {@code Distribution}.
+    * @param supportLB the lower bounds for the state dependent distribution of random demand in each period.
+    * @param supportUB the upper bounds for the state dependent distribution of random demand in each period.
     * @param immediateValueFunction the immediate value function.
     * @param randomOutcomeFunction the random outcome function.
     * @param buildActionList the action list builder.
     * @param idempotentAction the idempotent action; i.e. an action that leaves the system in the same state from period {@code t} to period {@code t+1}.
     * @param samplingScheme the sampling scheme adopted.
     * @param maxSampleSize the maximum sample size.
+    * @param hash the type of hash used to store the state space
     */
    public BackwardRecursionImpl(OptimisationDirection optimisationDirection,
                                 Distribution[] demand,
+                                double[] supportLB,
+                                double[] supportUB,
                                 ImmediateValueFunction<State, Action, Double> immediateValueFunction,
                                 RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction,
                                 Function<State, ArrayList<Action>> buildActionList,
                                 Function<State, Action> idempotentAction,
                                 double discountFactor,
                                 SamplingScheme samplingScheme,
-                                int maxSampleSize){
+                                int maxSampleSize,
+                                HashType hash){
       super(optimisationDirection);
       this.horizonLength = demand.length;
       
       this.stateSpace = new StateSpaceImpl[this.horizonLength+1];
       for(int i = 0; i < this.horizonLength + 1; i++) 
-         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, samplingScheme, maxSampleSize);
+         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, hash, samplingScheme, maxSampleSize);
       this.transitionProbability = new TransitionProbabilityImpl(
-            demand,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace(),StateImpl.getStepSize());
-      this.valueRepository = new ValueRepository(immediateValueFunction, discountFactor);
+            demand,supportLB,supportUB,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace(),StateImpl.getStepSize());
+      this.valueRepository = new ValueRepository(immediateValueFunction, discountFactor, hash);
    }
    
    /**
     * Creates an instance of the problem and initializes state space, transition probability and value repository.
     * 
     * @param demand the state-independent distribution of random demand in each period, an array of {@code Distribution}.
+    * @param supportLB the lower bounds for the state dependent distribution of random demand in each period.
+    * @param supportUB the upper bounds for the state dependent distribution of random demand in each period.
     * @param immediateValueFunction the immediate value function.
     * @param randomOutcomeFunction the random outcome function.
     * @param buildActionList the action list builder.
@@ -89,10 +98,13 @@ public class BackwardRecursionImpl extends BackwardRecursion{
     * @param maxSampleSize the maximum sample size.
     * @param stateSpaceSizeLowerBound the maximum size of hashtables used to store the state space
     * @param hashtable load factor (typically 0.8)
+    * @param hash the type of hash used to store the state space
     */
    
    public BackwardRecursionImpl(OptimisationDirection optimisationDirection,
                                 Distribution[] demand,
+                                double[] supportLB,
+                                double[] supportUB,                                
                                 ImmediateValueFunction<State, Action, Double> immediateValueFunction,
                                 RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction,
                                 Function<State, ArrayList<Action>> buildActionList,
@@ -101,22 +113,25 @@ public class BackwardRecursionImpl extends BackwardRecursion{
                                 SamplingScheme samplingScheme,
                                 int maxSampleSize,
                                 int stateSpaceSizeLowerBound, 
-                                float loadFactor){
+                                float loadFactor,
+                                HashType hash){
       super(optimisationDirection);
       this.horizonLength = demand.length;
       
       this.stateSpace = new StateSpaceImpl[this.horizonLength+1];
       for(int i = 0; i < this.horizonLength + 1; i++) 
-         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, samplingScheme, maxSampleSize, stateSpaceSizeLowerBound, loadFactor);
+         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, hash, samplingScheme, maxSampleSize, stateSpaceSizeLowerBound, loadFactor);
       this.transitionProbability = new TransitionProbabilityImpl(
-            demand,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace(),StateImpl.getStepSize());
-      this.valueRepository = new ValueRepository(immediateValueFunction, discountFactor, stateSpaceSizeLowerBound, loadFactor);
+            demand,supportLB,supportUB,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace(),StateImpl.getStepSize());
+      this.valueRepository = new ValueRepository(immediateValueFunction, discountFactor, stateSpaceSizeLowerBound, loadFactor, hash);
    }
    
    /**
     * Creates an instance of the problem and initializes state space, transition probability and value repository.
     * 
     * @param demand the state dependent distribution of random demand in each period, a two-dimensional array of {@code Distribution}, first index is the time period, second index is the state index.
+    * @param supportLB the lower bounds for the state dependent distribution of random demand in each period.
+    * @param supportUB the upper bounds for the state dependent distribution of random demand in each period.
     * @param immediateValueFunction the immediate value function.
     * @param randomOutcomeFunction the random outcome function.
     * @param buildActionList the action list builder.
@@ -126,6 +141,8 @@ public class BackwardRecursionImpl extends BackwardRecursion{
     */
    public BackwardRecursionImpl(OptimisationDirection optimisationDirection,
          Distribution[][] demand,
+         double[][] supportLB,
+         double[][] supportUB,          
          ImmediateValueFunction<State, Action, Double> immediateValueFunction,
          RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction,
          Function<State, ArrayList<Action>> buildActionList,
@@ -150,22 +167,25 @@ public class BackwardRecursionImpl extends BackwardRecursion{
     */
    public BackwardRecursionImpl(OptimisationDirection optimisationDirection,
          Distribution[][][] demand,
+         double[][][] supportLB,
+         double[][][] supportUB,            
          ImmediateValueFunction<State, Action, Double> immediateValueFunction,
          RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction,
          Function<State, ArrayList<Action>> buildActionList,
          Function<State, Action> idempotentAction,
          double discountFactor,
          SamplingScheme samplingScheme,
-         int maxSampleSize){
+         int maxSampleSize,
+         HashType hash){
       super(optimisationDirection);
       this.horizonLength = demand.length;
 
       this.stateSpace = new StateSpaceImpl[this.horizonLength+1];
       for(int i = 0; i < this.horizonLength + 1; i++) 
-         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, samplingScheme, maxSampleSize);
+         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, hash, samplingScheme, maxSampleSize);
       this.transitionProbability = new TransitionProbabilityImpl(
-            demand,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace(),StateImpl.getStepSize());
-      this.valueRepository = new ValueRepository(immediateValueFunction, discountFactor);
+            demand,supportLB,supportUB,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace(),StateImpl.getStepSize());
+      this.valueRepository = new ValueRepository(immediateValueFunction, discountFactor, hash);
    }
    
    @Override

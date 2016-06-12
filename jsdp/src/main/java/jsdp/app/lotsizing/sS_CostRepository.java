@@ -26,6 +26,7 @@
 
 package jsdp.app.lotsizing;
 
+import jsdp.sdp.HashType;
 import jsdp.sdp.ValueRepository;
 
 public class sS_CostRepository extends ValueRepository {
@@ -37,6 +38,6 @@ public class sS_CostRepository extends ValueRepository {
 	      totalCost +=   Math.max(sS_State.stateToInventory(fs.getInitialIntState()),0)*holdingCost+
 	                     Math.max(-sS_State.stateToInventory(fs.getInitialIntState()),0)*penaltyCost;
 	      return totalCost;
-	   }, 1.0);
+	   }, 1.0, HashType.HASHTABLE);
 	}
 }
