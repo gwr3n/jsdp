@@ -26,7 +26,6 @@
 
 package jsdp.sdp;
 
-import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -221,37 +220,5 @@ public class ValueRepository {
 	 */
 	public Action getOptimalAction(State state){
 		return this.optimalActionHashTable.get(state);
-	}
-	
-	/**
-	 * An association abstraction for a pair state-action.
-	 * 
-	 * @author Roberto Rossi
-	 *
-	 */
-	protected class StateAction implements Serializable{
-		State initialState;
-		Action action;
-		
-		/**
-		 * Creates an instance of {@code StateAction} from state {@initialState} and action {@code action}. 
-		 * 
-		 * @param initialState the target state.
-		 * @param action the target action.
-		 */
-		public StateAction(State initialState, Action action){
-			this.initialState = initialState;
-			this.action = action; 
-		}
-		
-		public boolean equals(StateAction stateAction){
-			return this.initialState.equals(stateAction.initialState) && this.action.equals(stateAction.action);
-		}
-		
-		public int hashCode(){
-			String hash = "";
-	      hash = hash + initialState.hashCode() + action.hashCode();
-	      return hash.hashCode();
-		}
 	}
 }

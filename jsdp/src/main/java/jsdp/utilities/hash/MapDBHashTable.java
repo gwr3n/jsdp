@@ -52,13 +52,20 @@ public class MapDBHashTable<K,V> implements Map<K,V>{
    
    @SuppressWarnings("unchecked")
    public MapDBHashTable(String name){
+      // Storage in memory
       //db = DBMaker.memoryDB().make();
+      //db = DBMaker.memoryDirectDB().make();
+      
+      // Storage on disk
       File f = new File("tables");
       if (!(f.exists() && f.isDirectory())) {
          f.mkdir();
       }
       String uuid = UUID.randomUUID().toString();
-      db = DBMaker.fileDB("tables/"+name+uuid+".db").make();
+      db = DBMaker.fileDB("tables/"+name+uuid+".db")
+            .allocateStartSize(512 * 1024*1024)  // 512MB
+            .make();
+      
       this.table = (HTreeMap<K,V>)db.hashMap(name).create();
    }
    
