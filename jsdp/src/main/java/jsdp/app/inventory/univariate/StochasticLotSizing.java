@@ -164,8 +164,8 @@ public class StochasticLotSizing {
       
       // Sampling scheme
       
-      SamplingScheme samplingScheme = SamplingScheme.NONE;
-      int maxSampleSize = 100;
+      SamplingScheme samplingScheme = SamplingScheme.JENSENS_PARTITIONING;
+      int maxSampleSize = 200;
       
       
       // Value Function Processing Method: backward recursion

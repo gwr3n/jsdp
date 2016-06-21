@@ -63,7 +63,7 @@ public class MapDBHashTable<K,V> implements Map<K,V>{
       }
       String uuid = UUID.randomUUID().toString();
       db = DBMaker.fileDB("tables/"+name+uuid+".db")
-            .allocateStartSize(512 * 1024*1024)  // 512MB
+            .allocateStartSize(50 * 1024*1024)  // 50MB
             .make();
       
       this.table = (HTreeMap<K,V>)db.hashMap(name).create();
