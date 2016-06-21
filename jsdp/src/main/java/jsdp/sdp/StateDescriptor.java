@@ -26,6 +26,8 @@
 
 package jsdp.sdp;
 
+import java.io.Serializable;
+
 /**
  * An abstract lightweight descriptor to uniquely identify a {@code State}. {@code StateDescriptor}
  * must implement method {@code hashCode()}, which will be used by the {@code Hashtable} used
@@ -34,7 +36,7 @@ package jsdp.sdp;
  * @author Roberto Rossi
  *
  */
-public abstract class StateDescriptor{
+public abstract class StateDescriptor implements Serializable{
 	
 	protected int period;
 	

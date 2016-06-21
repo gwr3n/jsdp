@@ -26,11 +26,13 @@
 
 package jsdp.sdp;
 
+import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import gnu.trove.map.hash.THashMap;
+import jsdp.utilities.hash.MapDBHashTable;
 
 /**
  * An abstraction representing a repository for the value associated with each {@code State}.
@@ -74,6 +76,13 @@ public class ValueRepository {
             this.optimalValueHashTable = new THashMap<State,Double>();
             this.optimalActionHashTable = new THashMap<State,Action>();
             break;
+         case MAPDB:
+            this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable");
+            this.optimalValueHashTable = new MapDBHashTable<State,Double>("optimalValueHashTable");
+            this.optimalActionHashTable = new MapDBHashTable<State,Action>("optimalActionHashTable");
+            break;
+         default: 
+            throw new NullPointerException("HashType not available");   
 	   }
 	}
 	
@@ -106,6 +115,13 @@ public class ValueRepository {
             this.optimalValueHashTable = new THashMap<State,Double>(stateSpaceSizeLowerBound,loadFactor);
             this.optimalActionHashTable = new THashMap<State,Action>(stateSpaceSizeLowerBound,loadFactor);
             break;
+         case MAPDB:
+            this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable");
+            this.optimalValueHashTable = new MapDBHashTable<State,Double>("optimalValueHashTable");
+            this.optimalActionHashTable = new MapDBHashTable<State,Action>("optimalActionHashTable");
+            break;   
+         default: 
+            throw new NullPointerException("HashType not available");   
       }
    }
 	
@@ -213,7 +229,7 @@ public class ValueRepository {
 	 * @author Roberto Rossi
 	 *
 	 */
-	protected class StateAction{
+	protected class StateAction implements Serializable{
 		State initialState;
 		Action action;
 		

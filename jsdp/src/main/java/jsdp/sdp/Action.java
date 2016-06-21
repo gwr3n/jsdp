@@ -26,13 +26,15 @@
 
 package jsdp.sdp;
 
+import java.io.Serializable;
+
 /**
  * An abstraction for an action that can be selected for a given {@code State}.
  * 
  * @author Roberto Rossi
  *
  */
-public abstract class Action {
+public abstract class Action implements Serializable{
 	
 	protected State state;
 	

@@ -12,14 +12,18 @@ import jsdp.sdp.StateSpace;
 public class BR_StateSpace extends StateSpace<BR_StateDescriptor> {
    
    public BR_StateSpace(int period,
-         Function<State, ArrayList<Action>> buildActionList, int stateSpaceSizeLowerBound, float loadFactor){
-      super(period, HashType.HASHTABLE, stateSpaceSizeLowerBound, loadFactor);
+                        Function<State, ArrayList<Action>> buildActionList,
+                        HashType hashType,
+                        int stateSpaceSizeLowerBound, 
+                        float loadFactor){
+      super(period, hashType, stateSpaceSizeLowerBound, loadFactor);
       this.buildActionList = buildActionList;
    }
    
    public BR_StateSpace(int period,
-         Function<State, ArrayList<Action>> buildActionList){
-      super(period, HashType.HASHTABLE);
+                        Function<State, ArrayList<Action>> buildActionList,
+                        HashType hashType){
+      super(period, hashType);
       this.buildActionList = buildActionList;
    }
 

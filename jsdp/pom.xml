@@ -40,6 +40,11 @@
   		<artifactId>maven-shade-plugin</artifactId>
   		<version>2.3</version>
   	</dependency>
+  	<dependency>
+  		<groupId>org.mapdb</groupId>
+  		<artifactId>mapdb</artifactId>
+  		<version>3.0.0-M6</version>
+  	</dependency>
   </dependencies>
   <url>http://gwr3n.github.io/jsdp/</url>
 </project>

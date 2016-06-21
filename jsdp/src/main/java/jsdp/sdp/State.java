@@ -26,6 +26,7 @@
 
 package jsdp.sdp;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -34,7 +35,7 @@ import java.util.ArrayList;
  * @author Roberto Rossi
  *
  */
-public abstract class State{
+public abstract class State implements Serializable{
 	
 	protected int period;
 	protected ArrayList<Action> feasibleActions;

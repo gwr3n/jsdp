@@ -34,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import gnu.trove.map.hash.THashMap;
+import jsdp.utilities.hash.MapDBHashTable;
 
 /**
  * An abstract container that stores all generated {@code State}.
@@ -60,12 +61,19 @@ public abstract class StateSpace<SD> implements Iterable<State>{
 		this.period = period;
 		switch(hash){
 		case HASHTABLE:
-		   states = new Hashtable<SD,State>();
+		   this.states = new Hashtable<SD,State>();
 		   break;
 		case CONCURRENT_HASHMAP:
-		   states = new ConcurrentHashMap<SD,State>();
+		   this.states = new ConcurrentHashMap<SD,State>();
+		   break;
 		case THASHMAP:
-		   states = new THashMap<SD,State>();
+		   this.states = new THashMap<SD,State>();
+		   break;
+		case MAPDB:
+		   this.states = new MapDBHashTable<SD,State>("states");
+		   break;
+      default: 
+         throw new NullPointerException("HashType not available");
 		}
 	}
 	
@@ -89,6 +97,11 @@ public abstract class StateSpace<SD> implements Iterable<State>{
          case THASHMAP:
             states = new THashMap<SD,State>(stateSpaceSizeLowerBound,loadFactor);
             break;
+         case MAPDB:
+            this.states = new MapDBHashTable<SD,State>("states");
+            break;   
+         default: 
+            throw new NullPointerException("HashType not available");   
       }
    }
 	

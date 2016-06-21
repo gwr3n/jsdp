@@ -28,13 +28,13 @@ public class BR_ForwardRecursion extends ForwardRecursion {
       
       this.stateSpace = new BR_StateSpace[this.horizonLength+1];
       for(int i = 0; i < this.horizonLength + 1; i++) 
-         this.stateSpace[i] = new BR_StateSpace(i, buildActionList);                                         //Hashtable
+         this.stateSpace[i] = new BR_StateSpace(i, buildActionList, HashType.MAPDB);                     //Hashtable
       this.transitionProbability = new BR_TransitionProbability(transitionProbabilities, 
                                                                 fuelConsumption, 
                                                                 (BR_StateSpace[])this.getStateSpace());
       this.valueRepository = new ValueRepository(immediateValueFunction, 
                                                  discountFactor, 
-                                                 HashType.HASHTABLE);                                        //Hashtable
+                                                 HashType.MAPDB);                                        //Hashtable
    }
    
    public BR_ForwardRecursion(int horizonLength,
@@ -52,7 +52,7 @@ public class BR_ForwardRecursion extends ForwardRecursion {
 
       this.stateSpace = new BR_StateSpace[this.horizonLength+1];
       for(int i = 0; i < this.horizonLength + 1; i++) 
-         this.stateSpace[i] = new BR_StateSpace(i, buildActionList, stateSpaceSizeLowerBound, loadFactor); //THashMap
+         this.stateSpace[i] = new BR_StateSpace(i, buildActionList, HashType.MAPDB, stateSpaceSizeLowerBound, loadFactor); //THashMap
       this.transitionProbability = new BR_TransitionProbability(transitionProbabilities, 
                                                                 fuelConsumption, 
                                                                 (BR_StateSpace[])this.getStateSpace());
@@ -60,7 +60,7 @@ public class BR_ForwardRecursion extends ForwardRecursion {
                                                  discountFactor, 
                                                  stateSpaceSizeLowerBound, 
                                                  loadFactor, 
-                                                 HashType.HASHTABLE);   //THashMap
+                                                 HashType.MAPDB);   //THashMap
    }
    
    public double getExpectedCost(BR_StateDescriptor stateDescriptor){
