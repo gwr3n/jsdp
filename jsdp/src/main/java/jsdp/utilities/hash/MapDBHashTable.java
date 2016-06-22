@@ -50,22 +50,31 @@ public class MapDBHashTable<K,V> implements Map<K,V>{
    protected DB db;
    protected HTreeMap<K,V> table;
    
+   enum Storage {
+      MEMORY,
+      DISK
+   };
+   
+   Storage hashTableStorage = Storage.MEMORY;
+   
    @SuppressWarnings("unchecked")
    public MapDBHashTable(String name){
-      // Storage in memory
-      //db = DBMaker.memoryDB().make();
-      //db = DBMaker.memoryDirectDB().make();
-      
-      // Storage on disk
-      File f = new File("tables");
-      if (!(f.exists() && f.isDirectory())) {
-         f.mkdir();
+      switch(hashTableStorage){
+      case MEMORY:
+         db = DBMaker.memoryDB().make();
+         //db = DBMaker.memoryDirectDB().make();
+         break;
+      case DISK:
+         File f = new File("tables");
+         if (!(f.exists() && f.isDirectory())) {
+            f.mkdir();
+         }
+         String uuid = UUID.randomUUID().toString();
+         db = DBMaker.fileDB("tables/"+name+uuid+".db")
+               .allocateStartSize(50 * 1024*1024)  // 50MB
+               .make();
+         break;
       }
-      String uuid = UUID.randomUUID().toString();
-      db = DBMaker.fileDB("tables/"+name+uuid+".db")
-            .allocateStartSize(50 * 1024*1024)  // 50MB
-            .make();
-      
       this.table = (HTreeMap<K,V>)db.hashMap(name).create();
    }
    

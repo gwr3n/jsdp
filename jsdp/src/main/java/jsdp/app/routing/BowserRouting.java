@@ -1,10 +1,14 @@
 package jsdp.app.routing;
 
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.time.StopWatch;
+
+import com.sun.management.OperatingSystemMXBean;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.ImmediateValueFunction;
@@ -80,22 +84,22 @@ public class BowserRouting {
       T = 10;   //time horizon
       M = 3;   //machines
       N = 10;   //nodes
-      tankCapacity = new int[]{100, 100, 100};
+      tankCapacity = new int[]{10, 10, 10};
       initialTankLevel = new int[]{10, 10, 10};
       fuelConsumption = new int[][]{{4, 4, 2, 1, 3, 1, 4, 4, 3, 3},
                                     {4, 2, 3, 4, 3, 1, 4, 2, 4, 4},
                                     {2, 4, 1, 2, 2, 4, 1, 1, 2, 2}};
       connectivity = new int[][]{
                {1, 1, 0, 0, 1, 0, 0, 0, 0, 0},
-               {1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-               {0, 1, 1, 1, 1, 0, 0, 1, 0, 1},
-               {0, 1, 0, 1, 0, 0, 0, 0, 0, 1},
-               {0, 0, 0, 0, 1, 1, 0, 0, 1, 0},
-               {0, 0, 1, 0, 1, 1, 1, 0, 0, 0},
-               {0, 0, 0, 0, 0, 1, 1, 1, 0, 0},
-               {0, 1, 0, 0, 0, 0, 0, 1, 1, 1},
-               {1, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-               {0, 0, 0, 0, 1, 0, 0, 0, 0, 1}};
+               {1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+               {0, 1, 0, 1, 1, 0, 0, 1, 0, 1},
+               {0, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+               {0, 0, 0, 0, 0, 1, 0, 0, 1, 0},
+               {0, 0, 1, 0, 1, 0, 1, 0, 0, 0},
+               {0, 0, 0, 0, 0, 1, 0, 1, 0, 0},
+               {0, 1, 0, 0, 0, 0, 0, 0, 1, 1},
+               {1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+               {0, 0, 0, 0, 1, 0, 0, 0, 0, 0}};
       distance = new double[][]{
             {0., 96., 0., 0., 107., 0., 0., 0., 0., 0.},
             {121.0, 0., 0., 0., 0., 0., 0., 0., 0., 0.},
@@ -149,8 +153,8 @@ public class BowserRouting {
       /*******************************************************************
        * Problem parameters
        */
-      smallInstance();
-      //largeInstance();
+      //smallInstance();
+      largeInstance();
       
       /*******************************************************************
        * Model definition
@@ -158,7 +162,7 @@ public class BowserRouting {
       
       // State space
       int minBowserTankLevel = 0;
-      int maxBowserTankLevel = 20;
+      int maxBowserTankLevel = 10;
       int[] minMachineTankLevel = new int[M];
       int[] maxMachineTankLevel = Arrays.copyOf(tankCapacity, tankCapacity.length);
       int networkSize = N;
@@ -178,15 +182,15 @@ public class BowserRouting {
             if(connectivity[state.getBowserLocation()][i] == 1){
                final int bowserNewLocation = i;
                if(state.getBowserLocation() == 0){
-                  for(int j = 0; j <= BR_State.getMaxBowserTankLevel() - state.getBowserTankLevel(); j++){
+                  for(int j = 0; j <= BR_State.getMaxBowserTankLevel() - state.getBowserTankLevel(); j+=1){
                      final int bowserRefuelQty = j;
-                     BR_Action.computeMachineRefuelQtys(state, j).stream().forEach(action -> 
+                     BR_Action.computeMachineRefuelQtys(state, j).parallelStream().forEach(action -> 
                         feasibleActions.add(new BR_Action(state, bowserNewLocation, bowserRefuelQty, action))
                      );
                   }
                }else{
                   final int bowserRefuelQty = 0;
-                  BR_Action.computeMachineRefuelQtys(state, 0).stream().forEach(action -> 
+                  BR_Action.computeMachineRefuelQtys(state, 0).parallelStream().forEach(action -> 
                      feasibleActions.add(new BR_Action(state, bowserNewLocation, bowserRefuelQty, action))
                   );
                }
@@ -201,7 +205,7 @@ public class BowserRouting {
          BR_State is = (BR_State)initialState;
          BR_Action a = (BR_Action)action;
          BR_State fs = (BR_State)finalState;
-         double travelCost = distance[is.getBowserLocation()][a.bowserNewLocation];
+         double travelCost = finalState.getPeriod() >= N ? 0 : distance[is.getBowserLocation()][a.bowserNewLocation];
          double penaltyCost = Arrays.stream(fs.getMachineTankLevel()).map(l -> Math.max(-l, 0)).sum()*fuelStockOutPenaltyCost;
          return travelCost + penaltyCost;
       };
@@ -224,7 +228,7 @@ public class BowserRouting {
       int period = 0;
       int bowserInitialTankLevel = 0;
       int bowserInitialLocation = 0;
-      int[] machinesInitialTankLevel = initialTankLevel;
+      int[] machinesInitialTankLevel = Arrays.copyOf(initialTankLevel, initialTankLevel.length);
       int[] machinesInitialLocation = getMachineLocationArray(M, machineLocation[0]);
       
       BR_StateDescriptor initialState = new BR_StateDescriptor(period, 
@@ -234,9 +238,32 @@ public class BowserRouting {
                                                                machinesInitialLocation);
 
       StopWatch timer = new StopWatch();
-      timer.start();
-      recursion.runForwardRecursion(((BR_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
-      timer.stop();
+      OperatingSystemMXBean osMBean;
+      try {
+         osMBean = ManagementFactory.newPlatformMXBeanProxy(
+               ManagementFactory.getPlatformMBeanServer(), ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME, OperatingSystemMXBean.class);
+         long nanoBefore = System.nanoTime();
+         long cpuBefore = osMBean.getProcessCpuTime();
+         
+         timer.start();
+         recursion.runForwardRecursion(((BR_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
+         timer.stop();
+         
+         long cpuAfter = osMBean.getProcessCpuTime();
+         long nanoAfter = System.nanoTime();
+         
+         long percent;
+         if (nanoAfter > nanoBefore)
+          percent = ((cpuAfter-cpuBefore)*100L)/
+            (nanoAfter-nanoBefore);
+         else percent = 0;
+
+         System.out.println("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)");
+      } catch (IOException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      System.out.println();
       double ETC = recursion.getExpectedCost(initialState);
       System.out.println("Expected total cost: "+ETC);
       System.out.println("Optimal initial action: "+recursion.getOptimalAction(initialState).toString());

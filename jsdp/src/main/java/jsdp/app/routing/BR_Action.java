@@ -58,14 +58,14 @@ public class BR_Action extends Action {
       if(machine == state.getMachineTankLevel().length - 1){
          qtys.add(Arrays.copyOf(currentPlan, currentPlan.length));
          for(int i = 1; i <= Math.min(availableFuel, BR_State.getMaxMachineTankLevel()[machine] - state.getMachineTankLevel()[machine]) &&
-                        state.getMachineLocation()[machine] == state.getBowserLocation(); i++){
+                        state.getMachineLocation()[machine] == state.getBowserLocation(); i+= 1){
             currentPlan[machine] = i;
             qtys.add(Arrays.copyOf(currentPlan, currentPlan.length));
          }
       }else{
          refuelMachine(Arrays.copyOf(currentPlan, currentPlan.length), machine + 1, state, availableFuel, qtys);
          for(int i = 1; i <= Math.min(availableFuel, BR_State.getMaxMachineTankLevel()[machine] - state.getMachineTankLevel()[machine]) &&
-                        state.getMachineLocation()[machine] == state.getBowserLocation(); i++){
+                        state.getMachineLocation()[machine] == state.getBowserLocation(); i+= 1){
             currentPlan[machine] = i;
             refuelMachine(Arrays.copyOf(currentPlan, currentPlan.length), machine + 1, state, availableFuel - i, qtys);
          }

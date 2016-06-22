@@ -57,15 +57,15 @@ public abstract class ForwardRecursion extends Recursion{
 	public double runForwardRecursion(State state){
 		return this.valueRepository.optimalValueHashTable.computeIfAbsent(state, y -> {
 		   BestActionRepository repository = new BestActionRepository();
-		   y.getFeasibleActions().stream().forEach(action -> {
+		   y.getFeasibleActions().parallelStream().forEach(action -> {
 		      double normalisationFactor = this.getTransitionProbability()
 		                                       .generateFinalStates(y, action)
-		                                       .stream()
+		                                       .parallelStream()
 		                                       .mapToDouble(finalState -> transitionProbability.getTransitionProbability(y, action, finalState))
 		                                       .sum();
 				double currentCost = this.getTransitionProbability()
 				                         .generateFinalStates(y, action)
-				                         .stream()
+				                         .parallelStream()
 				                         .mapToDouble(c -> ( this.getValueRepository().getImmediateValue(y, action, c)+
 						 				                           (y.getPeriod() < horizonLength - 1 ? runForwardRecursion(c) : 0) )*
 				                                             this.getValueRepository().getDiscountFactor()*

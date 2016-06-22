@@ -164,7 +164,7 @@ public class StochasticLotSizing {
       
       // Sampling scheme
       
-      SamplingScheme samplingScheme = SamplingScheme.JENSENS_PARTITIONING;
+      SamplingScheme samplingScheme = SamplingScheme.NONE;
       int maxSampleSize = 200;
       
       
