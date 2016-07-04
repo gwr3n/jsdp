@@ -130,7 +130,7 @@ public abstract class BackwardRecursion extends Recursion{
 			.parallelStream()
 			.forEach(entry -> {
 				State state = entry.getValue();
-				BestActionRepository repository = new BestActionRepository();
+				BestActionRepository repository = new BestActionRepository(direction);
 				state.getFeasibleActions().parallelStream().forEach(action -> {
 					double currentCost = this.getValueRepository().getExpectedValue(state, action, this.getTransitionProbability());
 					repository.update(action, currentCost);

@@ -228,7 +228,7 @@ public class StochasticLotSizing {
        * Charting
        */   
       System.out.println("--------------Charting--------------");
-      int targetPeriod = 0;                                 //If targetPeriod > 0 then no sampling!
+      int targetPeriod = 0;                                 
       plotOptimalPolicyAction(targetPeriod, recursion);     //Plot optimal policy action
       BackwardRecursionImpl recursionPlot = new BackwardRecursionImpl(OptimisationDirection.MIN,
                                                                       distributions,
@@ -239,7 +239,7 @@ public class StochasticLotSizing {
                                                                       buildActionList,
                                                                       idempotentAction,
                                                                       discountFactor,
-                                                                      samplingScheme,
+                                                                      targetPeriod > 0 ? SamplingScheme.NONE : samplingScheme,
                                                                       maxSampleSize,
                                                                       HashType.HASHTABLE);
       plotOptimalPolicyCost(targetPeriod, recursionPlot);   //Plot optimal policy cost 

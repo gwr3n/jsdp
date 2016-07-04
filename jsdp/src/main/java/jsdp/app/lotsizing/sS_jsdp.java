@@ -75,7 +75,7 @@ public class sS_jsdp {
 
    public static void main(String[] args) {
       //Factor must be 1 for discrete distributions
-      sS_State.setStateBoundaries(1, -50, 100);
+      sS_State.setStateBoundaries(1, -100, 100);
 
       double fixedOrderingCost = 50; 
       double proportionalOrderingCost = 0; 
@@ -98,7 +98,7 @@ public class sS_jsdp {
       double maxDemand = sS_State.getMaxInventory()-sS_State.getMinInventory();
       
       double initialInventory = 0;
-      sS_StateSpaceSampleIterator.SamplingScheme samplingScheme = sS_StateSpaceSampleIterator.SamplingScheme.JENSENS_PARTITIONING;
+      sS_StateSpaceSampleIterator.SamplingScheme samplingScheme = sS_StateSpaceSampleIterator.SamplingScheme.NONE;
       int maxSampleSize = 25;
 
       System.out.println("--------------Forward recursion--------------");
@@ -283,6 +283,9 @@ public class sS_jsdp {
 
       sS_StateDescriptor initialState = new sS_StateDescriptor(0, sS_State.inventoryToState(initialInventory));
 
+      /**
+       * Replace parallelStream with stream in "runForwardRecursion" to prevent deadlock
+       */
       StopWatch timer = new StopWatch();
       timer.start();
       recursion.runForwardRecursion(((sS_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));

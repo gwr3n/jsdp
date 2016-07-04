@@ -26,10 +26,14 @@
 
 package jsdp.app.lotsizing;
 
-import jsdp.sdp.Action;
-import jsdp.sdp.ForwardRecursion;
-import jsdp.sdp.State;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import jsdp.sdp.Action;
+import jsdp.sdp.BestActionRepository;
+import jsdp.sdp.ForwardRecursion;
+import jsdp.sdp.Recursion;
+import jsdp.sdp.State;
 import umontreal.ssj.probdist.Distribution;
 
 /**
@@ -39,6 +43,8 @@ import umontreal.ssj.probdist.Distribution;
  *
  */
 public class sS_ForwardRecursion extends ForwardRecursion{
+   
+   static final Logger logger = LogManager.getLogger(sS_ForwardRecursion.class.getName());
 	
 	Distribution[] demand;
 	
@@ -77,6 +83,35 @@ public class sS_ForwardRecursion extends ForwardRecursion{
 	public sS_CostRepository getValueRepository(){
 		return (sS_CostRepository) this.valueRepository;
 	}
+	
+	@Override
+	public double runForwardRecursion(State state){
+      return this.valueRepository.getOptimalValueHashTable().computeIfAbsent(state, y -> {
+         BestActionRepository repository = new BestActionRepository(direction);
+         y.getFeasibleActions().stream().forEach(action -> {
+            double normalisationFactor = this.getTransitionProbability()
+                                             .generateFinalStates(y, action)
+                                             .stream()
+                                             .mapToDouble(finalState -> transitionProbability.getTransitionProbability(y, action, finalState))
+                                             .sum();
+            double currentCost = this.getTransitionProbability()
+                                     .generateFinalStates(y, action)
+                                     .stream()
+                                     .mapToDouble(c -> ( this.getValueRepository().getImmediateValue(y, action, c)+
+                                                         (y.getPeriod() < horizonLength - 1 ? runForwardRecursion(c) : 0) )*
+                                                         this.getValueRepository().getDiscountFactor()*
+                                                         this.getTransitionProbability().getTransitionProbability(y, action, c))
+                                     .sum();
+               if(normalisationFactor != 0)
+                  currentCost /= normalisationFactor;
+               repository.update(action, currentCost);
+            });
+            this.getValueRepository().setOptimalExpectedValue(y, repository.getBestValue());
+            this.getValueRepository().setOptimalAction(y, repository.getBestAction());
+            logger.trace(repository.getBestAction()+"\tCost: "+repository.getBestValue());
+            return repository.getBestValue();
+      });
+   }
 	
 	public double[][] getOptimalPolicy(double initialInventory){
 		double[][] optimalPolicy = new double[2][];

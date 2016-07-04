@@ -56,7 +56,7 @@ public abstract class ForwardRecursion extends Recursion{
 	 */
 	public double runForwardRecursion(State state){
 		return this.valueRepository.optimalValueHashTable.computeIfAbsent(state, y -> {
-		   BestActionRepository repository = new BestActionRepository();
+		   BestActionRepository repository = new BestActionRepository(direction);
 		   y.getFeasibleActions().parallelStream().forEach(action -> {
 		      double normalisationFactor = this.getTransitionProbability()
 		                                       .generateFinalStates(y, action)

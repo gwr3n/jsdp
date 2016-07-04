@@ -127,6 +127,29 @@ public class ValueRepository {
 	protected ValueRepository(){}
 	
 	/**
+	 * Returns the hashtable storing optimal state values.
+	 * 
+	 * @return the hashtable storing optimal state values
+	 */
+	public Map<State,Double> getOptimalValueHashTable(){
+	   return this.optimalValueHashTable;
+	}
+	
+	/**
+    * Returns the hashtable storing optimal actions.
+    * 
+    * @return the hashtable storing optimal actions
+    */
+	public Map<State,Action> getOptimalActionHashTable(){
+	   return this.optimalActionHashTable;
+	}
+	
+	
+	public Map<StateAction,Double> getValueHashTable(){
+	   return this.valueHashTable;
+	}
+	
+	/**
 	 * Returns the immediate value of a transition from {@code initialState} to {@code finalState} under a chosen {@code action}.
 	 * 
 	 * @param initialState the initial state of the stochastic process.
@@ -134,7 +157,7 @@ public class ValueRepository {
 	 * @param finalState the final state of the stochastic process.
 	 * @return the immediate value of a transition from {@code initialState} to {@code finalState} under a chosen {@code action}.
 	 */
-	protected double getImmediateValue(State initialState, Action action, State finalState) {
+	public double getImmediateValue(State initialState, Action action, State finalState) {
       return this.immediateValueFunction.apply(initialState, action, finalState);
    }
 	
@@ -144,7 +167,7 @@ public class ValueRepository {
     * @param immediateValueFunction the immediate value of a transition from {@code initialState} to 
     * {@code finalState} under a chosen {@code action}.
     */
-	protected void setImmediateValue(ImmediateValueFunction<State, Action, Double> immediateValueFunction) {
+	public void setImmediateValue(ImmediateValueFunction<State, Action, Double> immediateValueFunction) {
       this.immediateValueFunction = immediateValueFunction;
    }
 	
