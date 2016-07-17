@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.app.routing;
+package jsdp.app.routing.location;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -35,9 +35,9 @@ import jsdp.sdp.HashType;
 import jsdp.sdp.State;
 import jsdp.sdp.StateSpace;
 
-public class BR_StateSpace extends StateSpace<BR_StateDescriptor> {
+public class BRL_StateSpace extends StateSpace<BRL_StateDescriptor> {
    
-   public BR_StateSpace(int period,
+   public BRL_StateSpace(int period,
                         Function<State, ArrayList<Action>> buildActionList,
                         HashType hashType,
                         int stateSpaceSizeLowerBound, 
@@ -46,25 +46,25 @@ public class BR_StateSpace extends StateSpace<BR_StateDescriptor> {
       this.buildActionList = buildActionList;
    }
    
-   public BR_StateSpace(int period,
+   public BRL_StateSpace(int period,
                         Function<State, ArrayList<Action>> buildActionList,
                         HashType hashType){
       super(period, hashType);
       this.buildActionList = buildActionList;
    }
 
-   public boolean exists (BR_StateDescriptor descriptor){
+   public boolean exists (BRL_StateDescriptor descriptor){
       return states.get(descriptor) != null;
    }
    
-   public State getState(BR_StateDescriptor descriptor){
+   public State getState(BRL_StateDescriptor descriptor){
       State value = states.get(descriptor);
       if(value == null){
-         State state = new BR_State(descriptor, this.buildActionList);
+         State state = new BRL_State(descriptor, this.buildActionList);
          this.states.put(descriptor, state);
          return state;
       }else
-         return (BR_State) value;
+         return (BRL_State) value;
    }
 
    public Iterator<State> iterator() {

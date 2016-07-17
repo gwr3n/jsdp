@@ -6,7 +6,6 @@ import java.util.function.Function;
 
 import org.apache.commons.lang3.time.StopWatch;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import jsdp.sdp.Action;
 import jsdp.sdp.HashType;
 import jsdp.sdp.ImmediateValueFunction;
@@ -110,11 +109,12 @@ public class MaintenanceScheduling {
          //StateImpl is = (StateImpl)initialState;
          ActionImpl a = (ActionImpl)action;
          StateImpl fs = (StateImpl)finalState;
-         if(a.getAction() == 1){
+         return (double)fs.getInitialIntState();
+         /*if(a.getAction() == 1){
             return 0.0;
          }else{
             return (double)fs.getInitialIntState();
-         }
+         }*/
       };
 
       /*******************************************************************

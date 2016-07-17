@@ -58,21 +58,22 @@ public abstract class ForwardRecursion extends Recursion{
 		return this.valueRepository.optimalValueHashTable.computeIfAbsent(state, y -> {
 		   BestActionRepository repository = new BestActionRepository(direction);
 		   y.getFeasibleActions().parallelStream().forEach(action -> {
-		      double normalisationFactor = this.getTransitionProbability()
-		                                       .generateFinalStates(y, action)
-		                                       .parallelStream()
-		                                       .mapToDouble(finalState -> transitionProbability.getTransitionProbability(y, action, finalState))
-		                                       .sum();
-				double currentCost = this.getTransitionProbability()
-				                         .generateFinalStates(y, action)
-				                         .parallelStream()
-				                         .mapToDouble(c -> ( this.getValueRepository().getImmediateValue(y, action, c)+
-						 				                           (y.getPeriod() < horizonLength - 1 ? runForwardRecursion(c) : 0) )*
-				                                             this.getValueRepository().getDiscountFactor()*
-						 						 	                  this.getTransitionProbability().getTransitionProbability(y, action, c))
-				                         .sum();
+		         double normalisationFactor = this.getTransitionProbability()
+		                                          .generateFinalStates(y, action)
+		                                          .parallelStream()
+		                                          .mapToDouble(finalState -> transitionProbability.getTransitionProbability(y, action, finalState))
+		                                          .sum();
+				   double currentCost = this.getTransitionProbability()
+				                            .generateFinalStates(y, action)
+				                            .stream()
+				                            .mapToDouble(c -> ( this.getValueRepository().getImmediateValue(y, action, c)+
+						 				                              (y.getPeriod() < horizonLength - 1 ? runForwardRecursion(c) : 0) )*
+				                                                this.getValueRepository().getDiscountFactor()*
+						 						 	                     this.getTransitionProbability().getTransitionProbability(y, action, c))
+				                            .sum();
 					if(normalisationFactor != 0)
                   currentCost /= normalisationFactor;
+					
 					repository.update(action, currentCost);
 				});
 				this.getValueRepository().setOptimalExpectedValue(y, repository.getBestValue());

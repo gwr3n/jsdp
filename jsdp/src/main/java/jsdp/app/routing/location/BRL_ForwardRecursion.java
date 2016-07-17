@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.app.routing;
+package jsdp.app.routing.location;
 
 import java.util.ArrayList;
 import java.util.function.Function;
@@ -36,12 +36,12 @@ import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.State;
 import jsdp.sdp.ValueRepository;
 
-public class BR_ForwardRecursion extends ForwardRecursion {
+public class BRL_ForwardRecursion extends ForwardRecursion {
    
    double[][][] machineLocation; 
    int[][] fuelConsumption;
    
-   public BR_ForwardRecursion(int horizonLength,
+   public BRL_ForwardRecursion(int horizonLength,
                               double[][][] machineLocation, 
                               int[][] fuelConsumption,
                               ImmediateValueFunction<State, Action, Double> immediateValueFunction,
@@ -52,18 +52,18 @@ public class BR_ForwardRecursion extends ForwardRecursion {
       this.machineLocation = machineLocation;
       this.fuelConsumption = fuelConsumption;
       
-      this.stateSpace = new BR_StateSpace[this.horizonLength+1];
+      this.stateSpace = new BRL_StateSpace[this.horizonLength+1];
       for(int i = 0; i < this.horizonLength + 1; i++) 
-         this.stateSpace[i] = new BR_StateSpace(i, buildActionList, HashType.MAPDB);                     //Hashtable
-      this.transitionProbability = new BR_TransitionProbability(machineLocation, 
+         this.stateSpace[i] = new BRL_StateSpace(i, buildActionList, HashType.MAPDB);                     //Hashtable
+      this.transitionProbability = new BRL_TransitionProbability(machineLocation, 
                                                                 fuelConsumption, 
-                                                                (BR_StateSpace[])this.getStateSpace());
+                                                                (BRL_StateSpace[])this.getStateSpace());
       this.valueRepository = new ValueRepository(immediateValueFunction, 
                                                  discountFactor, 
                                                  HashType.MAPDB);                                        //Hashtable
    }
    
-   public BR_ForwardRecursion(int horizonLength,
+   public BRL_ForwardRecursion(int horizonLength,
          double[][][] machineLocation, 
          int[][] fuelConsumption,
          ImmediateValueFunction<State, Action, Double> immediateValueFunction,
@@ -76,12 +76,12 @@ public class BR_ForwardRecursion extends ForwardRecursion {
       this.machineLocation = machineLocation;
       this.fuelConsumption = fuelConsumption;
 
-      this.stateSpace = new BR_StateSpace[this.horizonLength+1];
+      this.stateSpace = new BRL_StateSpace[this.horizonLength+1];
       for(int i = 0; i < this.horizonLength + 1; i++) 
-         this.stateSpace[i] = new BR_StateSpace(i, buildActionList, HashType.MAPDB, stateSpaceSizeLowerBound, loadFactor); //THashMap
-      this.transitionProbability = new BR_TransitionProbability(machineLocation, 
+         this.stateSpace[i] = new BRL_StateSpace(i, buildActionList, HashType.MAPDB, stateSpaceSizeLowerBound, loadFactor); //THashMap
+      this.transitionProbability = new BRL_TransitionProbability(machineLocation, 
                                                                 fuelConsumption, 
-                                                                (BR_StateSpace[])this.getStateSpace());
+                                                                (BRL_StateSpace[])this.getStateSpace());
       this.valueRepository = new ValueRepository(immediateValueFunction, 
                                                  discountFactor, 
                                                  stateSpaceSizeLowerBound, 
@@ -89,13 +89,13 @@ public class BR_ForwardRecursion extends ForwardRecursion {
                                                  HashType.MAPDB);   //THashMap
    }
    
-   public double getExpectedCost(BR_StateDescriptor stateDescriptor){
-      State state = ((BR_StateSpace)this.getStateSpace(stateDescriptor.getPeriod())).getState(stateDescriptor);
+   public double getExpectedCost(BRL_StateDescriptor stateDescriptor){
+      State state = ((BRL_StateSpace)this.getStateSpace(stateDescriptor.getPeriod())).getState(stateDescriptor);
       return getExpectedValue(state);
    }
    
-   public BR_Action getOptimalAction(BR_StateDescriptor stateDescriptor){
-      State state = ((BR_StateSpace)this.getStateSpace(stateDescriptor.getPeriod())).getState(stateDescriptor);
-      return (BR_Action) this.getValueRepository().getOptimalAction(state);
+   public BRL_Action getOptimalAction(BRL_StateDescriptor stateDescriptor){
+      State state = ((BRL_StateSpace)this.getStateSpace(stateDescriptor.getPeriod())).getState(stateDescriptor);
+      return (BRL_Action) this.getValueRepository().getOptimalAction(state);
    }
 }

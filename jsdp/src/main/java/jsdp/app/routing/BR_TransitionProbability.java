@@ -1,3 +1,29 @@
+/**
+ * jsdp: A Java Stochastic Dynamic Programming Library
+ * 
+ * MIT License
+ * 
+ * Copyright (c) 2016 Roberto Rossi
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package jsdp.app.routing;
 
 import java.util.ArrayList;
@@ -9,12 +35,12 @@ import jsdp.sdp.TransitionProbability;
 
 public class BR_TransitionProbability extends TransitionProbability {
 
-   private double[][][] transitionProbabilities;
+   private double[][][] machineLocation;
    private int[][] fuelConsumption;
    BR_StateSpace[] stateSpace;
    
-   public BR_TransitionProbability(double[][][] transitionProbabilities, int[][] fuelConsumption, BR_StateSpace[] stateSpace){
-      this.transitionProbabilities = transitionProbabilities;
+   public BR_TransitionProbability(double[][][] machineLocation, int[][] fuelConsumption, BR_StateSpace[] stateSpace){
+      this.machineLocation = machineLocation;
       this.fuelConsumption = fuelConsumption;
       this.stateSpace = stateSpace;
    }
@@ -22,10 +48,6 @@ public class BR_TransitionProbability extends TransitionProbability {
    @Override
    public double getTransitionProbability(State initialState, Action action, State finalState) {
       double probability = 1;
-      int[] machineLocations = ((BR_State) finalState).getMachineLocation();
-      for(int i = 0; i < machineLocations.length; i++){
-         probability *= this.transitionProbabilities[finalState.getPeriod()][i][machineLocations[i]];
-      }
       return probability;
    }
 
@@ -41,42 +63,26 @@ public class BR_TransitionProbability extends TransitionProbability {
          machineTankLevel[i] += ((BR_Action) action).getMachineRefuelQty()[i] - this.fuelConsumption[i][initialState.getPeriod()];
       }
       
-      ArrayList<int[]> machineLocationsArray = new ArrayList<int[]>();
-      
       int[] machineLocations = new int[((BR_State) initialState).getMachineLocation().length];
-      generateLocations(machineLocations, 0, this.transitionProbabilities[initialState.getPeriod()+1], machineLocationsArray);
+      double[][] locationProbabilityMatrix = this.machineLocation[initialState.getPeriod()+1];
+      for(int machine = 0; machine < machineLocations.length; machine++){
+         for(int i = 0; i < locationProbabilityMatrix[machine].length; i++){
+            if(locationProbabilityMatrix[machine][i] == 1){
+               machineLocations[machine] = i;
+            }
+         }
+      }
+      
+      BR_StateDescriptor descriptor = new BR_StateDescriptor(initialState.getPeriod() + 1, 
+            bowserTankLevel,
+            bowserLocation,
+            machineTankLevel,
+            machineLocations);
       
       ArrayList<State> finalStates = new ArrayList<State>();
-      for(int i = 0; i < machineLocationsArray.size(); i++){
-         BR_StateDescriptor descriptor = new BR_StateDescriptor(initialState.getPeriod() + 1, 
-                                                                bowserTankLevel,
-                                                                bowserLocation,
-                                                                machineTankLevel,
-                                                                machineLocationsArray.get(i));
-         finalStates.add(this.stateSpace[initialState.getPeriod() + 1].getState(descriptor));
-      }
+      finalStates.add(this.stateSpace[initialState.getPeriod() + 1].getState(descriptor));
+      
       return finalStates;
-   }
-   
-   private static void generateLocations(int[] machineLocations, 
-                                         int machine, 
-                                         double[][] locationProbabilityMatrix, 
-                                         ArrayList<int[]> machineLocationsArray){
-      if(machine == locationProbabilityMatrix.length - 1){
-         for(int i = 0; i < locationProbabilityMatrix[machine].length; i++){
-            if(locationProbabilityMatrix[machine][i] > 0){
-               machineLocations[machine] = i;
-               machineLocationsArray.add(Arrays.copyOf(machineLocations, machineLocations.length));
-            }
-         }
-      }else{
-         for(int i = 0; i < locationProbabilityMatrix[machine].length; i++){
-            if(locationProbabilityMatrix[machine][i] > 0){
-               machineLocations[machine] = i;
-               generateLocations(Arrays.copyOf(machineLocations, machineLocations.length), machine + 1, locationProbabilityMatrix, machineLocationsArray);
-            }
-         }
-      }
    }
 
    @Override

@@ -109,14 +109,17 @@ public class TransitionProbabilityImpl extends TransitionProbability {
    }
    
    private double getStateActionDependentTransitionProbability(State initialState, Action action, State finalState) {
+      int randomOutcome = StateImpl.stateToIntState(this.randomOutcomeFunction.apply(initialState, action, finalState));
       int period = ((StateImpl)initialState).getPeriod();
-      return this.stateActionDependentDistributions[period][((ActionImpl)action).getIntAction()][((StateImpl)initialState).getInitialIntState()].prob(((StateImpl)finalState).getInitialIntState());
+      return this.stateActionDependentDistributions[period][((ActionImpl)action).getIntAction()][((StateImpl)initialState).getInitialIntState()].prob(randomOutcome);
+      //return this.stateActionDependentDistributions[period][((ActionImpl)action).getIntAction()][((StateImpl)initialState).getInitialIntState()].prob(((StateImpl)finalState).getInitialIntState());
    }
    
    private double getStateIndependentTransitionProbability(State initialState, Action action, State finalState) {
       int randomOutcome = StateImpl.stateToIntState(this.randomOutcomeFunction.apply(initialState, action, finalState));
       int period = ((StateImpl)initialState).getPeriod();
-      return this.stateIndependentDistributions[period].prob(randomOutcome);
+      return this.stateIndependentDistributions[period].cdf(randomOutcome) - this.stateIndependentDistributions[period].cdf(randomOutcome - 1);
+      //return this.stateIndependentDistributions[period].prob(randomOutcome);
    }
    
    private double getStateDependentTransitionProbability(State initialState, Action action, State finalState) {
