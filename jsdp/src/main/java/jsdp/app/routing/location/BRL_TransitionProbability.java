@@ -29,6 +29,7 @@ package jsdp.app.routing.location;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import jsdp.app.routing.BR_State;
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
 import jsdp.sdp.TransitionProbability;
@@ -62,7 +63,8 @@ public class BRL_TransitionProbability extends TransitionProbability {
                             Arrays.stream(((BRL_Action)action).getMachineRefuelQty()).sum();
       int bowserLocation = ((BRL_Action) action).getBowserNewLocation();
       
-      int machineTankLevel[] = Arrays.copyOf(((BRL_State) initialState).getMachineTankLevel(), ((BRL_State) initialState).getMachineTankLevel().length);
+      //int machineTankLevel[] = Arrays.copyOf(((BRL_State) initialState).getMachineTankLevel(), ((BRL_State) initialState).getMachineTankLevel().length);
+      int machineTankLevel[] = Arrays.stream(((BRL_State) initialState).getMachineTankLevel()).map(i -> Math.max(i, 0)).toArray();
       for(int i = 0; i < machineTankLevel.length; i++){
          machineTankLevel[i] += ((BRL_Action) action).getMachineRefuelQty()[i] - this.fuelConsumption[i][initialState.getPeriod()];
       }

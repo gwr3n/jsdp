@@ -58,7 +58,16 @@ public class BowserRouting {
    static double[][][] machineLocation;
    static int fuelStockOutPenaltyCost;
    
+   static enum InstanceType {
+      TINY,
+      SMALL,
+      LARGE
+   }
+   
+   static InstanceType type;
+   
    static void tinyInstance(){
+      type = InstanceType.TINY;
       /*******************************************************************
        * Problem parameters
        */
@@ -103,6 +112,7 @@ public class BowserRouting {
    }
    
    static void smallInstance(){
+      type = InstanceType.SMALL;
       /*******************************************************************
        * Problem parameters
        */
@@ -155,6 +165,7 @@ public class BowserRouting {
    }
    
    static void largeInstance(){
+      type = InstanceType.LARGE;
       /*******************************************************************
        * Problem parameters
        */
@@ -241,7 +252,7 @@ public class BowserRouting {
       // State space
       int minBowserTankLevel = 0;
       int maxBowserTankLevel = 10;
-      int[] minMachineTankLevel = new int[M];
+      int[] minMachineTankLevel = Arrays.stream(fuelConsumption).mapToInt(m -> -Arrays.stream(m).max().getAsInt()).toArray();
       int[] maxMachineTankLevel = Arrays.copyOf(tankCapacity, tankCapacity.length);
       int networkSize = N;
       
@@ -353,7 +364,7 @@ public class BowserRouting {
          bowserInitialTankLevel += ((BR_Action)recursion.getOptimalAction(initialState)).getBowserRefuelQty() - Arrays.stream(((BR_Action)recursion.getOptimalAction(initialState)).getMachineRefuelQty()).sum();
          machinesInitialLocation = getMachineLocationArray(M, machineLocation[t]);
          for(int i = 0; i < M; i++){
-            machinesInitialTankLevel[i] += ((BR_Action)recursion.getOptimalAction(initialState)).getMachineRefuelQty()[i] - fuelConsumption[i][t-1];
+            machinesInitialTankLevel[i] = Math.max(0, machinesInitialTankLevel[i]) + ((BR_Action)recursion.getOptimalAction(initialState)).getMachineRefuelQty()[i] - fuelConsumption[i][t-1];
          }
          initialState = new BR_StateDescriptor(period + t, 
                bowserInitialTankLevel, 

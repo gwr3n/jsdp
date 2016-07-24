@@ -58,7 +58,7 @@ public class BR_TransitionProbability extends TransitionProbability {
                             Arrays.stream(((BR_Action)action).getMachineRefuelQty()).sum();
       int bowserLocation = ((BR_Action) action).getBowserNewLocation();
       
-      int machineTankLevel[] = Arrays.copyOf(((BR_State) initialState).getMachineTankLevel(), ((BR_State) initialState).getMachineTankLevel().length);
+      int machineTankLevel[] = Arrays.stream(((BR_State) initialState).getMachineTankLevel()).map(i -> Math.max(i, 0)).toArray();
       for(int i = 0; i < machineTankLevel.length; i++){
          machineTankLevel[i] += ((BR_Action) action).getMachineRefuelQty()[i] - this.fuelConsumption[i][initialState.getPeriod()];
       }

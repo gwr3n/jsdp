@@ -61,7 +61,16 @@ public class BowserRoutingFuel {
    static double[][][] machineLocation;
    static int fuelStockOutPenaltyCost;
    
+   static enum InstanceType {
+      TINY,
+      SMALL,
+      LARGE
+   }
+   
+   static InstanceType type;
+   
    static void tinyInstance(){
+      type = InstanceType.TINY;
       /*******************************************************************
        * Problem parameters
        */
@@ -118,7 +127,73 @@ public class BowserRoutingFuel {
       fuelStockOutPenaltyCost = 20;
    }
    
+   static void smallInstance(){
+      type = InstanceType.SMALL;
+      /*******************************************************************
+       * Problem parameters
+       */
+      T = 5;   //time horizon
+      M = 3;   //machines
+      N = 5;   //nodes
+      tankCapacity = new int[]{10, 10, 10};
+      initialTankLevel = new int[]{0, 0, 0};
+      
+      final int minFuelConsumption = 0;
+      final int maxFuelConsumption = 10;
+      int[][] fuelConsumption = new int[][]{{2, 4, 3, 4, 4},
+                                            {2, 1, 3, 1, 4},
+                                            {4, 3, 3, 4, 2}};
+      fuelConsumptionProb = new DiscreteDistribution[fuelConsumption.length][fuelConsumption[0].length];
+      for(int i = 0; i < fuelConsumption.length; i++){
+         final int[] array = fuelConsumption[i];
+         fuelConsumptionProb[i] = Arrays.stream(array)
+                                        .mapToObj(k -> DiscreteDistributionFactory.getTruncatedDiscreteDistribution(
+                                                  new PoissonDist(k), minFuelConsumption, maxFuelConsumption, 1.0))
+                                        .toArray(DiscreteDistribution[]::new);
+      }                             
+                                   
+      connectivity = new int[][]{
+            {1, 1, 0, 0, 0},
+            {0, 0, 1, 0, 0},
+            {1, 0, 0, 0, 1},
+            {0, 0, 1, 0, 0},
+            {0, 0, 0, 1, 0}};
+      distance = new double[][]{
+      {0., 98.3569, 0., 0., 0.},
+      {0., 0., 72.6373, 0., 0.},
+      {44.2516, 0., 0., 0., 99.4693},
+      {0., 0., 87.9929, 0., 0.},
+      {0., 0., 0., 78.212, 0.}};
+      machineLocation = new double[][][]{
+      {{0, 0, 0, 0, 1},
+      {0, 1, 0, 0, 0},
+      {0, 0, 0, 0, 1}},
+      
+      {{0, 0, 0, 0, 1},   
+      {0, 0, 0, 1, 0},
+      {0, 1, 0, 0, 0}},
+      
+      {{0, 0, 1, 0, 0},
+      {0, 0, 1, 0, 0},
+      {0, 0, 1, 0, 0}},
+      
+      {{0, 1, 0, 0, 0},
+      {0, 0, 0, 0, 1},
+      {0, 0, 0, 1, 0}},
+      
+      {{0, 0, 0, 0, 1},
+      {0, 0, 0, 1, 0},
+      {0, 0, 1, 0, 0}},
+      
+      {{0, 0, 0, 0, 1},
+      {0, 0, 0, 1, 0},
+      {0, 0, 1, 0, 0}}};
+      
+      fuelStockOutPenaltyCost = 20;
+   }
+   
    static void largeInstance(){
+      type = InstanceType.LARGE;
       /*******************************************************************
        * Problem parameters
        */
@@ -206,6 +281,7 @@ public class BowserRoutingFuel {
        * Problem parameters
        */
       tinyInstance();
+      //smallInstance();
       //largeInstance();
       
       /*******************************************************************
@@ -322,25 +398,29 @@ public class BowserRoutingFuel {
       System.out.println("Time elapsed: "+timer);
       System.out.println();
       
-      int[][] fuelConsumption = new int[][]{{1, 2, 1},
-                                            {2, 1, 2},
-                                            {1, 2, 1}};
       
-      for(int t = 1; t < T; t++){
-         bowserInitialLocation = ((BRF_Action)recursion.getOptimalAction(initialState)).getBowserNewLocation();
-         bowserInitialTankLevel += ((BRF_Action)recursion.getOptimalAction(initialState)).getBowserRefuelQty() - Arrays.stream(((BRF_Action)recursion.getOptimalAction(initialState)).getMachineRefuelQty()).sum();
-         machinesInitialLocation = getMachineLocationArray(M, machineLocation[t]);
-         for(int i = 0; i < M; i++){
-            machinesInitialTankLevel[i] += ((BRF_Action)recursion.getOptimalAction(initialState)).getMachineRefuelQty()[i] - fuelConsumption[i][t-1];
+      if(type == InstanceType.TINY){  
+         /* This set of realisations is valid for tinyInstance */
+         int[][] fuelConsumption = new int[][]{{1, 2, 1},
+                                               {2, 1, 2},
+                                               {1, 2, 1}};
+         
+         for(int t = 1; t < T; t++){
+            bowserInitialLocation = ((BRF_Action)recursion.getOptimalAction(initialState)).getBowserNewLocation();
+            bowserInitialTankLevel += ((BRF_Action)recursion.getOptimalAction(initialState)).getBowserRefuelQty() - Arrays.stream(((BRF_Action)recursion.getOptimalAction(initialState)).getMachineRefuelQty()).sum();
+            machinesInitialLocation = getMachineLocationArray(M, machineLocation[t]);
+            for(int i = 0; i < M; i++){
+               machinesInitialTankLevel[i] = Math.max(0, machinesInitialTankLevel[i]) + ((BRF_Action)recursion.getOptimalAction(initialState)).getMachineRefuelQty()[i] - fuelConsumption[i][t-1];
+            }
+            initialState = new BRF_StateDescriptor(period + t, 
+                  bowserInitialTankLevel, 
+                  bowserInitialLocation,
+                  machinesInitialTankLevel,
+                  machinesInitialLocation);
+            System.out.println(initialState.toString());
+            System.out.println("Expected total cost: "+recursion.getExpectedCost(initialState));
+            System.out.println("Optimal action: "+recursion.getOptimalAction(initialState).toString());
          }
-         initialState = new BRF_StateDescriptor(period + t, 
-               bowserInitialTankLevel, 
-               bowserInitialLocation,
-               machinesInitialTankLevel,
-               machinesInitialLocation);
-         System.out.println(initialState.toString());
-         System.out.println("Expected total cost: "+recursion.getExpectedCost(initialState));
-         System.out.println("Optimal action: "+recursion.getOptimalAction(initialState).toString());
       }
    }
    

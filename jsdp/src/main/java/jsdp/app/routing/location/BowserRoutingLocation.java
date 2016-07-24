@@ -36,9 +36,14 @@ import org.apache.commons.lang3.time.StopWatch;
 
 import com.sun.management.OperatingSystemMXBean;
 
+import jsdp.app.routing.BR_Action;
+import jsdp.app.routing.BR_StateDescriptor;
 import jsdp.sdp.Action;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.State;
+import jsdp.utilities.probdist.DiscreteDistributionFactory;
+import umontreal.ssj.probdist.DiscreteDistribution;
+import umontreal.ssj.probdist.PoissonDist;
 
 /**
  * Stochastic Dynamic Bowser Routing Problem under Asset Location Uncertainty
@@ -58,7 +63,62 @@ public class BowserRoutingLocation {
    static double[][][] machineLocation;
    static int fuelStockOutPenaltyCost;
    
+   static enum InstanceType {
+      TINY,
+      SMALL,
+      LARGE
+   }
+   
+   static InstanceType type;
+   
+   static void tinyInstance(){
+      type = InstanceType.TINY;
+      /*******************************************************************
+       * Problem parameters
+       */
+      T = 3;   //time horizon
+      M = 3;   //machines
+      N = 5;   //nodes
+      tankCapacity = new int[]{10, 10, 10};
+      initialTankLevel = new int[]{0, 0, 0};
+      fuelConsumption = new int[][]{{1, 1, 1},
+                                    {1, 1, 1},
+                                    {1, 1, 1}};
+                                    
+      connectivity = new int[][]{
+            {1, 1, 0, 0, 0},
+            {0, 0, 1, 0, 0},
+            {1, 0, 0, 0, 1},
+            {0, 0, 1, 0, 0},
+            {0, 0, 0, 1, 0}};
+      distance = new double[][]{
+      {0., 98.3569, 0., 0., 0.},
+      {0., 0., 72.6373, 0., 0.},
+      {44.2516, 0., 0., 0., 99.4693},
+      {0., 0., 87.9929, 0., 0.},
+      {0., 0., 0., 78.212, 0.}};
+      machineLocation = new double[][][]{
+           {{0, 0, 0, 1, 0},
+            {0, 1, 0, 0, 0},
+            {0, 0, 0, 0, 1}},
+            
+            {{0, 0.5, 0, 0, 0.5},   
+            {0, 0.5, 0, 0.5, 0},
+            {0.5, 0, 0, 0, 0.5}},
+            
+            {{0, 0.5, 0, 0, 0.5},
+            {0, 0, 0.5, 0.5, 0},
+            {0, 0.5, 0, 0, 0.5}},
+            
+            {{0, 0.5, 0, 0, 0.5},
+            {0, 0.5, 0, 0.5, 0},
+            {0.5, 0, 0.5, 0, 0}}};
+      
+      fuelStockOutPenaltyCost = 20;
+   }
+   
    static void smallInstance(){
+      type = InstanceType.SMALL;
       /*******************************************************************
        * Problem parameters
        */
@@ -111,6 +171,7 @@ public class BowserRoutingLocation {
    }
    
    static void largeInstance(){
+      type = InstanceType.LARGE;
       /*******************************************************************
        * Problem parameters
        */
@@ -186,7 +247,8 @@ public class BowserRoutingLocation {
       /*******************************************************************
        * Problem parameters
        */
-      smallInstance();
+      tinyInstance();
+      //smallInstance();
       //largeInstance();
       
       /*******************************************************************
@@ -196,7 +258,7 @@ public class BowserRoutingLocation {
       // State space
       int minBowserTankLevel = 0;
       int maxBowserTankLevel = 10;
-      int[] minMachineTankLevel = new int[M];
+      int[] minMachineTankLevel = Arrays.stream(fuelConsumption).mapToInt(m -> -Arrays.stream(m).max().getAsInt()).toArray();
       int[] maxMachineTankLevel = Arrays.copyOf(tankCapacity, tankCapacity.length);
       int networkSize = N;
       
@@ -302,6 +364,44 @@ public class BowserRoutingLocation {
       System.out.println("Optimal initial action: "+recursion.getOptimalAction(initialState).toString());
       System.out.println("Time elapsed: "+timer);
       System.out.println();
+      
+      
+      if(type == InstanceType.TINY){  
+         /* This set of realisations is valid for tinyInstance */
+         machineLocation = new double[][][]{
+            {{0, 0, 0, 1, 0},
+             {0, 1, 0, 0, 0},
+             {0, 0, 0, 0, 1}},
+             
+             {{0, 1, 0, 0, 0},   
+             {0, 1, 0, 0, 0},
+             {1, 0, 0, 0, 0}},
+             
+             {{0, 1, 0, 0, 0},
+             {0, 0, 0, 1, 0},
+             {0, 1, 0, 0, 0}},
+             
+             {{0, 0, 0, 0, 1},
+             {0, 0, 0, 1, 0},
+             {1, 0, 0, 0, 0}}};
+         
+         for(int t = 1; t < T; t++){
+            bowserInitialLocation = ((BRL_Action)recursion.getOptimalAction(initialState)).getBowserNewLocation();
+            bowserInitialTankLevel += ((BRL_Action)recursion.getOptimalAction(initialState)).getBowserRefuelQty() - Arrays.stream(((BRL_Action)recursion.getOptimalAction(initialState)).getMachineRefuelQty()).sum();
+            machinesInitialLocation = getMachineLocationArray(M, machineLocation[t]);
+            for(int i = 0; i < M; i++){
+               machinesInitialTankLevel[i] = Math.max(0, machinesInitialTankLevel[i]) + ((BRL_Action)recursion.getOptimalAction(initialState)).getMachineRefuelQty()[i] - fuelConsumption[i][t-1];
+            }
+            initialState = new BRL_StateDescriptor(period + t, 
+                  bowserInitialTankLevel, 
+                  bowserInitialLocation,
+                  machinesInitialTankLevel,
+                  machinesInitialLocation);
+            System.out.println(initialState.toString());
+            System.out.println("Expected total cost: "+recursion.getExpectedCost(initialState));
+            System.out.println("Optimal action: "+recursion.getOptimalAction(initialState).toString());
+         }
+      }
    }
    
    public static int[] getMachineLocationArray(int M, double[][] machineLocationMatrix){

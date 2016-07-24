@@ -29,6 +29,7 @@ package jsdp.app.routing.fuel;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import jsdp.app.routing.BR_State;
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
 import jsdp.sdp.TransitionProbability;
@@ -92,7 +93,7 @@ public class BRF_TransitionProbability extends TransitionProbability {
       
       int[][] scenarios = getFuelConsumptionScenarios(initialState.getPeriod());
       for(int s = 0; s < scenarios.length; s++){
-         int machineTankLevel[] = Arrays.copyOf(((BRF_State) initialState).getMachineTankLevel(), ((BRF_State) initialState).getMachineTankLevel().length);
+         int machineTankLevel[] = Arrays.stream(((BRF_State) initialState).getMachineTankLevel()).map(i -> Math.max(i, 0)).toArray();
          for(int i = 0; i < machineTankLevel.length; i++){
             machineTankLevel[i] += ((BRF_Action) action).getMachineRefuelQty()[i] - scenarios[s][i];
          }
