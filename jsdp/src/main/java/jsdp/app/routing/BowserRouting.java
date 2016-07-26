@@ -241,9 +241,9 @@ public class BowserRouting {
       /*******************************************************************
        * Problem parameters
        */
-      tinyInstance();
+      //tinyInstance();
       //smallInstance();
-      //largeInstance();
+      largeInstance();
       
       /*******************************************************************
        * Model definition
