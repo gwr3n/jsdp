@@ -42,6 +42,8 @@ import jsdp.sdp.State;
  */
 public class StateImpl extends State {
 
+   private static final long serialVersionUID = 1L;
+   
    private int initialIntState[];
 
    private static double[] stepSize;

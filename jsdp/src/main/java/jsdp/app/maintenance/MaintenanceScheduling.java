@@ -107,7 +107,7 @@ public class MaintenanceScheduling {
 
       RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction = (initialState, action, finalState) -> {
          //StateImpl is = (StateImpl)initialState;
-         ActionImpl a = (ActionImpl)action;
+         //ActionImpl a = (ActionImpl)action;
          StateImpl fs = (StateImpl)finalState;
          return (double)fs.getInitialIntState();
          /*if(a.getAction() == 1){

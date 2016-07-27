@@ -39,6 +39,8 @@ import jsdp.sdp.State;
  */
 public class ActionImpl extends Action {
    
+   private static final long serialVersionUID = 1L;
+   
    int[] intAction;
    
    private static double[] arrayProduct(int[] integerArray, double[] doubleArray){

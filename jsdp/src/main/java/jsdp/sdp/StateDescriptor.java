@@ -38,6 +38,8 @@ import java.io.Serializable;
  */
 public abstract class StateDescriptor implements Serializable{
 	
+   private static final long serialVersionUID = 1L;
+   
 	protected int period;
 	
 	@Override

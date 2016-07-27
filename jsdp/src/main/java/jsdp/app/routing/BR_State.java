@@ -35,6 +35,8 @@ import jsdp.sdp.State;
 
 public class BR_State extends State {
 
+   private static final long serialVersionUID = 1L;
+   
    private static int minBowserTankLevel;
    private static int maxBowserTankLevel;
    private static int[] minMachineTankLevel;

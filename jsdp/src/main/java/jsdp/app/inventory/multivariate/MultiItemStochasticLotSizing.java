@@ -48,9 +48,9 @@ import jsdp.sdp.impl.multivariate.*;
 import jsdp.utilities.probdist.SafeMultinomialDist;
 import jsdp.utilities.probdist.MultiINIDistribution;
 import umontreal.ssj.probdistmulti.DiscreteDistributionIntMulti;
+import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.BinomialDist;
 import umontreal.ssj.probdist.PoissonDist;
-import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.NormalDist;
 
 /**

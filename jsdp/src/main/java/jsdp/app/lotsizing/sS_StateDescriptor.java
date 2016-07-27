@@ -30,6 +30,8 @@ import jsdp.sdp.StateDescriptor;
 
 public class sS_StateDescriptor extends StateDescriptor{
 
+   private static final long serialVersionUID = 1L;
+   
    int initialIntState;
 
    public sS_StateDescriptor(int period, int initialIntState){

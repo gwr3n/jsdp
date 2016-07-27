@@ -29,7 +29,6 @@ package jsdp.app.routing.fuel;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import jsdp.app.routing.BR_State;
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
 import jsdp.sdp.TransitionProbability;

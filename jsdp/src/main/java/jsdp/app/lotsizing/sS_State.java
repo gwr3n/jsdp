@@ -33,6 +33,8 @@ import jsdp.sdp.State;
 
 public class sS_State extends State {
 
+   private static final long serialVersionUID = 1L;
+   
    private int initialIntState;
 
    private static double stepSize;

@@ -31,6 +31,8 @@ import jsdp.sdp.State;
 
 public class sS_Action extends Action {
 	
+   private static final long serialVersionUID = 1L;
+   
    int intAction;
 	
 	public static double actionToOrderQuantity(int action){

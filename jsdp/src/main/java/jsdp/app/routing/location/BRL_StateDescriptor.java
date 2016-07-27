@@ -32,6 +32,8 @@ import jsdp.sdp.StateDescriptor;
 
 public class BRL_StateDescriptor extends StateDescriptor {
 
+   private static final long serialVersionUID = 1L;
+   
    private int bowserTankLevel;
    private int bowserLocation;
    

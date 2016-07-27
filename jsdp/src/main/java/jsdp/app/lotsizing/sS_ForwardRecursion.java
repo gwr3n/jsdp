@@ -32,7 +32,6 @@ import org.apache.logging.log4j.Logger;
 import jsdp.sdp.Action;
 import jsdp.sdp.BestActionRepository;
 import jsdp.sdp.ForwardRecursion;
-import jsdp.sdp.Recursion;
 import jsdp.sdp.State;
 import umontreal.ssj.probdist.Distribution;
 

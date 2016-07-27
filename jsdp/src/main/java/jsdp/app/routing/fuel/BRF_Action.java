@@ -34,6 +34,8 @@ import jsdp.sdp.Action;
 
 public class BRF_Action extends Action {
    
+   private static final long serialVersionUID = 1L;
+   
    int bowserNewLocation;
    int bowserRefuelQty;
    int[] machineRefuelQty;
