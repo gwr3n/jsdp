@@ -54,11 +54,8 @@ import umontreal.ssj.probdist.NormalDist;
 public class CLQG {
    
    /**
-    *  We formulate the Constrained Linear Quadratic Gaussian Control Problem in  
-    *  
-    *  <INSERT REFERENCE>
-    *  
-    *  as a stochastic dynamic programming problem. 
+    *  We formulate the Constrained Linear Quadratic Gaussian (CLQG) 
+    *  Control Problem as a stochastic dynamic programming problem. 
     *  
     *  We use backward recursion and sampling to find optimal policies.
     *  
