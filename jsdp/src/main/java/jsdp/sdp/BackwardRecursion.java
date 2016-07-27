@@ -76,8 +76,8 @@ public abstract class BackwardRecursion extends Recursion{
 		}
 		
 		this.getStateSpace(horizonLength).entrySet()
-			.parallelStream()
-			.forEach(entry -> this.getValueRepository().setOptimalExpectedValue(entry.getValue(), 0));
+			 .parallelStream()
+			 .forEach(entry -> this.getValueRepository().setOptimalExpectedValue(entry.getValue(), 0));
 	}
 	
 	/**

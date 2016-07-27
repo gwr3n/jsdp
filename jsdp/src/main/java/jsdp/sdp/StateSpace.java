@@ -48,8 +48,16 @@ public abstract class StateSpace<SD> implements Iterable<State>{
 	protected int period;
 	protected Map<SD,State> states;
 	
-	protected Function<State, ArrayList<Action>> buildActionList;
-	protected Function<State, Action> idempotentAction;
+	protected static Function<State, ArrayList<Action>> buildActionList;
+	protected static Function<State, Action> idempotentAction;
+	
+	public static Function<State, ArrayList<Action>> getBuildActionList(){
+	   return buildActionList;
+	}
+	
+	public static Function<State, Action> getIdempotentAction(){
+	   return idempotentAction;
+	}
 	
 	/**
 	 * Constructs a container for states associated with a given {@code period}. This implementation is based on {@code ConcurrentHashMap}.

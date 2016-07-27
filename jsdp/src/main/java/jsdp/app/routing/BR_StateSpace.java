@@ -43,14 +43,14 @@ public class BR_StateSpace extends StateSpace<BR_StateDescriptor> {
                         int stateSpaceSizeLowerBound, 
                         float loadFactor){
       super(period, hashType, stateSpaceSizeLowerBound, loadFactor);
-      this.buildActionList = buildActionList;
+      BR_StateSpace.buildActionList = buildActionList;
    }
    
    public BR_StateSpace(int period,
                         Function<State, ArrayList<Action>> buildActionList,
                         HashType hashType){
       super(period, hashType);
-      this.buildActionList = buildActionList;
+      BR_StateSpace.buildActionList = buildActionList;
    }
 
    public boolean exists (BR_StateDescriptor descriptor){
@@ -60,7 +60,7 @@ public class BR_StateSpace extends StateSpace<BR_StateDescriptor> {
    public State getState(BR_StateDescriptor descriptor){
       State value = states.get(descriptor);
       if(value == null){
-         State state = new BR_State(descriptor, this.buildActionList);
+         State state = new BR_State(descriptor);
          this.states.put(descriptor, state);
          return state;
       }else

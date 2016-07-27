@@ -26,10 +26,6 @@
 
 package jsdp.sdp.impl.univariate;
 
-import java.util.ArrayList;
-import java.util.function.Function;
-
-import jsdp.sdp.Action;
 import jsdp.sdp.State;
 
 /**
@@ -40,7 +36,7 @@ import jsdp.sdp.State;
  */
 public class StateImpl extends State {
    
-   private static final long serialVersionUID = 1L;
+   //private static final long serialVersionUID = 1L;
 
    private int initialIntState;
 
@@ -90,12 +86,9 @@ public class StateImpl extends State {
       return intStateToState(maxIntState);
    }
 
-   public StateImpl(StateDescriptorImpl descriptor,
-                    Function<State, ArrayList<Action>> buildActionList,
-                    Function<State, Action> idempotentAction){
+   public StateImpl(StateDescriptorImpl descriptor){
       super(descriptor.getPeriod());
       this.initialIntState = descriptor.getInitialIntState();
-      this.buildActionList(buildActionList, idempotentAction);
    }
 
    public int getInitialIntState(){
@@ -104,17 +97,6 @@ public class StateImpl extends State {
    
    public double getInitialState(){
       return intStateToState(this.initialIntState);
-   }
-
-   @Override
-   protected void buildActionList(){
-      throw new NullPointerException("Method not implemented");
-   }
-   
-   protected void buildActionList(Function<State, ArrayList<Action>> buildActionList,
-                                  Function<State, Action> idempotentAction){
-      this.noAction = idempotentAction.apply(this);
-      this.feasibleActions = buildActionList.apply(this);
    }
 
    @Override

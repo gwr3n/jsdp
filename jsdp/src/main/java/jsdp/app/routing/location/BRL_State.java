@@ -81,14 +81,12 @@ public class BRL_State extends State {
    private int machineTankLevel[];
    private int machineLocation[];
    
-   public BRL_State(BRL_StateDescriptor descriptor,
-                   Function<State, ArrayList<Action>> buildActionList){
+   public BRL_State(BRL_StateDescriptor descriptor){
       super(descriptor.getPeriod());
       this.bowserTankLevel = descriptor.getBowserTankLevel();
       this.bowserLocation = descriptor.getBowserLocation();
       this.machineTankLevel = Arrays.copyOf(descriptor.getMachineTankLevel(), descriptor.getMachineTankLevel().length);
       this.machineLocation = Arrays.copyOf(descriptor.getMachineLocation(), descriptor.getMachineLocation().length);
-      this.buildActionList(buildActionList);
    }
    
    public int getBowserTankLevel(){
@@ -128,16 +126,6 @@ public class BRL_State extends State {
              Arrays.toString(this.machineTankLevel);
              Arrays.toString(this.machineLocation);
       return hash.hashCode();
-   }
-   
-   @Override
-   protected void buildActionList(){
-      throw new NullPointerException("Method not implemented");
-   }
-   
-   protected void buildActionList(
-         Function<State, ArrayList<Action>> buildActionList){
-      this.feasibleActions = buildActionList.apply(this);
    }
    
    @Override

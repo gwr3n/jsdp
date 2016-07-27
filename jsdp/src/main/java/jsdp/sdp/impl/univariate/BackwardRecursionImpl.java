@@ -140,16 +140,16 @@ public class BackwardRecursionImpl extends BackwardRecursion{
     * @param maxSampleSize the maximum sample size.
     */
    public BackwardRecursionImpl(OptimisationDirection optimisationDirection,
-         Distribution[][] demand,
-         double[][] supportLB,
-         double[][] supportUB,          
-         ImmediateValueFunction<State, Action, Double> immediateValueFunction,
-         RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction,
-         Function<State, ArrayList<Action>> buildActionList,
-         Function<State, Action> idempotentAction,
-         double discountFactor,
-         SamplingScheme samplingScheme,
-         int maxSampleSize){
+                                Distribution[][] demand,
+                                double[][] supportLB,
+                                double[][] supportUB,          
+                                ImmediateValueFunction<State, Action, Double> immediateValueFunction,
+                                RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction,
+                                Function<State, ArrayList<Action>> buildActionList,
+                                Function<State, Action> idempotentAction,
+                                double discountFactor,
+                                SamplingScheme samplingScheme,
+                                int maxSampleSize){
       super(optimisationDirection);
       throw new NullPointerException("Method not implemented!");
    }
@@ -166,17 +166,17 @@ public class BackwardRecursionImpl extends BackwardRecursion{
     * @param maxSampleSize the maximum sample size.
     */
    public BackwardRecursionImpl(OptimisationDirection optimisationDirection,
-         Distribution[][][] demand,
-         double[][][] supportLB,
-         double[][][] supportUB,            
-         ImmediateValueFunction<State, Action, Double> immediateValueFunction,
-         RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction,
-         Function<State, ArrayList<Action>> buildActionList,
-         Function<State, Action> idempotentAction,
-         double discountFactor,
-         SamplingScheme samplingScheme,
-         int maxSampleSize,
-         HashType hash){
+                                Distribution[][][] demand,
+                                double[][][] supportLB,
+                                double[][][] supportUB,            
+                                ImmediateValueFunction<State, Action, Double> immediateValueFunction,
+                                RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction,
+                                Function<State, ArrayList<Action>> buildActionList,
+                                Function<State, Action> idempotentAction,
+                                double discountFactor,
+                                SamplingScheme samplingScheme,
+                                int maxSampleSize,
+                                HashType hash){
       super(optimisationDirection);
       this.horizonLength = demand.length;
 

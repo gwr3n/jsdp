@@ -27,6 +27,7 @@
 package jsdp.app.control.clqg.univariate;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -107,14 +108,14 @@ public class CLQG {
       
       // State space
       
-      double stepSize = 1;       //Stepsize must be 1 for discrete distributions
+      double stepSize = 0.5;       //Stepsize must be 1 for discrete distributions
       double minState = -25;
       double maxState = 100;
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
       
       // Actions
       
-      Function<State, ArrayList<Action>> buildActionList = s -> {
+      Function<State, ArrayList<Action>> buildActionList = (Function<State, ArrayList<Action>> & Serializable) s -> {
          StateImpl state = (StateImpl) s;
          ArrayList<Action> feasibleActions = new ArrayList<Action>();
          double maxAction = Math.min(Uub, (StateImpl.getMaxState() - Phi*state.getInitialState())/G);
@@ -125,7 +126,7 @@ public class CLQG {
          return feasibleActions;
       };
       
-      Function<State, Action> idempotentAction = s -> new ActionImpl(s, 0.0);
+      Function<State, Action> idempotentAction = (Function<State, Action> & Serializable) s -> new ActionImpl(s, 0.0);
       
       ImmediateValueFunction<State, Action, Double> immediateValueFunction = (initialState, action, finalState) -> {
          ActionImpl a = (ActionImpl)action;
@@ -150,7 +151,7 @@ public class CLQG {
       
       // Sampling scheme
       
-      SamplingScheme samplingScheme = SamplingScheme.JENSENS_PARTITIONING;
+      SamplingScheme samplingScheme = SamplingScheme.NONE;
       int maxSampleSize = 20;
       
       
@@ -171,7 +172,7 @@ public class CLQG {
                                                                   maxSampleSize,
                                                                   stateSpaceLowerBound,
                                                                   loadFactor,
-                                                                  HashType.MAPDB);
+                                                                  HashType.HASHTABLE);
 
       
       System.out.println("--------------Backward recursion--------------");

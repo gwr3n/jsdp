@@ -119,7 +119,7 @@ public class StochasticLotSizing {
       
       // State space
       
-      double stepSize = 0.5;       //Stepsize must be 1 for discrete distributions
+      double stepSize = 1;       //Stepsize must be 1 for discrete distributions
       double minState = -200;
       double maxState = 200;
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
@@ -185,7 +185,7 @@ public class StochasticLotSizing {
                                                                   maxSampleSize,
                                                                   stateSpaceLowerBound,
                                                                   loadFactor,
-                                                                  HashType.CONCURRENT_HASHMAP);
+                                                                  HashType.MAPDB);
 
       
       System.out.println("--------------Backward recursion--------------");
