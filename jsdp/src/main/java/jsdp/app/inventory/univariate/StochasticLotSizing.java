@@ -104,7 +104,7 @@ public class StochasticLotSizing {
                                               .toArray(Distribution[]::new);
       double[] supportLB = IntStream.iterate(0, i -> i + 1)
                                     .limit(meanDemand.length)
-                                    .mapToDouble(i -> 0.0)
+                                    .mapToDouble(i -> NormalDist.inverseF(meanDemand[i],meanDemand[i]*coefficientOfVariation, 1-truncationQuantile))
                                     .toArray();
       double[] supportUB = IntStream.iterate(0, i -> i + 1)
                                     .limit(meanDemand.length)
@@ -119,7 +119,7 @@ public class StochasticLotSizing {
       
       // State space
       
-      double stepSize = 1;       //Stepsize must be 1 for discrete distributions
+      double stepSize = 0.5;       //Stepsize must be 1 for discrete distributions
       double minState = -200;
       double maxState = 200;
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
@@ -129,13 +129,13 @@ public class StochasticLotSizing {
       Function<State, ArrayList<Action>> buildActionList = s -> {
          StateImpl state = (StateImpl) s;
          ArrayList<Action> feasibleActions = new ArrayList<Action>();
-         ActionIterator feasibleActionsIterator = new  ActionIteratorImpl(state);
+         ActionIterator feasibleActionsIterator = new ActionIteratorImpl(state);
          while(feasibleActionsIterator.hasNext())
             feasibleActions.add(feasibleActionsIterator.next());
          return feasibleActions;
       };
       
-      Function<State, Action> idempotentAction = s -> new ActionImpl(s, 0);
+      Function<State, Action> idempotentAction = s -> new ActionImpl(s, 0.0);
       
       // Immediate Value Function
       
@@ -143,7 +143,7 @@ public class StochasticLotSizing {
          ActionImpl a = (ActionImpl)action;
          StateImpl fs = (StateImpl)finalState;
          double orderingCost = 
-               a.getIntAction() > 0 ? (fixedOrderingCost + a.getAction()*proportionalOrderingCost) : 0;
+               a.getAction() > 0 ? (fixedOrderingCost + a.getAction()*proportionalOrderingCost) : 0;
          double holdingAndPenaltyCost =   
                holdingCost*Math.max(fs.getInitialState(),0) + penaltyCost*Math.max(-fs.getInitialState(),0);
          return orderingCost+holdingAndPenaltyCost;
@@ -226,7 +226,7 @@ public class StochasticLotSizing {
       
       /*******************************************************************
        * Charting
-       */   
+       *   
       System.out.println("--------------Charting--------------");
       int targetPeriod = 0;                                 
       plotOptimalPolicyAction(targetPeriod, recursion);     //Plot optimal policy action
@@ -243,7 +243,7 @@ public class StochasticLotSizing {
                                                                       maxSampleSize,
                                                                       HashType.HASHTABLE);
       plotOptimalPolicyCost(targetPeriod, recursionPlot);   //Plot optimal policy cost 
-      System.out.println();
+      System.out.println();*/
       
       /*******************************************************************
        * Simulation

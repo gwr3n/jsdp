@@ -113,7 +113,7 @@ public class DiscreteDistributionFactory {
 	 * @param stepSize discretization step
 	 * @return a discretized {@code DiscreteDistribution}
 	 * 
-	 * TODO: make sure that supportLB % stepSize is 0!
+	 * TODO: make sure that supportLB % stepSize is 0! (I believe this is sorted)
 	 */
 	private static DiscreteDistribution discretizeTruncatedContinuousDistribution(ContinuousDistribution distribution, 
 																		 double supportLB,
