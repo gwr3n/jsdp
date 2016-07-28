@@ -90,9 +90,7 @@ public class StateImpl extends State {
       return intStateToState(maxIntState);
    }
 
-   public StateImpl(StateDescriptorImpl descriptor,
-                    Function<State, ArrayList<Action>> buildActionList,
-                    Function<State, Action> idempotentAction){
+   public StateImpl(StateDescriptorImpl descriptor){
       super(descriptor.getPeriod());
       this.initialIntState = descriptor.getInitialIntState();
    }

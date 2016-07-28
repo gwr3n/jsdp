@@ -111,7 +111,7 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
    public State getState(StateDescriptorImpl descriptor){
       State value = states.get(descriptor);
       if(value == null){
-         State state = new StateImpl(descriptor, StateSpace.buildActionList, StateSpace.idempotentAction);
+         State state = new StateImpl(descriptor);
          this.states.put(descriptor, state);
          return state;
       }else
