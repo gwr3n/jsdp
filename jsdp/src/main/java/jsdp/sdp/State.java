@@ -42,7 +42,7 @@ public abstract class State implements Serializable{
 	protected int period;
 	protected ArrayList<Action> feasibleActions;
 	
-	private static boolean lightweightActionGeneration = true; 
+	private static boolean lightweightActionGeneration = false; 
 	
 	/**
 	 * Creates a {@code State} associated with a given {@code period}.

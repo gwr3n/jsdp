@@ -185,7 +185,7 @@ public class StochasticLotSizing {
                                                                   maxSampleSize,
                                                                   stateSpaceLowerBound,
                                                                   loadFactor,
-                                                                  HashType.CONCURRENT_HASHMAP);
+                                                                  HashType.MAPDB);
 
       
       System.out.println("--------------Backward recursion--------------");
