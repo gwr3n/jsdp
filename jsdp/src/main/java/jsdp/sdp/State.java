@@ -41,7 +41,8 @@ public abstract class State implements Serializable{
    
 	protected int period;
 	protected ArrayList<Action> feasibleActions;
-	protected Action noAction;
+	
+	private static boolean lightweightActionGeneration = true; 
 	
 	/**
 	 * Creates a {@code State} associated with a given {@code period}.
@@ -53,14 +54,20 @@ public abstract class State implements Serializable{
 	}
 	
 	/**
-	 * Returns an {@code ArrayList<Action>} of feasible actions for this 
-	 * {@code State}.
-	 * 
-	 * @return the {@code ArrayList<Action>} of feasible actions.
-	 */
-	public ArrayList<Action> getFeasibleActions() {
-		return this.feasibleActions;
-	}
+    * Returns an {@code ArrayList<Action>} of feasible actions for this 
+    * {@code State}.
+    * 
+    * @return the {@code ArrayList<Action>} of feasible actions.
+    */
+   public ArrayList<Action> getFeasibleActions() {
+      if(lightweightActionGeneration)
+         return StateSpace.getBuildActionList().apply(this);
+      else if(this.feasibleActions == null){
+         return this.feasibleActions = StateSpace.getBuildActionList().apply(this);
+      }else{
+         return this.feasibleActions;
+      }
+   }
 	
 	/**
 	 * Returns the idempotent {@code Action} for this {@code State}.
@@ -68,7 +75,7 @@ public abstract class State implements Serializable{
 	 * @return the idempotent {@code Action} for this {@code State}.
 	 */
 	public Action getNoAction(){
-		return noAction;
+		return StateSpace.getIdempotentAction().apply(this);
 	}
 	
 	/**
@@ -82,10 +89,4 @@ public abstract class State implements Serializable{
 	
 	public abstract boolean equals(Object state);
 	public abstract int hashCode();
-	
-	/**
-	 * This method constructs the set of feasible actions stored in 
-	 * {@code ArrayList<Action> feasibleAction}.
-	 */
-	protected abstract void buildActionList();
 }

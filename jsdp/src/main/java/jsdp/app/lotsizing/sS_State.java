@@ -86,7 +86,6 @@ public class sS_State extends State {
    public sS_State(sS_StateDescriptor descriptor){
       super(descriptor.getPeriod());
       this.initialIntState = descriptor.getInitialIntState();
-      this.buildActionList();
    }
 
    public int getInitialIntState(){
@@ -94,12 +93,17 @@ public class sS_State extends State {
    }
 
    @Override
-   protected void buildActionList(){
-      this.noAction = new sS_Action(this, 0);
-      this.feasibleActions = new ArrayList<Action>();
-      for(int i = this.initialIntState; i <= maxIntState; i++){
+   public ArrayList<Action> getFeasibleActions() {
+      ArrayList<Action> feasibleActions = new ArrayList<Action>();
+      for(int i = this.initialIntState; i <= sS_State.maxIntState; i++){
          feasibleActions.add(new sS_Action(this, i - this.initialIntState));
       }
+      return feasibleActions;
+   }
+   
+   @Override
+   public Action getNoAction(){
+      return  new sS_Action(this, 0);
    }
 
    @Override

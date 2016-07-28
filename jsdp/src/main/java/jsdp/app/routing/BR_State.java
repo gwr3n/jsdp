@@ -130,11 +130,6 @@ public class BR_State extends State {
       return hash.hashCode();
    }
    
-   @Override
-   protected void buildActionList(){
-      throw new NullPointerException("Method not implemented");
-   }
-   
    protected void buildActionList(
          Function<State, ArrayList<Action>> buildActionList){
       this.feasibleActions = buildActionList.apply(this);

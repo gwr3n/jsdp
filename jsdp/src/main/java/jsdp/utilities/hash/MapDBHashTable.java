@@ -55,7 +55,7 @@ public class MapDBHashTable<K,V> implements Map<K,V>{
       DISK
    };
    
-   Storage hashTableStorage = Storage.MEMORY;
+   Storage hashTableStorage = Storage.DISK;
    
    @SuppressWarnings("unchecked")
    public MapDBHashTable(String name){

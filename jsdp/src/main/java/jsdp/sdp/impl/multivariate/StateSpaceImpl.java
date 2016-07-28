@@ -51,8 +51,8 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
                          Function<State, Action> idempotentAction,
                          HashType hash){
       super(period, hash);
-      this.buildActionList = buildActionList;
-      this.idempotentAction = idempotentAction;
+      StateSpace.buildActionList = buildActionList;
+      StateSpace.idempotentAction = idempotentAction;
    }
    
    public StateSpaceImpl(int period,
@@ -62,8 +62,8 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
                          int stateSpaceSizeLowerBound, 
                          float loadFactor){
       super(period, hash, stateSpaceSizeLowerBound, loadFactor);
-      this.buildActionList = buildActionList;
-      this.idempotentAction = idempotentAction;
+      StateSpace.buildActionList = buildActionList;
+      StateSpace.idempotentAction = idempotentAction;
    }   
   
    public StateSpaceImpl(int period, 
@@ -73,8 +73,8 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
                          int maxSampleSize,
                          HashType hash){
       super(period, hash);
-      this.buildActionList = buildActionList;
-      this.idempotentAction = idempotentAction;
+      StateSpace.buildActionList = buildActionList;
+      StateSpace.idempotentAction = idempotentAction;
       this.setSamplingScheme(samplingScheme, maxSampleSize);
    }
    
@@ -87,8 +87,8 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
                          int stateSpaceSizeLowerBound, 
                          float loadFactor){
       super(period, hash, stateSpaceSizeLowerBound, loadFactor);
-      this.buildActionList = buildActionList;
-      this.idempotentAction = idempotentAction;
+      StateSpace.buildActionList = buildActionList;
+      StateSpace.idempotentAction = idempotentAction;
       this.setSamplingScheme(samplingScheme, maxSampleSize);
    }
    
@@ -111,7 +111,7 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
    public State getState(StateDescriptorImpl descriptor){
       State value = states.get(descriptor);
       if(value == null){
-         State state = new StateImpl(descriptor, this.buildActionList, this.idempotentAction);
+         State state = new StateImpl(descriptor, StateSpace.buildActionList, StateSpace.idempotentAction);
          this.states.put(descriptor, state);
          return state;
       }else

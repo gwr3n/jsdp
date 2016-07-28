@@ -128,7 +128,6 @@ public class StateImpl extends State {
                     Function<State, Action> idempotentAction){
       super(descriptor.getPeriod());
       this.initialIntState = Arrays.copyOf(descriptor.getInitialIntState(), descriptor.getInitialIntState().length);
-      this.buildActionList(buildActionList, idempotentAction);
    }
 
    public int[] getInitialIntState(){
@@ -137,17 +136,6 @@ public class StateImpl extends State {
    
    public double[] getInitialState(){
       return intStateToState(this.initialIntState);
-   }
-
-   @Override
-   protected void buildActionList(){
-      throw new NullPointerException("Method not implemented");
-   }
-   
-   protected void buildActionList(Function<State, ArrayList<Action>> buildActionList,
-                                  Function<State, Action> idempotentAction){
-      this.noAction = idempotentAction.apply(this);
-      this.feasibleActions = buildActionList.apply(this);
    }
 
    @Override
