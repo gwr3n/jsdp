@@ -26,12 +26,9 @@
 
 package jsdp.sdp.impl.multivariate;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.function.Function;
 import java.util.stream.IntStream;
 
-import jsdp.sdp.Action;
 import jsdp.sdp.State;
 
 /**
@@ -135,13 +132,6 @@ public class StateImpl extends State {
    public double[] getInitialState(){
       return intStateToState(this.initialIntState);
    }
-
-   /*@Override
-   protected void buildActionList(Function<State, ArrayList<Action>> buildActionList,
-                                  Function<State, Action> idempotentAction){
-      this.noAction = idempotentAction.apply(this);
-      this.feasibleActions = buildActionList.apply(this);
-   }*/
 
    @Override
    public boolean equals(Object state){

@@ -51,8 +51,8 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
                          Function<State, Action> idempotentAction,
                          HashType hash){
       super(period, hash);
-      StateSpaceImpl.buildActionList = buildActionList;
-      StateSpaceImpl.idempotentAction = idempotentAction;
+      StateSpace.buildActionList = buildActionList;
+      StateSpace.idempotentAction = idempotentAction;
    }
    
    public StateSpaceImpl(int period,
@@ -62,8 +62,8 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
                          int stateSpaceSizeLowerBound, 
                          float loadFactor){
       super(period, hash, stateSpaceSizeLowerBound, loadFactor);
-      StateSpaceImpl.buildActionList = buildActionList;
-      StateSpaceImpl.idempotentAction = idempotentAction;
+      StateSpace.buildActionList = buildActionList;
+      StateSpace.idempotentAction = idempotentAction;
    }
    
    public StateSpaceImpl(int period, 
@@ -73,8 +73,8 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
                          SamplingScheme samplingScheme,
                          int maxSampleSize){
       super(period, hash);
-      StateSpaceImpl.buildActionList = buildActionList;
-      StateSpaceImpl.idempotentAction = idempotentAction;
+      StateSpace.buildActionList = buildActionList;
+      StateSpace.idempotentAction = idempotentAction;
       this.setSamplingScheme(samplingScheme, maxSampleSize);
    }
    
@@ -87,8 +87,8 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
                          int stateSpaceSizeLowerBound, 
                          float loadFactor){
       super(period, hash, stateSpaceSizeLowerBound, loadFactor);
-      StateSpaceImpl.buildActionList = buildActionList;
-      StateSpaceImpl.idempotentAction = idempotentAction;
+      StateSpace.buildActionList = buildActionList;
+      StateSpace.idempotentAction = idempotentAction;
       this.setSamplingScheme(samplingScheme, maxSampleSize);
    }
    

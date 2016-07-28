@@ -87,7 +87,11 @@ public class sS_State extends State {
       super(descriptor.getPeriod());
       this.initialIntState = descriptor.getInitialIntState();
    }
-   
+
+   public int getInitialIntState(){
+      return this.initialIntState;
+   }
+
    @Override
    public ArrayList<Action> getFeasibleActions() {
       ArrayList<Action> feasibleActions = new ArrayList<Action>();
@@ -97,12 +101,9 @@ public class sS_State extends State {
       return feasibleActions;
    }
    
+   @Override
    public Action getNoAction(){
       return  new sS_Action(this, 0);
-   }
-
-   public int getInitialIntState(){
-      return this.initialIntState;
    }
 
    @Override

@@ -167,7 +167,7 @@ public class CapacitatedStochasticLotSizing {
                                                                   discountFactor,
                                                                   samplingScheme,
                                                                   maxSampleSize,
-                                                                  HashType.CONCURRENT_HASHMAP);
+                                                                  HashType.MAPDB);
 
       System.out.println("--------------Backward recursion--------------");
       StopWatch timer = new StopWatch();
