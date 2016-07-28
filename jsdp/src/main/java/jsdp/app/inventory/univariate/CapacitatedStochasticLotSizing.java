@@ -104,8 +104,8 @@ public class CapacitatedStochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      double minState = -200;
-      double maxState = 200;
+      double minState = -250;
+      double maxState = 250;
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
       // Actions
@@ -167,7 +167,7 @@ public class CapacitatedStochasticLotSizing {
                                                                   discountFactor,
                                                                   samplingScheme,
                                                                   maxSampleSize,
-                                                                  HashType.HASHTABLE);
+                                                                  HashType.CONCURRENT_HASHMAP);
 
       System.out.println("--------------Backward recursion--------------");
       StopWatch timer = new StopWatch();

@@ -172,7 +172,7 @@ public class CLQG {
                                                                   maxSampleSize,
                                                                   stateSpaceLowerBound,
                                                                   loadFactor,
-                                                                  HashType.HASHTABLE);
+                                                                  HashType.MAPDB);
 
       
       System.out.println("--------------Backward recursion--------------");
