@@ -88,7 +88,6 @@ public class BRL_State extends State {
       this.bowserLocation = descriptor.getBowserLocation();
       this.machineTankLevel = Arrays.copyOf(descriptor.getMachineTankLevel(), descriptor.getMachineTankLevel().length);
       this.machineLocation = Arrays.copyOf(descriptor.getMachineLocation(), descriptor.getMachineLocation().length);
-      this.buildActionList(buildActionList);
    }
    
    public int getBowserTankLevel(){
@@ -128,11 +127,6 @@ public class BRL_State extends State {
              Arrays.toString(this.machineTankLevel);
              Arrays.toString(this.machineLocation);
       return hash.hashCode();
-   }
-   
-   protected void buildActionList(
-         Function<State, ArrayList<Action>> buildActionList){
-      this.feasibleActions = buildActionList.apply(this);
    }
    
    @Override
