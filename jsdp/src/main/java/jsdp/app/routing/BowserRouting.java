@@ -304,7 +304,7 @@ public class BowserRouting {
       /**
        * THashMap
        */
-      int stateSpaceSizeLowerBound = 60000000;
+      int stateSpaceSizeLowerBound = 10000000;
       float loadFactor = 0.8F;
       double discountFactor = 1.0;
       BR_ForwardRecursion recursion = new BR_ForwardRecursion(T, 
@@ -336,10 +336,9 @@ public class BowserRouting {
                ManagementFactory.getPlatformMBeanServer(), ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME, OperatingSystemMXBean.class);
          long nanoBefore = System.nanoTime();
          long cpuBefore = osMBean.getProcessCpuTime();
-         MonitoringInterface.setStartTime(nanoBefore);
          
          timer.start();
-         recursion.runForwardRecursion(((BR_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
+         recursion.runForwardRecursionMonitoring(((BR_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
          timer.stop();
          
          long cpuAfter = osMBean.getProcessCpuTime();

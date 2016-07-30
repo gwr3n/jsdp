@@ -65,14 +65,14 @@ public class BRL_ForwardRecursion extends ForwardRecursion {
    }
    
    public BRL_ForwardRecursion(int horizonLength,
-         double[][][] machineLocation, 
-         int[][] fuelConsumption,
-         ImmediateValueFunction<State, Action, Double> immediateValueFunction,
-         Function<State, ArrayList<Action>> buildActionList,
-         double discountFactor,
-         HashType hashType,
-         int stateSpaceSizeLowerBound,
-         float loadFactor){
+                               double[][][] machineLocation, 
+                               int[][] fuelConsumption,
+                               ImmediateValueFunction<State, Action, Double> immediateValueFunction,
+                               Function<State, ArrayList<Action>> buildActionList,
+                               double discountFactor,
+                               HashType hashType,
+                               int stateSpaceSizeLowerBound,
+                               float loadFactor){
       super(OptimisationDirection.MIN);
       this.horizonLength = horizonLength;
       this.machineLocation = machineLocation;

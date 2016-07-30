@@ -53,7 +53,6 @@ public class BR_ForwardRecursion extends ForwardRecursion {
       this.machineLocation = machineLocation;
       this.fuelConsumption = fuelConsumption;
       
-      this.setStateMonitoring(true);
       this.stateSpace = new BR_StateSpace[this.horizonLength+1];
       for(int i = 0; i < this.horizonLength + 1; i++) 
          this.stateSpace[i] = new BR_StateSpace(i, buildActionList, hashType);                     
@@ -79,7 +78,6 @@ public class BR_ForwardRecursion extends ForwardRecursion {
       this.machineLocation = machineLocation;
       this.fuelConsumption = fuelConsumption;
 
-      this.stateMonitoring = true;
       this.stateSpace = new BR_StateSpace[this.horizonLength+1];
       for(int i = 0; i < this.horizonLength + 1; i++) 
          this.stateSpace[i] = new BR_StateSpace(i, buildActionList, hashType, stateSpaceSizeLowerBound, loadFactor); 

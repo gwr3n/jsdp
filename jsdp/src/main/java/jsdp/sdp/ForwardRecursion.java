@@ -50,6 +50,11 @@ public abstract class ForwardRecursion extends Recursion{
 	 */
    private long generatedStates = 0;
 	
+   /**
+    * Monitor
+    */
+   private  MonitoringInterface monitor;
+   
 	/**
 	 * Creates an instance of {@code ForwardRecursion} with the given optimization direction.
 	 * 
@@ -69,8 +74,15 @@ public abstract class ForwardRecursion extends Recursion{
          reusedStates++;
       else
          generatedStates++;
-      if(reusedStates > 0L && reusedStates % 10000L == 0L)
-         MonitoringInterface.setStates(generatedStates, reusedStates);
+      monitor.setStates(generatedStates, reusedStates);
+	}
+	
+	public double runForwardRecursionMonitoring(State state){
+	   this.monitor = new MonitoringInterface(this);
+	   this.monitor.startMonitoring();
+	   double expectedValue = runForwardRecursion(state);
+	   this.monitor.terminate();
+	   return expectedValue;
 	}
 	
 	/**
@@ -81,7 +93,9 @@ public abstract class ForwardRecursion extends Recursion{
 	 * @return the expected value of running the system from state {@code state}.
 	 */
 	public double runForwardRecursion(State state){
-	   if(stateMonitoring) stateMonitoring(state);
+	   if(stateMonitoring) 
+	      stateMonitoring(state);
+	   
 		return this.valueRepository.optimalValueHashTable.computeIfAbsent(state, y -> {
 		   BestActionRepository repository = new BestActionRepository(direction);
 		   y.getFeasibleActions().parallelStream().forEach(action -> {
