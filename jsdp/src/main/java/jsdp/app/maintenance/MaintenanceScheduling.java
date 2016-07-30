@@ -152,7 +152,7 @@ public class MaintenanceScheduling {
       System.out.println("Expected total cost (assuming initial state "+initialMachineState+"): "+ETC);
       for(int i = 0; i < states.length; i++){
          StateDescriptorImpl initialState = new StateDescriptorImpl(0, states[i]);
-         double action = StateImpl.intStateToState(recursion.getOptimalAction(initialState).getIntAction());
+         double action = recursion.getOptimalAction(initialState).getAction();
          System.out.println("Optimal action in state "+states[i]+": "+action);
       }
       System.out.println("Time elapsed: "+timer);

@@ -36,7 +36,7 @@ import jsdp.sdp.State;
 import jsdp.sdp.StateSpace;
 
 public class BR_StateSpace extends StateSpace<BR_StateDescriptor> {
-   
+      
    public BR_StateSpace(int period,
                         Function<State, ArrayList<Action>> buildActionList,
                         HashType hashType,

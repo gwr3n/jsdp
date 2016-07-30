@@ -50,6 +50,8 @@ public abstract class Recursion {
 	protected ValueRepository valueRepository;
 	final protected OptimisationDirection direction;
 	
+	protected boolean stateMonitoring = false;
+	
 	/**
 	 * Creates an instance of {@code Recursion} with the given optimisatio direction.
 	 * 
@@ -104,5 +106,15 @@ public abstract class Recursion {
 	 */
 	public ValueRepository getValueRepository(){
 		return this.valueRepository;
+	}
+	
+	/**
+	 * If {@code stateMonitoring} is {@code true} state generation and reuse
+	 * are monitored during the recursion. 
+	 * 
+	 * @param stateMonitoring status of state monitoring
+	 */
+	public void setStateMonitoring(boolean stateMonitoring){
+	   this.stateMonitoring = stateMonitoring;
 	}
 }

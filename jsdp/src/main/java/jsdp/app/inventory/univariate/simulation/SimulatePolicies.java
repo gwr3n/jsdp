@@ -117,7 +117,7 @@ public class SimulatePolicies {
          double inventory = initialStock;
          for(int t = 0; t < demand.length; t++){
             StateDescriptorImpl state = new StateDescriptorImpl(t, inventory);
-            double qty = StateImpl.intStateToState(recursion.getOptimalAction(state).getIntAction());
+            double qty = recursion.getOptimalAction(state).getAction();
             if(qty > 0){
                replicationCost += orderCost;
                replicationCost += qty*unitCost;

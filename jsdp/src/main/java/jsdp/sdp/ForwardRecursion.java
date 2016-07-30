@@ -29,6 +29,8 @@ package jsdp.sdp;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
+import jsdp.utilities.monitoring.MonitoringInterface;;
+
 /**
  * Implements a forward recursion algorithm to solve a stochastic dynamic program.
  * 
@@ -37,6 +39,16 @@ import org.apache.logging.log4j.LogManager;
  */
 public abstract class ForwardRecursion extends Recursion{
 	static final Logger logger = LogManager.getLogger(ForwardRecursion.class.getName());
+	
+	/**
+	 * States reused by memoization
+	 */
+	private long reusedStates = 0;
+	
+	/**
+	 * States generated
+	 */
+   private long generatedStates = 0;
 	
 	/**
 	 * Creates an instance of {@code ForwardRecursion} with the given optimization direction.
@@ -48,6 +60,20 @@ public abstract class ForwardRecursion extends Recursion{
 	}
 	
 	/**
+	 * Monitors state generation
+	 * 
+	 * @param state the initial state.
+	 */
+	private void stateMonitoring(State state){
+	   if(this.valueRepository.optimalValueHashTable.containsKey(state))
+         reusedStates++;
+      else
+         generatedStates++;
+      if(reusedStates > 0L && reusedStates % 10000L == 0L)
+         MonitoringInterface.setStates(generatedStates, reusedStates);
+	}
+	
+	/**
 	 * Runs the forward recursion algorithm for the given stochastic dynamic program and
 	 * computes the expected value function starting from state {@code state}.
 	 * 
@@ -55,6 +81,7 @@ public abstract class ForwardRecursion extends Recursion{
 	 * @return the expected value of running the system from state {@code state}.
 	 */
 	public double runForwardRecursion(State state){
+	   if(stateMonitoring) stateMonitoring(state);
 		return this.valueRepository.optimalValueHashTable.computeIfAbsent(state, y -> {
 		   BestActionRepository repository = new BestActionRepository(direction);
 		   y.getFeasibleActions().parallelStream().forEach(action -> {

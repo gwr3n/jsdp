@@ -129,7 +129,7 @@ public class CapacitatedStochasticLotSizing {
          ActionImpl a = (ActionImpl)action;
          StateImpl fs = (StateImpl)finalState;
          double orderingCost = 
-               a.getIntAction() > 0 ? (fixedOrderingCost + a.getAction()*proportionalOrderingCost) : 0;
+               a.getAction() > 0 ? (fixedOrderingCost + a.getAction()*proportionalOrderingCost) : 0;
          double holdingAndPenaltyCost =   
                holdingCost*Math.max(fs.getInitialState(),0) + penaltyCost*Math.max(-fs.getInitialState(),0);
          return orderingCost+holdingAndPenaltyCost;
@@ -177,7 +177,7 @@ public class CapacitatedStochasticLotSizing {
       System.out.println();
       double ETC = recursion.getExpectedCost(initialInventory);
       StateDescriptorImpl initialState = new StateDescriptorImpl(0, initialInventory);
-      double action = StateImpl.intStateToState(recursion.getOptimalAction(initialState).getIntAction());
+      double action = recursion.getOptimalAction(initialState).getAction();
       System.out.println("Expected total cost (assuming an initial inventory level "+initialInventory+"): "+ETC);
       System.out.println("Optimal initial action: "+action);
       System.out.println("Time elapsed: "+timer);

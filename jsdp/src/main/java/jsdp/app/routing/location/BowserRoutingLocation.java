@@ -37,6 +37,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import com.sun.management.OperatingSystemMXBean;
 
 import jsdp.sdp.Action;
+import jsdp.sdp.HashType;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.State;
 
@@ -312,6 +313,7 @@ public class BowserRoutingLocation {
                                                               immediateValueFunction, 
                                                               buildActionList,
                                                               discountFactor,
+                                                              HashType.MAPDB,
                                                               stateSpaceSizeLowerBound,
                                                               loadFactor);
       

@@ -59,7 +59,7 @@ public class ActionImpl extends Action {
       this.intAction = actionToIntAction(action);
    }
    
-   public int getIntAction(){
+   protected int getIntAction(){
       return this.intAction;
    }
    

@@ -165,7 +165,7 @@ public class StochasticLotSizing {
       // Sampling scheme
       
       SamplingScheme samplingScheme = SamplingScheme.NONE;
-      int maxSampleSize = 200;
+      int maxSampleSize = 100;
       
       
       // Value Function Processing Method: backward recursion
@@ -185,7 +185,7 @@ public class StochasticLotSizing {
                                                                   maxSampleSize,
                                                                   stateSpaceLowerBound,
                                                                   loadFactor,
-                                                                  HashType.MAPDB);
+                                                                  HashType.CONCURRENT_HASHMAP);
 
       
       System.out.println("--------------Backward recursion--------------");
@@ -218,7 +218,7 @@ public class StochasticLotSizing {
       System.out.println();
       double ETC = recursion.getExpectedCost(initialInventory);
       StateDescriptorImpl initialState = new StateDescriptorImpl(0, initialInventory);
-      double action = StateImpl.intStateToState(recursion.getOptimalAction(initialState).getIntAction());
+      double action = recursion.getOptimalAction(initialState).getAction();
       System.out.println("Expected total cost (assuming an initial inventory level "+initialInventory+"): "+ETC);
       System.out.println("Optimal initial action: "+action);
       System.out.println("Time elapsed: "+timer);

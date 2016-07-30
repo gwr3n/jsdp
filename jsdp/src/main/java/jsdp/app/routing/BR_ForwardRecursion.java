@@ -46,39 +46,43 @@ public class BR_ForwardRecursion extends ForwardRecursion {
                               int[][] fuelConsumption,
                               ImmediateValueFunction<State, Action, Double> immediateValueFunction,
                               Function<State, ArrayList<Action>> buildActionList,
-                              double discountFactor){
+                              double discountFactor,
+                              HashType hashType){
       super(OptimisationDirection.MIN);
       this.horizonLength = horizonLength;
       this.machineLocation = machineLocation;
       this.fuelConsumption = fuelConsumption;
       
+      this.setStateMonitoring(true);
       this.stateSpace = new BR_StateSpace[this.horizonLength+1];
       for(int i = 0; i < this.horizonLength + 1; i++) 
-         this.stateSpace[i] = new BR_StateSpace(i, buildActionList, HashType.MAPDB);                     //Hashtable
+         this.stateSpace[i] = new BR_StateSpace(i, buildActionList, hashType);                     
       this.transitionProbability = new BR_TransitionProbability(machineLocation, 
                                                                 fuelConsumption, 
                                                                 (BR_StateSpace[])this.getStateSpace());
       this.valueRepository = new ValueRepository(immediateValueFunction, 
                                                  discountFactor, 
-                                                 HashType.MAPDB);                                        //Hashtable
+                                                 hashType);                                       
    }
    
    public BR_ForwardRecursion(int horizonLength,
-         double[][][] machineLocation, 
-         int[][] fuelConsumption,
-         ImmediateValueFunction<State, Action, Double> immediateValueFunction,
-         Function<State, ArrayList<Action>> buildActionList,
-         double discountFactor,
-         int stateSpaceSizeLowerBound,
-         float loadFactor){
+                              double[][][] machineLocation, 
+                              int[][] fuelConsumption,
+                              ImmediateValueFunction<State, Action, Double> immediateValueFunction,
+                              Function<State, ArrayList<Action>> buildActionList,
+                              double discountFactor,
+                              HashType hashType,
+                              int stateSpaceSizeLowerBound,
+                              float loadFactor){
       super(OptimisationDirection.MIN);
       this.horizonLength = horizonLength;
       this.machineLocation = machineLocation;
       this.fuelConsumption = fuelConsumption;
 
+      this.stateMonitoring = true;
       this.stateSpace = new BR_StateSpace[this.horizonLength+1];
       for(int i = 0; i < this.horizonLength + 1; i++) 
-         this.stateSpace[i] = new BR_StateSpace(i, buildActionList, HashType.MAPDB, stateSpaceSizeLowerBound, loadFactor); //THashMap
+         this.stateSpace[i] = new BR_StateSpace(i, buildActionList, hashType, stateSpaceSizeLowerBound, loadFactor); 
       this.transitionProbability = new BR_TransitionProbability(machineLocation, 
                                                                 fuelConsumption, 
                                                                 (BR_StateSpace[])this.getStateSpace());
@@ -86,7 +90,7 @@ public class BR_ForwardRecursion extends ForwardRecursion {
                                                  discountFactor, 
                                                  stateSpaceSizeLowerBound, 
                                                  loadFactor, 
-                                                 HashType.MAPDB);   //THashMap
+                                                 hashType);   
    }
    
    public double getExpectedCost(BR_StateDescriptor stateDescriptor){

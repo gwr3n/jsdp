@@ -40,9 +40,6 @@ public abstract class State implements Serializable{
    private static final long serialVersionUID = 1L;
    
 	protected int period;
-	protected ArrayList<Action> feasibleActions;
-	
-	private static boolean lightweightActionGeneration = false; 
 	
 	/**
 	 * Creates a {@code State} associated with a given {@code period}.
@@ -60,13 +57,7 @@ public abstract class State implements Serializable{
     * @return the {@code ArrayList<Action>} of feasible actions.
     */
    public ArrayList<Action> getFeasibleActions() {
-      if(lightweightActionGeneration)
-         return StateSpace.getBuildActionList().apply(this);
-      else if(this.feasibleActions == null){
-         return this.feasibleActions = StateSpace.getBuildActionList().apply(this);
-      }else{
-         return this.feasibleActions;
-      }
+      return StateSpace.getBuildActionList().apply(this);
    }
 	
 	/**

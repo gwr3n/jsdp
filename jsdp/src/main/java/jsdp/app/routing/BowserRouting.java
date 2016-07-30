@@ -37,8 +37,10 @@ import org.apache.commons.lang3.time.StopWatch;
 import com.sun.management.OperatingSystemMXBean;
 
 import jsdp.sdp.Action;
+import jsdp.sdp.HashType;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.State;
+import jsdp.utilities.monitoring.MonitoringInterface;
 
 /**
  * Dynamic Bowser Routing Problem
@@ -172,7 +174,7 @@ public class BowserRouting {
       T = 10;   //time horizon
       M = 3;    //machines
       N = 10;   //nodes
-      tankCapacity = new int[]{10, 10, 10};
+      tankCapacity = new int[]{20, 20, 20};
       initialTankLevel = new int[]{10, 10, 10};
       fuelConsumption = new int[][]{{4, 4, 2, 1, 3, 1, 4, 4, 3, 3},
                                     {4, 2, 3, 4, 3, 1, 4, 2, 4, 4},
@@ -234,7 +236,7 @@ public class BowserRouting {
                {0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
                {0, 0, 1, 0, 0, 0, 0, 0, 0, 0}}};
       
-      fuelStockOutPenaltyCost = 20;
+      fuelStockOutPenaltyCost = 100;
    }
    
    public static void main(String args[]){
@@ -251,7 +253,7 @@ public class BowserRouting {
       
       // State space
       int minBowserTankLevel = 0;
-      int maxBowserTankLevel = 10;
+      int maxBowserTankLevel = 60;
       int[] minMachineTankLevel = Arrays.stream(fuelConsumption).mapToInt(m -> -Arrays.stream(m).max().getAsInt()).toArray();
       int[] maxMachineTankLevel = Arrays.copyOf(tankCapacity, tankCapacity.length);
       int networkSize = N;
@@ -302,7 +304,7 @@ public class BowserRouting {
       /**
        * THashMap
        */
-      int stateSpaceSizeLowerBound = 10000000;
+      int stateSpaceSizeLowerBound = 60000000;
       float loadFactor = 0.8F;
       double discountFactor = 1.0;
       BR_ForwardRecursion recursion = new BR_ForwardRecursion(T, 
@@ -311,6 +313,7 @@ public class BowserRouting {
                                                               immediateValueFunction, 
                                                               buildActionList,
                                                               discountFactor,
+                                                              HashType.HASHTABLE,
                                                               stateSpaceSizeLowerBound,
                                                               loadFactor);
       
@@ -333,6 +336,7 @@ public class BowserRouting {
                ManagementFactory.getPlatformMBeanServer(), ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME, OperatingSystemMXBean.class);
          long nanoBefore = System.nanoTime();
          long cpuBefore = osMBean.getProcessCpuTime();
+         MonitoringInterface.setStartTime(nanoBefore);
          
          timer.start();
          recursion.runForwardRecursion(((BR_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));

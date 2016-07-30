@@ -78,8 +78,8 @@ public abstract class StateSpace<SD> implements Iterable<State>{
 		   this.states = new THashMap<SD,State>();
 		   break;
 		case MAPDB:
-		   this.states = new MapDBHashTable<SD,State>("states");
-		   break;
+         this.states = new MapDBHashTable<SD,State>("states");
+         break;   
       default: 
          throw new NullPointerException("HashType not available");
 		}

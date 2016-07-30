@@ -28,7 +28,7 @@ public class sS_Policy {
          if(i == 0) {
             StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(0, initialInventory);
             s[i] = StateImpl.intStateToState(this.find_s(i).getInitialIntState());
-            S[i] = ActionImpl.intActionToAction(recursion.getOptimalAction(stateDescriptor).getIntAction())+initialInventory;
+            S[i] = recursion.getOptimalAction(stateDescriptor).getAction()+initialInventory;
          }
          else{
             s[i] = StateImpl.intStateToState(this.find_s(i).getInitialIntState());
@@ -42,7 +42,7 @@ public class sS_Policy {
    
    public StateImpl find_S(int period){
       StateImpl s = this.find_s(period);
-      int i = ((ActionImpl)recursion.getValueRepository().getOptimalAction(s)).getIntAction()+s.getInitialIntState();
+      double i = ((ActionImpl)recursion.getValueRepository().getOptimalAction(s)).getAction()+s.getInitialState();
       StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(period, i);
       StateImpl state = (StateImpl) ((StateSpaceImpl)recursion.getStateSpace()[period]).getState(stateDescriptor);
       return state;
@@ -56,7 +56,7 @@ public class sS_Policy {
          Action action = recursion.getValueRepository().getOptimalAction(state);
          if(action == null)
             continue;
-         if(((ActionImpl)action).getIntAction() > 0){
+         if(((ActionImpl)action).getAction() > 0){
             return state;
          }
       }while(iterator.hasNext());

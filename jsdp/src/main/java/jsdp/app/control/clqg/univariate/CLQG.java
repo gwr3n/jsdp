@@ -205,7 +205,7 @@ public class CLQG {
       System.out.println();
       double ETC = recursion.getExpectedCost(initialX);
       StateDescriptorImpl initialState = new StateDescriptorImpl(0, initialX);
-      double action = StateImpl.intStateToState(recursion.getOptimalAction(initialState).getIntAction());
+      double action = recursion.getOptimalAction(initialState).getAction();
       System.out.println("Expected total cost (assuming an initial state "+initialX+"): "+ETC);
       System.out.println("Optimal initial action: "+action);
       System.out.println("Time elapsed: "+timer);
