@@ -82,27 +82,27 @@ public class BRF_Action extends Action {
       return hash.hashCode();
    }
    
-   private static void refuelMachine(int[] currentPlan, int machine, BRF_State state, int availableFuel, ArrayList<int[]> qtys){
+   private static void refuelMachine(int[] currentPlan, int machine, BRF_State state, int availableFuel, ArrayList<int[]> qtys, int minRefuelingQty){
       if(machine == state.getMachineTankLevel().length - 1){
          qtys.add(Arrays.copyOf(currentPlan, currentPlan.length));
          for(int i = 1; i <= Math.min(availableFuel, BRF_State.getMaxMachineTankLevel()[machine] - Math.max(state.getMachineTankLevel()[machine], 0)) &&
-                        state.getMachineLocation()[machine] == state.getBowserLocation(); i+= 1){
+                        state.getMachineLocation()[machine] == state.getBowserLocation(); i+= minRefuelingQty){
             currentPlan[machine] = i;
             qtys.add(Arrays.copyOf(currentPlan, currentPlan.length));
          }
       }else{
-         refuelMachine(Arrays.copyOf(currentPlan, currentPlan.length), machine + 1, state, availableFuel, qtys);
+         refuelMachine(Arrays.copyOf(currentPlan, currentPlan.length), machine + 1, state, availableFuel, qtys, minRefuelingQty);
          for(int i = 1; i <= Math.min(availableFuel, BRF_State.getMaxMachineTankLevel()[machine] - Math.max(state.getMachineTankLevel()[machine], 0)) &&
-                        state.getMachineLocation()[machine] == state.getBowserLocation(); i+= 1){
+                        state.getMachineLocation()[machine] == state.getBowserLocation(); i+= minRefuelingQty){
             currentPlan[machine] = i;
-            refuelMachine(Arrays.copyOf(currentPlan, currentPlan.length), machine + 1, state, availableFuel - i, qtys);
+            refuelMachine(Arrays.copyOf(currentPlan, currentPlan.length), machine + 1, state, availableFuel - i, qtys, minRefuelingQty);
          }
       }
    }
    
-   public static ArrayList<int[]> computeMachineRefuelQtys(BRF_State state, int bowserRefuelingQty){
+   public static ArrayList<int[]> computeMachineRefuelQtys(BRF_State state, int bowserRefuelingQty, int minRefuelingQty){
       ArrayList<int[]> qtys = new ArrayList<int[]>();
-      refuelMachine(new int[state.getMachineTankLevel().length], 0, state, state.getBowserTankLevel() + bowserRefuelingQty, qtys);
+      refuelMachine(new int[state.getMachineTankLevel().length], 0, state, state.getBowserTankLevel() + bowserRefuelingQty, qtys, minRefuelingQty);
       return qtys;
    }
    

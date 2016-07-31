@@ -30,6 +30,9 @@ import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.logging.log4j.Logger;
+
+import jsdp.utilities.monitoring.MonitoringInterfaceBackward;
+
 import org.apache.logging.log4j.LogManager;
 
 /**
@@ -42,6 +45,21 @@ public abstract class BackwardRecursion extends Recursion{
 	static final Logger logger = LogManager.getLogger(BackwardRecursion.class.getName());
 	
 	/**
+    * States processed
+    */
+   private long processedStates = 0;
+   
+   /**
+    * States generated
+    */
+   private long generatedStates = 0;
+   
+   /**
+    * Monitor
+    */
+   private  MonitoringInterfaceBackward monitor;
+	
+	/**
 	 * Creates an instance of {@code BackwardRecursion} with the given optimization direction.
 	 * 
 	 * @param direction the direction of optimization.
@@ -51,34 +69,14 @@ public abstract class BackwardRecursion extends Recursion{
 	}
 	
 	/**
-	 * Generates the complete state space for the discrete time, discrete space, stochastic dynamic program.
-	 */
-	protected void generateStates(){
-		CountDownLatch latch = new CountDownLatch(horizonLength);
-		for(int i = horizonLength; i >= 0; i--){
-			Iterator<State> iterator = this.getStateSpace(i).iterator();
-			if(iterator != null){
-   			Runnable r = () -> {
-   				while(iterator.hasNext()) 
-   					iterator.next();
-   				latch.countDown();
-   				};
-   			new Thread(r).start();
-			}else{
-			   logger.info("Skipping state generation for period "+i);
-			}
-		}
-		try {
-			latch.await();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		this.getStateSpace(horizonLength).entrySet()
-			 .parallelStream()
-			 .forEach(entry -> this.getValueRepository().setOptimalExpectedValue(entry.getValue(), 0));
-	}
+    * Runs the backward recursion algorithm for the given stochastic dynamic program.
+    */
+   public void runBackwardRecursionMonitoring(){
+      this.monitor = new MonitoringInterfaceBackward(this);
+      this.monitor.startMonitoring();
+      runBackwardRecursion();
+      this.monitor.terminate();
+   }
 	
 	/**
 	 * Runs the backward recursion algorithm for the given stochastic dynamic program.
@@ -91,6 +89,20 @@ public abstract class BackwardRecursion extends Recursion{
 			recurse(i);
 		}
 	}
+	
+	/**
+    * Runs the backward recursion algorithm for the given stochastic dynamic program from period {@code period} 
+    * up to the end of the planning horizon. This implementation of the backward recursion algorithm assumes 
+    * that the idempotent action is selected in period {@code period}.
+    * 
+    * @param period the starting period. 
+    */
+   public void runBackwardRecursionMonitoring(int period){
+      this.monitor = new MonitoringInterfaceBackward(this);
+      this.monitor.startMonitoring();
+      runBackwardRecursion(period);
+      this.monitor.terminate();
+   }
 	
 	/**
 	 * Runs the backward recursion algorithm for the given stochastic dynamic program from period {@code period} 
@@ -116,8 +128,47 @@ public abstract class BackwardRecursion extends Recursion{
 			double bestCost = this.getValueRepository().getExpectedValue(state, bestAction, this.getTransitionProbability());
 			this.getValueRepository().setOptimalExpectedValue(state, bestCost);
 			this.getValueRepository().setOptimalAction(state, bestAction);
+         if(stateMonitoring)
+            monitor.setStates(generatedStates, ++processedStates, period);
 		});
 	}
+	
+	  /**
+    * Generates the complete state space for the discrete time, discrete space, stochastic dynamic program.
+    */
+   protected void generateStates(){
+      CountDownLatch latch = new CountDownLatch(horizonLength);
+      for(int i = horizonLength; i >= 0; i--){
+         Iterator<State> iterator = this.getStateSpace(i).iterator();
+         if(iterator != null){
+            Runnable r = () -> {
+               while(iterator.hasNext()){ 
+                  if(stateMonitoring)
+                     monitor.setStates(++generatedStates, processedStates, horizonLength);
+                  iterator.next();
+               }
+               latch.countDown();
+               };
+            new Thread(r).start();
+         }else{
+            logger.info("Skipping state generation for period "+i);
+         }
+      }
+      try {
+         latch.await();
+      } catch (InterruptedException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      
+      this.getStateSpace(horizonLength).entrySet()
+          .parallelStream()
+          .forEach(entry -> {
+             this.getValueRepository().setOptimalExpectedValue(entry.getValue(), 0);
+             if(stateMonitoring)
+                monitor.setStates(generatedStates, ++processedStates, horizonLength);
+          });
+   }
 	
 	/**
 	 * Backward recursion step; in order to run the recursion step for period {@code period} 
@@ -138,6 +189,8 @@ public abstract class BackwardRecursion extends Recursion{
 				this.getValueRepository().setOptimalExpectedValue(state, repository.getBestValue());
 				this.getValueRepository().setOptimalAction(state, repository.getBestAction());
 				logger.trace(repository.getBestAction()+"\tCost: "+repository.getBestValue());
+				if(stateMonitoring)
+				   monitor.setStates(generatedStates, ++processedStates, period);
 			});
 	}
 }

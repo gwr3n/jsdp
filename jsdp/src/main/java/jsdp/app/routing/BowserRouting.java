@@ -252,7 +252,7 @@ public class BowserRouting {
       
       // State space
       int minBowserTankLevel = 0;
-      int maxBowserTankLevel = 60;
+      int maxBowserTankLevel = 300;
       int[] minMachineTankLevel = Arrays.stream(fuelConsumption).mapToInt(m -> -Arrays.stream(m).max().getAsInt()).toArray();
       int[] maxMachineTankLevel = Arrays.copyOf(tankCapacity, tankCapacity.length);
       int networkSize = N;
@@ -265,6 +265,8 @@ public class BowserRouting {
       
       // Actions
       
+      int minRefuelingQty = 5;
+      
       Function<State, ArrayList<Action>> buildActionList = s -> {
          BR_State state = (BR_State) s;
          ArrayList<Action> feasibleActions = new ArrayList<Action>();
@@ -272,15 +274,15 @@ public class BowserRouting {
             if(connectivity[state.getBowserLocation()][i] == 1){
                final int bowserNewLocation = i;
                if(state.getBowserLocation() == 0){
-                  for(int j = 0; j <= BR_State.getMaxBowserTankLevel() - state.getBowserTankLevel(); j+=1){
+                  for(int j = 0; j <= BR_State.getMaxBowserTankLevel() - state.getBowserTankLevel(); j += minRefuelingQty){
                      final int bowserRefuelQty = j;
-                     BR_Action.computeMachineRefuelQtys(state, j).parallelStream().forEach(action -> 
+                     BR_Action.computeMachineRefuelQtys(state, j, minRefuelingQty).parallelStream().forEach(action -> 
                         feasibleActions.add(new BR_Action(state, bowserNewLocation, bowserRefuelQty, action))
                      );
                   }
                }else{
                   final int bowserRefuelQty = 0;
-                  BR_Action.computeMachineRefuelQtys(state, 0).parallelStream().forEach(action -> 
+                  BR_Action.computeMachineRefuelQtys(state, 0, minRefuelingQty).parallelStream().forEach(action -> 
                      feasibleActions.add(new BR_Action(state, bowserNewLocation, bowserRefuelQty, action))
                   );
                }
@@ -312,12 +314,12 @@ public class BowserRouting {
                                                               immediateValueFunction, 
                                                               buildActionList,
                                                               discountFactor,
-                                                              HashType.HASHTABLE,
+                                                              HashType.THASHMAP,
                                                               stateSpaceSizeLowerBound,
                                                               loadFactor);
       
       int period = 0;
-      int bowserInitialTankLevel = 0;
+      int bowserInitialTankLevel = 10;
       int bowserInitialLocation = 0;
       int[] machinesInitialTankLevel = Arrays.copyOf(initialTankLevel, initialTankLevel.length);
       int[] machinesInitialLocation = getMachineLocationArray(M, machineLocation[0]);

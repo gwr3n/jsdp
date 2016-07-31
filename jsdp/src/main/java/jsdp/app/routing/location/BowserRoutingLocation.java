@@ -266,6 +266,8 @@ public class BowserRoutingLocation {
       
       // Actions
       
+      int minRefuelingQty = 1;
+      
       Function<State, ArrayList<Action>> buildActionList = s -> {
          BRL_State state = (BRL_State) s;
          ArrayList<Action> feasibleActions = new ArrayList<Action>();
@@ -273,15 +275,15 @@ public class BowserRoutingLocation {
             if(connectivity[state.getBowserLocation()][i] == 1){
                final int bowserNewLocation = i;
                if(state.getBowserLocation() == 0){
-                  for(int j = 0; j <= BRL_State.getMaxBowserTankLevel() - state.getBowserTankLevel(); j+=1){
+                  for(int j = 0; j <= BRL_State.getMaxBowserTankLevel() - state.getBowserTankLevel(); j+= minRefuelingQty){
                      final int bowserRefuelQty = j;
-                     BRL_Action.computeMachineRefuelQtys(state, j).parallelStream().forEach(action -> 
+                     BRL_Action.computeMachineRefuelQtys(state, j ,minRefuelingQty).parallelStream().forEach(action -> 
                         feasibleActions.add(new BRL_Action(state, bowserNewLocation, bowserRefuelQty, action))
                      );
                   }
                }else{
                   final int bowserRefuelQty = 0;
-                  BRL_Action.computeMachineRefuelQtys(state, 0).parallelStream().forEach(action -> 
+                  BRL_Action.computeMachineRefuelQtys(state, 0, minRefuelingQty).parallelStream().forEach(action -> 
                      feasibleActions.add(new BRL_Action(state, bowserNewLocation, bowserRefuelQty, action))
                   );
                }
@@ -313,7 +315,7 @@ public class BowserRoutingLocation {
                                                               immediateValueFunction, 
                                                               buildActionList,
                                                               discountFactor,
-                                                              HashType.MAPDB_MEMORY,
+                                                              HashType.THASHMAP,
                                                               stateSpaceSizeLowerBound,
                                                               loadFactor);
       
@@ -338,7 +340,7 @@ public class BowserRoutingLocation {
          long cpuBefore = osMBean.getProcessCpuTime();
          
          timer.start();
-         recursion.runForwardRecursion(((BRL_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
+         recursion.runForwardRecursionMonitoring(((BRL_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
          timer.stop();
          
          long cpuAfter = osMBean.getProcessCpuTime();

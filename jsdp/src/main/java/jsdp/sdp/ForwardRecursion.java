@@ -29,7 +29,7 @@ package jsdp.sdp;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-import jsdp.utilities.monitoring.MonitoringInterface;;
+import jsdp.utilities.monitoring.MonitoringInterfaceForward;;
 
 /**
  * Implements a forward recursion algorithm to solve a stochastic dynamic program.
@@ -53,7 +53,7 @@ public abstract class ForwardRecursion extends Recursion{
    /**
     * Monitor
     */
-   private  MonitoringInterface monitor;
+   private  MonitoringInterfaceForward monitor;
    
 	/**
 	 * Creates an instance of {@code ForwardRecursion} with the given optimization direction.
@@ -78,7 +78,7 @@ public abstract class ForwardRecursion extends Recursion{
 	}
 	
 	public double runForwardRecursionMonitoring(State state){
-	   this.monitor = new MonitoringInterface(this);
+	   this.monitor = new MonitoringInterfaceForward(this);
 	   this.monitor.startMonitoring();
 	   double expectedValue = runForwardRecursion(state);
 	   this.monitor.terminate();

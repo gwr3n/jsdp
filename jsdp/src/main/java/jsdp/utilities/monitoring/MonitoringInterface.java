@@ -1,50 +1,47 @@
 package jsdp.utilities.monitoring;
 
+import java.awt.GraphicsConfiguration;
+import java.awt.HeadlessException;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JTextArea;
 
 import com.sun.management.OperatingSystemMXBean;
 
-import jsdp.sdp.Recursion;
+public abstract class MonitoringInterface extends JFrame implements Runnable{
 
-public class MonitoringInterface extends JFrame implements Runnable{
-   
    private static final long serialVersionUID = 1L;
+   
+   protected JTextArea text = new JTextArea();
+   
+   protected OperatingSystemMXBean osMBean;
+   protected long nanoBefore;
+   protected long cpuBefore;
+   protected boolean terminate = false;
 
-   static MonitoringInterface instance = null;
-   
-   JTextArea text = new JTextArea();
+   public MonitoringInterface() throws HeadlessException {
+      super();
+   }
 
-   long generatedStates;
-   long reusedStates;
-   
-   OperatingSystemMXBean osMBean;
-   long nanoBefore;
-   long cpuBefore;
-   
-   boolean terminate = false;
-   
-   public MonitoringInterface(Recursion recursion){
-      recursion.setStateMonitoring(true);
-      this.setTitle("jsdp statistics");
-      this.text.setEditable(false);
-      this.getContentPane().add(text);
-      this.setSize(300, 120);
-      this.setVisible(true);
+   public MonitoringInterface(GraphicsConfiguration gc) {
+      super(gc);
    }
-   
-   public synchronized void setStates(long generatedStates, long reusedStates){
-      this.generatedStates = generatedStates;
-      this.reusedStates = reusedStates;
+
+   public MonitoringInterface(String title) throws HeadlessException {
+      super(title);
    }
-   
-   private synchronized void setText(String text){
+
+   public MonitoringInterface(String title, GraphicsConfiguration gc) {
+      super(title, gc);
+   }
+
+   protected synchronized void setText(String text) {
       this.text.setText(text);
    }
-   
-   public void startMonitoring(){
+
+   public void startMonitoring() {
       try {
          osMBean = ManagementFactory.newPlatformMXBeanProxy(
                ManagementFactory.getPlatformMBeanServer(), ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME, OperatingSystemMXBean.class);
@@ -59,33 +56,8 @@ public class MonitoringInterface extends JFrame implements Runnable{
       runner.start();
    }
 
-   public void terminate(){
+   public void terminate() {
       this.terminate = true;
    }
-   
-   @Override
-   public void run() {
-      while(!terminate){
-         try {
-            Thread.sleep(1000);
-         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-         }
-         long cpuAfter = this.osMBean.getProcessCpuTime();
-         long nanoAfter = System.nanoTime();
-            
-         long percent;
-         if (nanoAfter > this.nanoBefore)
-            percent = ((cpuAfter-this.cpuBefore)*100L)/
-               (nanoAfter-this.nanoBefore);
-         else percent = 0;   
-            
-         setText("Time: " + (int) Math.ceil(((nanoAfter-this.nanoBefore)*Math.pow(10, -9))) +"\n"
-               + "CPU: "  +percent+"%" +" ("+Runtime.getRuntime().availableProcessors()+" cores)\n"
-               + "States processed per second: "+ (int) Math.ceil((generatedStates+reusedStates)/((nanoAfter-this.nanoBefore)*Math.pow(10, -9))) +"\n"
-               + "Generated states: " + generatedStates +"\n"
-               + "Reused states: " + reusedStates);
-      }
-   }
+
 }

@@ -198,7 +198,7 @@ public class StochasticLotSizing {
          long cpuBefore = osMBean.getProcessCpuTime();
          
          timer.start();
-         recursion.runBackwardRecursion();
+         recursion.runBackwardRecursionMonitoring();
          timer.stop();
          
          long cpuAfter = osMBean.getProcessCpuTime();
