@@ -28,6 +28,7 @@ package jsdp.sdp;
 
 import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.Logger;
 
@@ -47,12 +48,12 @@ public abstract class BackwardRecursion extends Recursion{
 	/**
     * States processed
     */
-   private long processedStates = 0;
+   private AtomicLong processedStates = new AtomicLong(0L);
    
    /**
     * States generated
     */
-   private long generatedStates = 0;
+   private AtomicLong generatedStates = new AtomicLong(0L);
    
    /**
     * Monitor
@@ -128,8 +129,9 @@ public abstract class BackwardRecursion extends Recursion{
 			double bestCost = this.getValueRepository().getExpectedValue(state, bestAction, this.getTransitionProbability());
 			this.getValueRepository().setOptimalExpectedValue(state, bestCost);
 			this.getValueRepository().setOptimalAction(state, bestAction);
-         if(stateMonitoring)
-            monitor.setStates(generatedStates, ++processedStates, period);
+         if(stateMonitoring){
+            monitor.setStates(generatedStates.get(), processedStates.addAndGet(1L), period);
+         }
 		});
 	}
 	
@@ -144,7 +146,7 @@ public abstract class BackwardRecursion extends Recursion{
             Runnable r = () -> {
                while(iterator.hasNext()){ 
                   if(stateMonitoring)
-                     monitor.setStates(++generatedStates, processedStates, horizonLength);
+                     monitor.setStates(generatedStates.addAndGet(1L), processedStates.get(), horizonLength);
                   iterator.next();
                }
                latch.countDown();
@@ -166,7 +168,7 @@ public abstract class BackwardRecursion extends Recursion{
           .forEach(entry -> {
              this.getValueRepository().setOptimalExpectedValue(entry.getValue(), 0);
              if(stateMonitoring)
-                monitor.setStates(generatedStates, ++processedStates, horizonLength);
+                monitor.setStates(generatedStates.get(), processedStates.addAndGet(1L), horizonLength);
           });
    }
 	
@@ -190,7 +192,7 @@ public abstract class BackwardRecursion extends Recursion{
 				this.getValueRepository().setOptimalAction(state, repository.getBestAction());
 				logger.trace(repository.getBestAction()+"\tCost: "+repository.getBestValue());
 				if(stateMonitoring)
-				   monitor.setStates(generatedStates, ++processedStates, period);
+				   monitor.setStates(generatedStates.get(), processedStates.addAndGet(1L), period);
 			});
 	}
 }

@@ -44,6 +44,8 @@ import jsdp.sdp.State;
 /**
  * Stochastic Dynamic Bowser Routing Problem under Asset Location Uncertainty
  * 
+ * Run with VM arguments -d64 -Xms512m -Xmx4g
+ * 
  * @author Roberto Rossi
  *
  */

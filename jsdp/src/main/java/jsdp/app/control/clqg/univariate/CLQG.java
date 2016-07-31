@@ -60,6 +60,8 @@ public class CLQG {
     *  
     *  We use backward recursion and sampling to find optimal policies.
     *  
+    *  Run with VM arguments -d64 -Xms512m -Xmx4g
+    *  
     * @author Roberto Rossi
     *
     */
@@ -172,7 +174,7 @@ public class CLQG {
                                                                   maxSampleSize,
                                                                   stateSpaceLowerBound,
                                                                   loadFactor,
-                                                                  HashType.HASHTABLE);
+                                                                  HashType.THASHMAP);
 
       
       System.out.println("--------------Backward recursion--------------");
@@ -185,7 +187,7 @@ public class CLQG {
          long cpuBefore = osMBean.getProcessCpuTime();
          
          timer.start();
-         recursion.runBackwardRecursion();
+         recursion.runBackwardRecursionMonitoring();
          timer.stop();
          
          long cpuAfter = osMBean.getProcessCpuTime();

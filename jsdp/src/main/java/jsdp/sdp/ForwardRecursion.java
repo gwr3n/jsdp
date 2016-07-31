@@ -69,7 +69,7 @@ public abstract class ForwardRecursion extends Recursion{
 	 * 
 	 * @param state the initial state.
 	 */
-	private void stateMonitoring(State state){
+	private synchronized void stateMonitoring(State state){
 	   if(this.valueRepository.optimalValueHashTable.containsKey(state))
          reusedStates++;
       else

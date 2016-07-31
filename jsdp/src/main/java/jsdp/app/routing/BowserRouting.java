@@ -44,6 +44,8 @@ import jsdp.sdp.State;
 /**
  * Dynamic Bowser Routing Problem
  * 
+ * Run with VM arguments -d64 -Xms512m -Xmx4g
+ * 
  * @author Roberto Rossi
  *
  */

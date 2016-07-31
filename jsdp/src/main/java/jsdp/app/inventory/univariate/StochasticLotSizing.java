@@ -70,9 +70,9 @@ import umontreal.ssj.probdist.NormalDist;
  *  and P. Suppes, editors, Mathematical Methods in the Social Sciences, pages 196–202. Stanford University
  *  Press, Stanford, CA, 1960.
  *  
- *  as a stochastic dynamic programming problem. 
+ *  as a stochastic dynamic programming problem. We use backward recursion and sampling to find optimal policies.
  *  
- *  We use backward recursion and sampling to find optimal policies.
+ *  Run with VM arguments -d64 -Xms512m -Xmx4g
  *  
  * @author Roberto Rossi
  *
@@ -185,7 +185,7 @@ public class StochasticLotSizing {
                                                                   maxSampleSize,
                                                                   stateSpaceLowerBound,
                                                                   loadFactor,
-                                                                  HashType.CONCURRENT_HASHMAP);
+                                                                  HashType.THASHMAP);
 
       
       System.out.println("--------------Backward recursion--------------");

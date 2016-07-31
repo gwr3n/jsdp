@@ -18,7 +18,7 @@ public class MonitoringInterfaceForward extends MonitoringInterface{
       this.setVisible(true);
    }
    
-   public synchronized void setStates(long generatedStates, long reusedStates) {
+   public void setStates(long generatedStates, long reusedStates) {
       this.generatedStates = generatedStates;
       this.reusedStates = reusedStates;
    }

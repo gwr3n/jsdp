@@ -47,6 +47,8 @@ import umontreal.ssj.probdist.PoissonDist;
 /**
  * Stochastic Dynamic Bowser Routing Problem under Asset Fuel Consumption Uncertainty
  * 
+ * Run with VM arguments -d64 -Xms512m -Xmx4g
+ * 
  * @author Roberto Rossi
  *
  */
