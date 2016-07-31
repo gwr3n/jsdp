@@ -40,7 +40,6 @@ import jsdp.sdp.Action;
 import jsdp.sdp.HashType;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.State;
-import jsdp.utilities.monitoring.MonitoringInterface;
 
 /**
  * Dynamic Bowser Routing Problem

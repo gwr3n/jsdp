@@ -4,5 +4,6 @@ public enum HashType {
    HASHTABLE,
    CONCURRENT_HASHMAP,
    THASHMAP,
-   MAPDB
+   MAPDB_MEMORY,
+   MAPDB_DISK
 }

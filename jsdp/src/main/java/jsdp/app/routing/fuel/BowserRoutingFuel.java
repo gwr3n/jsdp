@@ -351,7 +351,7 @@ public class BowserRoutingFuel {
                                                               immediateValueFunction, 
                                                               buildActionList,
                                                               discountFactor,
-                                                              HashType.MAPDB,
+                                                              HashType.MAPDB_MEMORY,
                                                               stateSpaceSizeLowerBound,
                                                               loadFactor);
       

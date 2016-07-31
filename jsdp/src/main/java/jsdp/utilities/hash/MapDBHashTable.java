@@ -50,15 +50,13 @@ public class MapDBHashTable<K,V> implements Map<K,V>{
    protected DB db;
    protected HTreeMap<K,V> table;
    
-   enum Storage {
+   public enum Storage {
       MEMORY,
       DISK
    };
    
-   Storage hashTableStorage = Storage.MEMORY;
-   
    @SuppressWarnings("unchecked")
-   public MapDBHashTable(String name){
+   public MapDBHashTable(String name, Storage hashTableStorage){
       switch(hashTableStorage){
       case MEMORY:
          db = DBMaker.memoryDB().make();

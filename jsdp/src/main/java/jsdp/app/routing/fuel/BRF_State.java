@@ -26,11 +26,8 @@
 
 package jsdp.app.routing.fuel;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.function.Function;
 
-import jsdp.sdp.Action;
 import jsdp.sdp.State;
 
 public class BRF_State extends State {

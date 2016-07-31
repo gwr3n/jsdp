@@ -35,6 +35,7 @@ import java.util.function.Function;
 
 import gnu.trove.map.hash.THashMap;
 import jsdp.utilities.hash.MapDBHashTable;
+import jsdp.utilities.hash.MapDBHashTable.Storage;
 
 /**
  * An abstract container that stores all generated {@code State}.
@@ -77,9 +78,12 @@ public abstract class StateSpace<SD> implements Iterable<State>{
 		case THASHMAP:
 		   this.states = new THashMap<SD,State>();
 		   break;
-		case MAPDB:
-         this.states = new MapDBHashTable<SD,State>("states");
+		case MAPDB_MEMORY:
+         this.states = new MapDBHashTable<SD,State>("states", Storage.MEMORY);
          break;   
+		case MAPDB_DISK:
+         this.states = new MapDBHashTable<SD,State>("states", Storage.DISK);
+         break;      
       default: 
          throw new NullPointerException("HashType not available");
 		}
@@ -105,9 +109,12 @@ public abstract class StateSpace<SD> implements Iterable<State>{
          case THASHMAP:
             states = new THashMap<SD,State>(stateSpaceSizeLowerBound,loadFactor);
             break;
-         case MAPDB:
-            this.states = new MapDBHashTable<SD,State>("states");
+         case MAPDB_MEMORY:
+            this.states = new MapDBHashTable<SD,State>("states", Storage.MEMORY);
             break;   
+         case MAPDB_DISK:
+            this.states = new MapDBHashTable<SD,State>("states", Storage.DISK);
+            break;    
          default: 
             throw new NullPointerException("HashType not available");   
       }

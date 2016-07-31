@@ -26,11 +26,8 @@
 
 package jsdp.app.routing.location;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.function.Function;
 
-import jsdp.sdp.Action;
 import jsdp.sdp.State;
 
 public class BRL_State extends State {

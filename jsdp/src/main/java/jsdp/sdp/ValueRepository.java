@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import gnu.trove.map.hash.THashMap;
 import jsdp.utilities.hash.MapDBHashTable;
+import jsdp.utilities.hash.MapDBHashTable.Storage;
 
 /**
  * An abstraction representing a repository for the value associated with each {@code State}.
@@ -75,11 +76,16 @@ public class ValueRepository {
             this.optimalValueHashTable = new THashMap<State,Double>();
             this.optimalActionHashTable = new THashMap<State,Action>();
             break;
-         case MAPDB:
-            this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable");
-            this.optimalValueHashTable = new MapDBHashTable<State,Double>("optimalValueHashTable");
-            this.optimalActionHashTable = new MapDBHashTable<State,Action>("optimalActionHashTable");
+         case MAPDB_MEMORY:
+            this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable", Storage.MEMORY);
+            this.optimalValueHashTable = new MapDBHashTable<State,Double>("optimalValueHashTable", Storage.MEMORY);
+            this.optimalActionHashTable = new MapDBHashTable<State,Action>("optimalActionHashTable", Storage.MEMORY);
             break;
+         case MAPDB_DISK:
+            this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable", Storage.DISK);
+            this.optimalValueHashTable = new MapDBHashTable<State,Double>("optimalValueHashTable", Storage.DISK);
+            this.optimalActionHashTable = new MapDBHashTable<State,Action>("optimalActionHashTable", Storage.DISK);
+            break;   
          default: 
             throw new NullPointerException("HashType not available");   
 	   }
@@ -114,10 +120,15 @@ public class ValueRepository {
             this.optimalValueHashTable = new THashMap<State,Double>(stateSpaceSizeLowerBound,loadFactor);
             this.optimalActionHashTable = new THashMap<State,Action>(stateSpaceSizeLowerBound,loadFactor);
             break;
-         case MAPDB:
-            this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable");
-            this.optimalValueHashTable = new MapDBHashTable<State,Double>("optimalValueHashTable");
-            this.optimalActionHashTable = new MapDBHashTable<State,Action>("optimalActionHashTable");
+         case MAPDB_MEMORY:
+            this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable", Storage.MEMORY);
+            this.optimalValueHashTable = new MapDBHashTable<State,Double>("optimalValueHashTable", Storage.MEMORY);
+            this.optimalActionHashTable = new MapDBHashTable<State,Action>("optimalActionHashTable", Storage.MEMORY);
+            break;
+         case MAPDB_DISK:
+            this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable", Storage.DISK);
+            this.optimalValueHashTable = new MapDBHashTable<State,Double>("optimalValueHashTable", Storage.DISK);
+            this.optimalActionHashTable = new MapDBHashTable<State,Action>("optimalActionHashTable", Storage.DISK);
             break;   
          default: 
             throw new NullPointerException("HashType not available");   
