@@ -40,6 +40,7 @@ import jsdp.sdp.Action;
 import jsdp.sdp.HashType;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.State;
+import jsdp.sdp.impl.univariate.SamplingScheme;
 
 /**
  * Stochastic Dynamic Bowser Routing Problem under Asset Location Uncertainty
@@ -53,6 +54,8 @@ import jsdp.sdp.State;
 public class BowserRoutingLocation {
    
    static int T, M, N;
+   static int maxBowserTankLevel;
+   static int minRefuelingQty;   
    static int[] tankCapacity;
    static int[] initialTankLevel;
    static int[][] fuelConsumption;
@@ -77,6 +80,8 @@ public class BowserRoutingLocation {
       T = 3;   //time horizon
       M = 3;   //machines
       N = 5;   //nodes
+      maxBowserTankLevel = 10;
+      minRefuelingQty = 1;      
       tankCapacity = new int[]{10, 10, 10};
       initialTankLevel = new int[]{0, 0, 0};
       fuelConsumption = new int[][]{{1, 1, 1},
@@ -123,6 +128,8 @@ public class BowserRoutingLocation {
       T = 5;   //time horizon
       M = 3;   //machines
       N = 5;   //nodes
+      maxBowserTankLevel = 10;
+      minRefuelingQty = 1;
       tankCapacity = new int[]{10, 10, 10};
       initialTankLevel = new int[]{0, 0, 0};
       fuelConsumption = new int[][]{{2, 4, 3, 4, 4},
@@ -176,6 +183,8 @@ public class BowserRoutingLocation {
       T = 10;   //time horizon
       M = 3;    //machines
       N = 10;   //nodes
+      maxBowserTankLevel = 300;
+      minRefuelingQty = 5;      
       tankCapacity = new int[]{10, 10, 10};
       initialTankLevel = new int[]{10, 10, 10};
       fuelConsumption = new int[][]{{4, 4, 2, 1, 3, 1, 4, 4, 3, 3},
@@ -254,8 +263,8 @@ public class BowserRoutingLocation {
        */
       
       // State space
+      
       int minBowserTankLevel = 0;
-      int maxBowserTankLevel = 10;
       int[] minMachineTankLevel = Arrays.stream(fuelConsumption).mapToInt(m -> -Arrays.stream(m).max().getAsInt()).toArray();
       int[] maxMachineTankLevel = Arrays.copyOf(tankCapacity, tankCapacity.length);
       int networkSize = N;
@@ -267,8 +276,6 @@ public class BowserRoutingLocation {
                                   networkSize);
       
       // Actions
-      
-      int minRefuelingQty = 1;
       
       Function<State, ArrayList<Action>> buildActionList = s -> {
          BRL_State state = (BRL_State) s;
@@ -306,6 +313,12 @@ public class BowserRoutingLocation {
       };
       
       /**
+       * Sampling scheme
+       */
+      SamplingScheme samplingScheme = SamplingScheme.NONE;
+      double sampleRate = 0.5;
+      
+      /**
        * THashMap
        */
       int stateSpaceSizeLowerBound = 10000000;
@@ -319,7 +332,9 @@ public class BowserRoutingLocation {
                                                               discountFactor,
                                                               HashType.THASHMAP,
                                                               stateSpaceSizeLowerBound,
-                                                              loadFactor);
+                                                              loadFactor,
+                                                              samplingScheme,
+                                                              sampleRate);
       
       int period = 0;
       int bowserInitialTankLevel = 0;
@@ -367,7 +382,7 @@ public class BowserRoutingLocation {
       System.out.println();
       
       
-      if(type == InstanceType.TINY){  
+      if(type == InstanceType.TINY  && samplingScheme == SamplingScheme.NONE){  
          /* This set of realisations is valid for tinyInstance */
          machineLocation = new double[][][]{
             {{0, 0, 0, 1, 0},

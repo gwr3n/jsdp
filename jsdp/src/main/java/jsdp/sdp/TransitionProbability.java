@@ -51,7 +51,8 @@ public abstract class TransitionProbability {
 	  /**
     * This method constructs an {@code ArrayList<State>} of states towards which the stochastic process may 
     * transition in period {@code t+1} if {@code action} is selected in {@code initialState} at period  
-    * {@code t}; note that these states may not yet exist in the state space.
+    * {@code t}; note that these states may not yet exist in the state space. This method is used by 
+    * forward recursion procedures.
     * 
     * @param initialState the initial state of the stochastic process; note that we assume that 
     * {@code initialState} is associated with period {@code t}.
@@ -64,7 +65,7 @@ public abstract class TransitionProbability {
    /**
     * This method retrieves an {@code ArrayList<State>} of existing states towards which the stochastic process may 
     * transition in period {@code t+1} if {@code action} is selected in {@code initialState} at period  
-    * {@code t}.
+    * {@code t}. This method is used by backward recursion procedures.
     * 
     * @param initialState the initial state of the stochastic process; note that we assume that 
     * {@code initialState} is associated with period {@code t}.

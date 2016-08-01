@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.time.StopWatch;
@@ -40,6 +41,7 @@ import jsdp.sdp.Action;
 import jsdp.sdp.HashType;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.State;
+import jsdp.sdp.impl.univariate.SamplingScheme;
 import jsdp.utilities.probdist.DiscreteDistributionFactory;
 import umontreal.ssj.probdist.DiscreteDistribution;
 import umontreal.ssj.probdist.PoissonDist;
@@ -56,6 +58,8 @@ import umontreal.ssj.probdist.PoissonDist;
 public class BowserRoutingFuel {
    
    static int T, M, N;
+   static int maxBowserTankLevel;
+   static int minRefuelingQty;
    static int[] tankCapacity;
    static int[] initialTankLevel;
    static DiscreteDistribution[][] fuelConsumptionProb;
@@ -80,6 +84,8 @@ public class BowserRoutingFuel {
       T = 3;   //time horizon
       M = 3;   //machines
       N = 5;   //nodes
+      maxBowserTankLevel = 10;
+      minRefuelingQty = 1;
       tankCapacity = new int[]{10, 10, 10};
       initialTankLevel = new int[]{0, 0, 0};
       
@@ -138,6 +144,8 @@ public class BowserRoutingFuel {
       T = 5;   //time horizon
       M = 3;   //machines
       N = 5;   //nodes
+      maxBowserTankLevel = 10;
+      minRefuelingQty = 5;
       tankCapacity = new int[]{10, 10, 10};
       initialTankLevel = new int[]{0, 0, 0};
       
@@ -203,6 +211,8 @@ public class BowserRoutingFuel {
       T = 10;   //time horizon
       M = 3;    //machines
       N = 10;   //nodes
+      maxBowserTankLevel = 300;
+      minRefuelingQty = 5;
       tankCapacity = new int[]{10, 10, 10};
       initialTankLevel = new int[]{10, 10, 10};
       final int minFuelConsumption = 0;
@@ -293,7 +303,6 @@ public class BowserRoutingFuel {
       
       // State space
       int minBowserTankLevel = 0;
-      int maxBowserTankLevel = 10;
       int[] minMachineTankLevel = new int[M];
       int[] maxMachineTankLevel = Arrays.copyOf(tankCapacity, tankCapacity.length);
       int networkSize = N;
@@ -306,8 +315,6 @@ public class BowserRoutingFuel {
       
       // Actions
       
-      int minRefuelingQty = 5;
-      
       Function<State, ArrayList<Action>> buildActionList = s -> {
          BRF_State state = (BRF_State) s;
          ArrayList<Action> feasibleActions = new ArrayList<Action>();
@@ -317,18 +324,20 @@ public class BowserRoutingFuel {
                if(state.getBowserLocation() == 0){
                   for(int j = 0; j <= BRF_State.getMaxBowserTankLevel() - state.getBowserTankLevel(); j+= minRefuelingQty){
                      final int bowserRefuelQty = j;
-                     BRF_Action.computeMachineRefuelQtys(state, j, minRefuelingQty).parallelStream().forEach(action -> 
-                        feasibleActions.add(new BRF_Action(state, bowserNewLocation, bowserRefuelQty, action))
+                     BRF_Action.computeMachineRefuelQtys(state, j, minRefuelingQty).parallelStream().forEach(action -> {
+                        feasibleActions.add(new BRF_Action(state, bowserNewLocation, bowserRefuelQty, action));}
                      );
                   }
                }else{
                   final int bowserRefuelQty = 0;
-                  BRF_Action.computeMachineRefuelQtys(state, 0, minRefuelingQty).parallelStream().forEach(action -> 
-                     feasibleActions.add(new BRF_Action(state, bowserNewLocation, bowserRefuelQty, action))
+                  BRF_Action.computeMachineRefuelQtys(state, 0, minRefuelingQty).parallelStream().forEach(action -> {
+                     feasibleActions.add(new BRF_Action(state, bowserNewLocation, bowserRefuelQty, action));}
                   );
                }
             }
          }
+         //Very odd... it should be impossible for feasibleActions to contain null values, constructors never return null values (???)
+         feasibleActions.removeAll(Collections.singleton(null));
          return feasibleActions;
       };
       
@@ -344,10 +353,17 @@ public class BowserRoutingFuel {
       };
       
       /**
+       * Sampling scheme
+       */
+      SamplingScheme samplingScheme = SamplingScheme.SIMPLE_RANDOM_SAMPLING;
+      double sampleRate = 0.2;
+      
+      /**
        * THashMap
        */
       int stateSpaceSizeLowerBound = 10000000;
       float loadFactor = 0.8F;
+      
       double discountFactor = 1.0;
       BRF_ForwardRecursion recursion = new BRF_ForwardRecursion(T, 
                                                               machineLocation, 
@@ -357,7 +373,9 @@ public class BowserRoutingFuel {
                                                               discountFactor,
                                                               HashType.THASHMAP,
                                                               stateSpaceSizeLowerBound,
-                                                              loadFactor);
+                                                              loadFactor,
+                                                              samplingScheme,
+                                                              sampleRate);
       
       int period = 0;
       int bowserInitialTankLevel = 0;
@@ -405,7 +423,7 @@ public class BowserRoutingFuel {
       System.out.println();
       
       
-      if(type == InstanceType.TINY){  
+      if(type == InstanceType.TINY && samplingScheme == SamplingScheme.NONE){  
          /* This set of realisations is valid for tinyInstance */
          int[][] fuelConsumption = new int[][]{{1, 2, 1},
                                                {2, 1, 2},

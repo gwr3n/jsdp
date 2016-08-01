@@ -28,10 +28,12 @@ package jsdp.app.routing.location;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
 import jsdp.sdp.TransitionProbability;
+import jsdp.sdp.impl.univariate.SamplingScheme;
 
 public class BRL_TransitionProbability extends TransitionProbability {
 
@@ -39,10 +41,27 @@ public class BRL_TransitionProbability extends TransitionProbability {
    private int[][] fuelConsumption;
    BRL_StateSpace[] stateSpace;
    
-   public BRL_TransitionProbability(double[][][] machineLocationProbability, int[][] fuelConsumption, BRL_StateSpace[] stateSpace){
+   SamplingScheme samplingScheme;
+   double sampleRate;
+   
+   public BRL_TransitionProbability(double[][][] machineLocationProbability, 
+                                    int[][] fuelConsumption, 
+                                    BRL_StateSpace[] stateSpace,
+                                    SamplingScheme samplingScheme,
+                                    double sampleRate){
       this.machineLocationProbability = machineLocationProbability;
       this.fuelConsumption = fuelConsumption;
       this.stateSpace = stateSpace;
+      
+      if(samplingScheme == SamplingScheme.NONE || samplingScheme == SamplingScheme.SIMPLE_RANDOM_SAMPLING)
+         this.samplingScheme = samplingScheme;
+      else
+         throw new NullPointerException("Unsupported sampling scheme: "+samplingScheme);
+      
+      if(sampleRate > 0 && sampleRate < 1)
+         this.sampleRate = sampleRate;
+      else
+         throw new NullPointerException("Sample rate must be > 0 and < 1.");
    }
    
    @Override
@@ -74,13 +93,16 @@ public class BRL_TransitionProbability extends TransitionProbability {
       generateLocations(machineLocations, 0, this.machineLocationProbability[initialState.getPeriod()+1], machineLocationsArray);
       
       ArrayList<State> finalStates = new ArrayList<State>();
+      Random rnd = new Random(12345);
       for(int i = 0; i < machineLocationsArray.size(); i++){
          BRL_StateDescriptor descriptor = new BRL_StateDescriptor(initialState.getPeriod() + 1, 
                                                                 bowserTankLevel,
                                                                 bowserLocation,
                                                                 machineTankLevel,
                                                                 machineLocationsArray.get(i));
-         finalStates.add(this.stateSpace[initialState.getPeriod() + 1].getState(descriptor));
+         if(this.samplingScheme == SamplingScheme.NONE || 
+               this.samplingScheme == SamplingScheme.SIMPLE_RANDOM_SAMPLING && rnd.nextDouble() < this.sampleRate)
+            finalStates.add(this.stateSpace[initialState.getPeriod() + 1].getState(descriptor));
       }
       return finalStates;
    }

@@ -53,6 +53,8 @@ import jsdp.sdp.State;
 public class BowserRouting {
    
    static int T, M, N;
+   static int maxBowserTankLevel;
+   static int minRefuelingQty;
    static int[] tankCapacity;
    static int[] initialTankLevel;
    static int[][] fuelConsumption;
@@ -77,6 +79,8 @@ public class BowserRouting {
       T = 3;   //time horizon
       M = 3;   //machines
       N = 5;   //nodes
+      maxBowserTankLevel = 10;
+      minRefuelingQty = 1;
       tankCapacity = new int[]{10, 10, 10};
       initialTankLevel = new int[]{0, 0, 0};
       fuelConsumption = new int[][]{{1, 1, 1},
@@ -105,7 +109,7 @@ public class BowserRouting {
       
       {{0, 0, 0, 0, 1},
       {0, 0, 0, 1, 0},
-      {0, 1, 0, 0, 0}},
+      {0, 0, 1, 0, 0}},
       
       {{0, 0, 0, 0, 1},
       {0, 0, 0, 1, 0},
@@ -122,6 +126,8 @@ public class BowserRouting {
       T = 5;   //time horizon
       M = 3;   //machines
       N = 5;   //nodes
+      maxBowserTankLevel = 10;
+      minRefuelingQty = 1;
       tankCapacity = new int[]{10, 10, 10};
       initialTankLevel = new int[]{0, 0, 0};
       fuelConsumption = new int[][]{{2, 4, 3, 4, 4},
@@ -175,6 +181,8 @@ public class BowserRouting {
       T = 10;   //time horizon
       M = 3;    //machines
       N = 10;   //nodes
+      maxBowserTankLevel = 300;
+      minRefuelingQty = 5;
       tankCapacity = new int[]{20, 20, 20};
       initialTankLevel = new int[]{10, 10, 10};
       fuelConsumption = new int[][]{{4, 4, 2, 1, 3, 1, 4, 4, 3, 3},
@@ -244,9 +252,9 @@ public class BowserRouting {
       /*******************************************************************
        * Problem parameters
        */
-      //tinyInstance();
+      tinyInstance();
       //smallInstance();
-      largeInstance();
+      //largeInstance();
       
       /*******************************************************************
        * Model definition
@@ -254,7 +262,6 @@ public class BowserRouting {
       
       // State space
       int minBowserTankLevel = 0;
-      int maxBowserTankLevel = 300;
       int[] minMachineTankLevel = Arrays.stream(fuelConsumption).mapToInt(m -> -Arrays.stream(m).max().getAsInt()).toArray();
       int[] maxMachineTankLevel = Arrays.copyOf(tankCapacity, tankCapacity.length);
       int networkSize = N;
@@ -266,8 +273,6 @@ public class BowserRouting {
                                   networkSize);
       
       // Actions
-      
-      int minRefuelingQty = 5;
       
       Function<State, ArrayList<Action>> buildActionList = s -> {
          BR_State state = (BR_State) s;

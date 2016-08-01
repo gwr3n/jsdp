@@ -28,10 +28,12 @@ package jsdp.app.routing.fuel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
 import jsdp.sdp.TransitionProbability;
+import jsdp.sdp.impl.univariate.SamplingScheme;
 import umontreal.ssj.probdist.DiscreteDistribution;
 
 public class BRF_TransitionProbability extends TransitionProbability {
@@ -40,10 +42,27 @@ public class BRF_TransitionProbability extends TransitionProbability {
    private DiscreteDistribution[][] fuelConsumption;
    BRF_StateSpace[] stateSpace;
    
-   public BRF_TransitionProbability(double[][][] machineLocation, DiscreteDistribution[][] fuelConsumption, BRF_StateSpace[] stateSpace){
+   SamplingScheme samplingScheme;
+   double sampleRate;
+   
+   public BRF_TransitionProbability(double[][][] machineLocation, 
+                                    DiscreteDistribution[][] fuelConsumption, 
+                                    BRF_StateSpace[] stateSpace,
+                                    SamplingScheme samplingScheme,
+                                    double sampleRate){
       this.machineLocation = machineLocation;
       this.fuelConsumption = fuelConsumption;
       this.stateSpace = stateSpace;
+      
+      if(samplingScheme == SamplingScheme.NONE || samplingScheme == SamplingScheme.SIMPLE_RANDOM_SAMPLING)
+         this.samplingScheme = samplingScheme;
+      else
+         throw new NullPointerException("Unsupported sampling scheme: "+samplingScheme);
+      
+      if(sampleRate > 0 && sampleRate < 1)
+         this.sampleRate = sampleRate;
+      else
+         throw new NullPointerException("Sample rate must be > 0 and < 1.");
    }
    
    @Override
@@ -82,7 +101,7 @@ public class BRF_TransitionProbability extends TransitionProbability {
    }
    
    @Override
-   public ArrayList<State> generateFinalStates(State initialState, Action action) {      
+   public ArrayList<State> generateFinalStates(State initialState, Action action) {   
       int bowserTankLevel = ((BRF_State) initialState).getBowserTankLevel() +
                             ((BRF_Action) action).getBowserRefuelQty() - 
                             Arrays.stream(((BRF_Action)action).getMachineRefuelQty()).sum();
@@ -110,13 +129,16 @@ public class BRF_TransitionProbability extends TransitionProbability {
       }
       
       ArrayList<State> finalStates = new ArrayList<State>();
+      Random rnd = new Random(12345);
       for(int i = 0; i < machineTankLevelArray.size(); i++){
          BRF_StateDescriptor descriptor = new BRF_StateDescriptor(initialState.getPeriod() + 1, 
                bowserTankLevel,
                bowserLocation,
                machineTankLevelArray.get(i),
                machineLocations);
-         finalStates.add(this.stateSpace[initialState.getPeriod() + 1].getState(descriptor));
+         if(this.samplingScheme == SamplingScheme.NONE || 
+               this.samplingScheme == SamplingScheme.SIMPLE_RANDOM_SAMPLING && rnd.nextDouble() < this.sampleRate)
+            finalStates.add(this.stateSpace[initialState.getPeriod() + 1].getState(descriptor));
       }
       
       return finalStates;
