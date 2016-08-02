@@ -142,30 +142,12 @@ public class BRF_TransitionProbability extends TransitionProbability {
                   )
             ).collect(Collectors.toList()));
       
-      
-      /*for(int i = 0; i < machineTankLevelArray.size(); i++){
-         BRF_StateDescriptor descriptor = new BRF_StateDescriptor(initialState.getPeriod() + 1, 
-               bowserTankLevel,
-               bowserLocation,
-               machineTankLevelArray.get(i),
-               machineLocations);
-            finalStates.add(this.stateSpace[initialState.getPeriod() + 1].getState(descriptor));
-      }*/
-      
       if(this.samplingScheme == SamplingScheme.NONE)
          return finalStates;
       else{
          Random rnd = new Random(12345);
          Collections.shuffle(finalStates, rnd);
          return new ArrayList<State>(finalStates.subList(0, this.sampleSize));
-         /*MRG32k3aL rng = new MRG32k3aL();
-         rng.setSeed(new long[]{12345,12345,12345,12345,12345,12345});
-         int[] positions = new int[finalStates.size()];
-         RandomPermutation.init(positions, finalStates.size());
-         RandomPermutation.shuffle(positions, rng);
-         return new ArrayList<State>(Arrays.stream(positions)
-                                           .limit(this.sampleSize)
-                                           .mapToObj(p -> finalStates.get(p)).collect(Collectors.toList()));*/
       }
    }
 

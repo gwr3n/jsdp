@@ -332,9 +332,6 @@ public class BowserRoutingFuel {
                            BRF_Action.computeMachineRefuelQtys(state, j, minRefuelingQty).parallelStream().map(action -> 
                               new BRF_Action(state, bowserNewLocation, bowserRefuelQty, action)).collect(Collectors.toList())
                            );
-                     /*BRF_Action.computeMachineRefuelQtys(state, j, minRefuelingQty).parallelStream().forEach(action -> {
-                        feasibleActions.add(new BRF_Action(state, bowserNewLocation, bowserRefuelQty, action));} // <-- feasibleActions.add
-                     );*/
                   }
                }else{
                   final int bowserRefuelQty = 0;
@@ -342,13 +339,9 @@ public class BowserRoutingFuel {
                         BRF_Action.computeMachineRefuelQtys(state, 0, minRefuelingQty).parallelStream().map(action -> 
                            new BRF_Action(state, bowserNewLocation, bowserRefuelQty, action)).collect(Collectors.toList())
                         );
-                  /*BRF_Action.computeMachineRefuelQtys(state, 0, minRefuelingQty).parallelStream().forEach(action -> {
-                     feasibleActions.add(new BRF_Action(state, bowserNewLocation, bowserRefuelQty, action));} // <-- feasibleActions.add
-                  );*/
                }
             }
          }
-         //Very odd... it should be impossible for feasibleActions to contain null values, constructors never return null values (???)
          //feasibleActions.removeAll(Collections.singleton(null));
          return feasibleActions;
       };

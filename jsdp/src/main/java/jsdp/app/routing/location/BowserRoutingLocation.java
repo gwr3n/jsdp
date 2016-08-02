@@ -295,9 +295,6 @@ public class BowserRoutingLocation {
                            BRL_Action.computeMachineRefuelQtys(state, j ,minRefuelingQty).parallelStream().map(action -> 
                            new BRL_Action(state, bowserNewLocation, bowserRefuelQty, action)).collect(Collectors.toList())
                            );
-                     /*BRL_Action.computeMachineRefuelQtys(state, j ,minRefuelingQty).parallelStream().forEach(action -> 
-                        feasibleActions.add(new BRL_Action(state, bowserNewLocation, bowserRefuelQty, action))
-                     );*/
                   }
                }else{
                   final int bowserRefuelQty = 0;
@@ -305,9 +302,6 @@ public class BowserRoutingLocation {
                         BRL_Action.computeMachineRefuelQtys(state, 0, minRefuelingQty).parallelStream().map(action -> 
                            new BRL_Action(state, bowserNewLocation, bowserRefuelQty, action)).collect(Collectors.toList())
                         );
-                  /*BRL_Action.computeMachineRefuelQtys(state, 0, minRefuelingQty).parallelStream().forEach(action -> 
-                     feasibleActions.add(new BRL_Action(state, bowserNewLocation, bowserRefuelQty, action))
-                  );*/
                }
             }
          }
