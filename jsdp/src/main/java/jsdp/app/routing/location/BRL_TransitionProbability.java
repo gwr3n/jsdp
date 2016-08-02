@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
 import jsdp.sdp.TransitionProbability;
@@ -41,14 +42,14 @@ public class BRL_TransitionProbability extends TransitionProbability {
    private int[][] fuelConsumption;
    BRL_StateSpace[] stateSpace;
    
-   SamplingScheme samplingScheme;
-   double sampleRate;
+   private SamplingScheme samplingScheme;
+   private int sampleSize;
    
    public BRL_TransitionProbability(double[][][] machineLocationProbability, 
                                     int[][] fuelConsumption, 
                                     BRL_StateSpace[] stateSpace,
                                     SamplingScheme samplingScheme,
-                                    double sampleRate){
+                                    int sampleSize){
       this.machineLocationProbability = machineLocationProbability;
       this.fuelConsumption = fuelConsumption;
       this.stateSpace = stateSpace;
@@ -58,10 +59,10 @@ public class BRL_TransitionProbability extends TransitionProbability {
       else
          throw new NullPointerException("Unsupported sampling scheme: "+samplingScheme);
       
-      if(sampleRate > 0 && sampleRate < 1)
-         this.sampleRate = sampleRate;
+      if(sampleSize > 0)
+         this.sampleSize = sampleSize;
       else
-         throw new NullPointerException("Sample rate must be > 0 and < 1.");
+         throw new NullPointerException("Sample size must be positive.");
    }
    
    @Override
@@ -81,7 +82,6 @@ public class BRL_TransitionProbability extends TransitionProbability {
                             Arrays.stream(((BRL_Action)action).getMachineRefuelQty()).sum();
       int bowserLocation = ((BRL_Action) action).getBowserNewLocation();
       
-      //int machineTankLevel[] = Arrays.copyOf(((BRL_State) initialState).getMachineTankLevel(), ((BRL_State) initialState).getMachineTankLevel().length);
       int machineTankLevel[] = Arrays.stream(((BRL_State) initialState).getMachineTankLevel()).map(i -> Math.max(i, 0)).toArray();
       for(int i = 0; i < machineTankLevel.length; i++){
          machineTankLevel[i] += ((BRL_Action) action).getMachineRefuelQty()[i] - this.fuelConsumption[i][initialState.getPeriod()];
@@ -93,18 +93,22 @@ public class BRL_TransitionProbability extends TransitionProbability {
       generateLocations(machineLocations, 0, this.machineLocationProbability[initialState.getPeriod()+1], machineLocationsArray);
       
       ArrayList<State> finalStates = new ArrayList<State>();
-      Random rnd = new Random(12345);
       for(int i = 0; i < machineLocationsArray.size(); i++){
          BRL_StateDescriptor descriptor = new BRL_StateDescriptor(initialState.getPeriod() + 1, 
                                                                 bowserTankLevel,
                                                                 bowserLocation,
                                                                 machineTankLevel,
                                                                 machineLocationsArray.get(i));
-         if(this.samplingScheme == SamplingScheme.NONE || 
-               this.samplingScheme == SamplingScheme.SIMPLE_RANDOM_SAMPLING && rnd.nextDouble() < this.sampleRate)
             finalStates.add(this.stateSpace[initialState.getPeriod() + 1].getState(descriptor));
       }
-      return finalStates;
+      
+      if(this.samplingScheme == SamplingScheme.NONE)
+         return finalStates;
+      else{
+         Random rnd = new Random(12345);
+         Collections.shuffle(finalStates, rnd);
+         return new ArrayList<State>(finalStates.subList(0, this.sampleSize));
+      }
    }
    
    private static void generateLocations(int[] machineLocations, 

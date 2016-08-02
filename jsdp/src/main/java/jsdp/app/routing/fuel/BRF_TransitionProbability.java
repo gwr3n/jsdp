@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
 import jsdp.sdp.TransitionProbability;
@@ -42,14 +43,14 @@ public class BRF_TransitionProbability extends TransitionProbability {
    private DiscreteDistribution[][] fuelConsumption;
    BRF_StateSpace[] stateSpace;
    
-   SamplingScheme samplingScheme;
-   double sampleRate;
+   private SamplingScheme samplingScheme;
+   private int sampleSize;
    
    public BRF_TransitionProbability(double[][][] machineLocation, 
                                     DiscreteDistribution[][] fuelConsumption, 
                                     BRF_StateSpace[] stateSpace,
                                     SamplingScheme samplingScheme,
-                                    double sampleRate){
+                                    int sampleSize){
       this.machineLocation = machineLocation;
       this.fuelConsumption = fuelConsumption;
       this.stateSpace = stateSpace;
@@ -59,10 +60,10 @@ public class BRF_TransitionProbability extends TransitionProbability {
       else
          throw new NullPointerException("Unsupported sampling scheme: "+samplingScheme);
       
-      if(sampleRate > 0 && sampleRate < 1)
-         this.sampleRate = sampleRate;
+      if(sampleSize > 0)
+         this.sampleSize = sampleSize;
       else
-         throw new NullPointerException("Sample rate must be > 0 and < 1.");
+         throw new NullPointerException("Sample size must be positive.");
    }
    
    @Override
@@ -129,19 +130,22 @@ public class BRF_TransitionProbability extends TransitionProbability {
       }
       
       ArrayList<State> finalStates = new ArrayList<State>();
-      Random rnd = new Random(12345);
       for(int i = 0; i < machineTankLevelArray.size(); i++){
          BRF_StateDescriptor descriptor = new BRF_StateDescriptor(initialState.getPeriod() + 1, 
                bowserTankLevel,
                bowserLocation,
                machineTankLevelArray.get(i),
                machineLocations);
-         if(this.samplingScheme == SamplingScheme.NONE || 
-               this.samplingScheme == SamplingScheme.SIMPLE_RANDOM_SAMPLING && rnd.nextDouble() < this.sampleRate)
             finalStates.add(this.stateSpace[initialState.getPeriod() + 1].getState(descriptor));
       }
       
-      return finalStates;
+      if(this.samplingScheme == SamplingScheme.NONE)
+         return finalStates;
+      else{
+         Random rnd = new Random(12345);
+         Collections.shuffle(finalStates, rnd);
+         return new ArrayList<State>(finalStates.subList(0, this.sampleSize));
+      }
    }
 
    @Override

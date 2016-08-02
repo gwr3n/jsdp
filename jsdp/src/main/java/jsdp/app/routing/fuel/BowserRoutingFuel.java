@@ -31,6 +31,7 @@ import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.time.StopWatch;
@@ -87,7 +88,7 @@ public class BowserRoutingFuel {
       maxBowserTankLevel = 10;
       minRefuelingQty = 1;
       tankCapacity = new int[]{10, 10, 10};
-      initialTankLevel = new int[]{0, 0, 0};
+      initialTankLevel = new int[]{2, 0, 2};
       
       final int minFuelConsumption = 0;
       final int maxFuelConsumption = 4;
@@ -133,7 +134,7 @@ public class BowserRoutingFuel {
             {0, 0, 0, 1, 0},
             {0, 0, 1, 0, 0}}};
       
-      fuelStockOutPenaltyCost = 20;
+      fuelStockOutPenaltyCost = 100;
    }
    
    static void smallInstance(){
@@ -317,7 +318,7 @@ public class BowserRoutingFuel {
       
       Function<State, ArrayList<Action>> buildActionList = s -> {
          BRF_State state = (BRF_State) s;
-         ArrayList<Action> feasibleActions = new ArrayList<Action>(); // <-- feasibleActions created afresh 
+         List<Action> feasibleActions = Collections.synchronizedList(new ArrayList<Action>()); // <-- feasibleActions created afresh 
          for(int i = 0; i < N; i++){
             if(connectivity[state.getBowserLocation()][i] == 1){
                final int bowserNewLocation = i;
@@ -338,7 +339,7 @@ public class BowserRoutingFuel {
          }
          //Very odd... it should be impossible for feasibleActions to contain null values, constructors never return null values (???)
          feasibleActions.removeAll(Collections.singleton(null));
-         return feasibleActions;
+         return new ArrayList<Action>(feasibleActions);
       };
       
       // Immediate Value Function
@@ -355,8 +356,8 @@ public class BowserRoutingFuel {
       /**
        * Sampling scheme
        */
-      SamplingScheme samplingScheme = SamplingScheme.SIMPLE_RANDOM_SAMPLING;
-      double sampleRate = 0.2;
+      SamplingScheme samplingScheme = SamplingScheme.NONE;
+      int sampleSize = 10;                                     // This is the sample size used to determine a state value function
       
       /**
        * THashMap
@@ -375,7 +376,7 @@ public class BowserRoutingFuel {
                                                               stateSpaceSizeLowerBound,
                                                               loadFactor,
                                                               samplingScheme,
-                                                              sampleRate);
+                                                              sampleSize);
       
       int period = 0;
       int bowserInitialTankLevel = 0;

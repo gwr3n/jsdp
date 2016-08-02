@@ -54,7 +54,7 @@ import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.probdist.NormalDist;
 
 /**
- *  We formulate a multi item stochastic lot sizing problem under multinomial demand  
+ *  We formulate a multi-item stochastic lot sizing problem under multinomial demand  
  *  
  *  We use backward recursion and sampling to find optimal policies.
  *  

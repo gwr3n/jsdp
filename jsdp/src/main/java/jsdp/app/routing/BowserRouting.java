@@ -82,7 +82,7 @@ public class BowserRouting {
       maxBowserTankLevel = 10;
       minRefuelingQty = 1;
       tankCapacity = new int[]{10, 10, 10};
-      initialTankLevel = new int[]{0, 0, 0};
+      initialTankLevel = new int[]{2, 0, 2};
       fuelConsumption = new int[][]{{1, 1, 1},
                                     {1, 1, 1},
                                     {1, 1, 1}};
@@ -115,7 +115,7 @@ public class BowserRouting {
       {0, 0, 0, 1, 0},
       {0, 0, 1, 0, 0}}};
       
-      fuelStockOutPenaltyCost = 20;
+      fuelStockOutPenaltyCost = 100;
    }
    
    static void smallInstance(){
