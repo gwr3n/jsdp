@@ -226,7 +226,7 @@ public class StochasticLotSizing {
       
       /*******************************************************************
        * Charting
-       *   
+       */
       System.out.println("--------------Charting--------------");
       int targetPeriod = 0;                                 
       plotOptimalPolicyAction(targetPeriod, recursion);     //Plot optimal policy action
@@ -241,9 +241,9 @@ public class StochasticLotSizing {
                                                                       discountFactor,
                                                                       targetPeriod > 0 ? SamplingScheme.NONE : samplingScheme,
                                                                       maxSampleSize,
-                                                                      HashType.HASHTABLE);
+                                                                      HashType.THASHMAP);
       plotOptimalPolicyCost(targetPeriod, recursionPlot);   //Plot optimal policy cost 
-      System.out.println();*/
+      System.out.println();
       
       /*******************************************************************
        * Simulation

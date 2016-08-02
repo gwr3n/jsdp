@@ -317,7 +317,7 @@ public class BowserRoutingFuel {
       
       Function<State, ArrayList<Action>> buildActionList = s -> {
          BRF_State state = (BRF_State) s;
-         ArrayList<Action> feasibleActions = new ArrayList<Action>();
+         ArrayList<Action> feasibleActions = new ArrayList<Action>(); // <-- feasibleActions created afresh 
          for(int i = 0; i < N; i++){
             if(connectivity[state.getBowserLocation()][i] == 1){
                final int bowserNewLocation = i;
@@ -325,13 +325,13 @@ public class BowserRoutingFuel {
                   for(int j = 0; j <= BRF_State.getMaxBowserTankLevel() - state.getBowserTankLevel(); j+= minRefuelingQty){
                      final int bowserRefuelQty = j;
                      BRF_Action.computeMachineRefuelQtys(state, j, minRefuelingQty).parallelStream().forEach(action -> {
-                        feasibleActions.add(new BRF_Action(state, bowserNewLocation, bowserRefuelQty, action));}
+                        feasibleActions.add(new BRF_Action(state, bowserNewLocation, bowserRefuelQty, action));} // <-- feasibleActions.add
                      );
                   }
                }else{
                   final int bowserRefuelQty = 0;
                   BRF_Action.computeMachineRefuelQtys(state, 0, minRefuelingQty).parallelStream().forEach(action -> {
-                     feasibleActions.add(new BRF_Action(state, bowserNewLocation, bowserRefuelQty, action));}
+                     feasibleActions.add(new BRF_Action(state, bowserNewLocation, bowserRefuelQty, action));} // <-- feasibleActions.add
                   );
                }
             }
