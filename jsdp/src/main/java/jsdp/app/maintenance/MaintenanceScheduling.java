@@ -20,6 +20,36 @@ import jsdp.sdp.impl.univariate.StateImpl;
 
 import umontreal.ssj.probdist.DiscreteDistribution;
 
+/**
+ * Consider the problem of operating a machine that may be in any of the following 
+ * possible states: good as new (0), minor fault (1), major fault (2), out of order (3). 
+ * The transition probability from state i to state j during a given period is 
+ * 
+ *    1/4   1/4   1/4   1/4
+ *    0     1/3   1/3   1/3
+ *    0     0     1/2   1/2
+ *    0     0     0     1
+ *    
+ * If a machine is in state 0 at the beginning of a period, no action should be taken;
+ * costs associated with the production of faulty items over the coming period
+ * when a machine is in state 0 are negligible. However, if the machine is in state
+ * 1 < i < 2, it is possible to take no action or to repair the machine for $500; once
+ * the machine has been repaired, it returns to state 0 at the beginning of the next
+ * period. If no action is taken in state 1, there will be a cost of $1000 associated
+ * with the production of faulty items over the coming period. If the machine is
+ * repaired in state 1, production will halt during the next period and there will
+ * be a cost of $1500 associated with lost profits. Similarly, if the machine is in
+ * state 2 and no action is taken, there will be a cost of $1500 associated with the
+ * production of faulty items over the coming period. If the machine is repaired,
+ * production will halt and there will be a cost of $2500 associated with lost profits
+ * over the coming period. Finally, if the machine is in state 3, it must necessarily
+ * be repaired to resume production at the beginning of the next period; in this
+ * case repair costs amount to $1000 and lost profits amount to $3000
+ * 
+ * @author Roberto Rossi
+ * 
+ */
+
 public class MaintenanceScheduling {
 
    public static void main(String[] args){
