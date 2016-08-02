@@ -30,9 +30,8 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.StopWatch;
 
@@ -59,6 +58,7 @@ import umontreal.ssj.probdist.PoissonDist;
 public class BowserRoutingFuel {
    
    static int T, M, N;
+   static int bowserInitialTankLevel;
    static int maxBowserTankLevel;
    static int minRefuelingQty;
    static int[] tankCapacity;
@@ -85,6 +85,7 @@ public class BowserRoutingFuel {
       T = 3;   //time horizon
       M = 3;   //machines
       N = 5;   //nodes
+      bowserInitialTankLevel = 0;
       maxBowserTankLevel = 10;
       minRefuelingQty = 1;
       tankCapacity = new int[]{10, 10, 10};
@@ -145,6 +146,7 @@ public class BowserRoutingFuel {
       T = 5;   //time horizon
       M = 3;   //machines
       N = 5;   //nodes
+      bowserInitialTankLevel = 0;
       maxBowserTankLevel = 10;
       minRefuelingQty = 5;
       tankCapacity = new int[]{10, 10, 10};
@@ -212,6 +214,7 @@ public class BowserRoutingFuel {
       T = 10;   //time horizon
       M = 3;    //machines
       N = 10;   //nodes
+      bowserInitialTankLevel = 0;
       maxBowserTankLevel = 300;
       minRefuelingQty = 5;
       tankCapacity = new int[]{10, 10, 10};
@@ -294,9 +297,9 @@ public class BowserRoutingFuel {
       /*******************************************************************
        * Problem parameters
        */
-      tinyInstance();
+      //tinyInstance();
       //smallInstance();
-      //largeInstance();
+      largeInstance();
       
       /*******************************************************************
        * Model definition
@@ -318,28 +321,36 @@ public class BowserRoutingFuel {
       
       Function<State, ArrayList<Action>> buildActionList = s -> {
          BRF_State state = (BRF_State) s;
-         List<Action> feasibleActions = Collections.synchronizedList(new ArrayList<Action>()); // <-- feasibleActions created afresh 
+         ArrayList<Action> feasibleActions = new ArrayList<Action>(); // <-- feasibleActions created afresh 
          for(int i = 0; i < N; i++){
             if(connectivity[state.getBowserLocation()][i] == 1){
                final int bowserNewLocation = i;
                if(state.getBowserLocation() == 0){
                   for(int j = 0; j <= BRF_State.getMaxBowserTankLevel() - state.getBowserTankLevel(); j+= minRefuelingQty){
                      final int bowserRefuelQty = j;
-                     BRF_Action.computeMachineRefuelQtys(state, j, minRefuelingQty).parallelStream().forEach(action -> {
+                     feasibleActions.addAll(
+                           BRF_Action.computeMachineRefuelQtys(state, j, minRefuelingQty).parallelStream().map(action -> 
+                              new BRF_Action(state, bowserNewLocation, bowserRefuelQty, action)).collect(Collectors.toList())
+                           );
+                     /*BRF_Action.computeMachineRefuelQtys(state, j, minRefuelingQty).parallelStream().forEach(action -> {
                         feasibleActions.add(new BRF_Action(state, bowserNewLocation, bowserRefuelQty, action));} // <-- feasibleActions.add
-                     );
+                     );*/
                   }
                }else{
                   final int bowserRefuelQty = 0;
-                  BRF_Action.computeMachineRefuelQtys(state, 0, minRefuelingQty).parallelStream().forEach(action -> {
+                  feasibleActions.addAll(
+                        BRF_Action.computeMachineRefuelQtys(state, 0, minRefuelingQty).parallelStream().map(action -> 
+                           new BRF_Action(state, bowserNewLocation, bowserRefuelQty, action)).collect(Collectors.toList())
+                        );
+                  /*BRF_Action.computeMachineRefuelQtys(state, 0, minRefuelingQty).parallelStream().forEach(action -> {
                      feasibleActions.add(new BRF_Action(state, bowserNewLocation, bowserRefuelQty, action));} // <-- feasibleActions.add
-                  );
+                  );*/
                }
             }
          }
          //Very odd... it should be impossible for feasibleActions to contain null values, constructors never return null values (???)
-         feasibleActions.removeAll(Collections.singleton(null));
-         return new ArrayList<Action>(feasibleActions);
+         //feasibleActions.removeAll(Collections.singleton(null));
+         return feasibleActions;
       };
       
       // Immediate Value Function
@@ -356,8 +367,8 @@ public class BowserRoutingFuel {
       /**
        * Sampling scheme
        */
-      SamplingScheme samplingScheme = SamplingScheme.NONE;
-      int sampleSize = 10;                                     // This is the sample size used to determine a state value function
+      SamplingScheme samplingScheme = SamplingScheme.SIMPLE_RANDOM_SAMPLING;
+      int sampleSize = 2;                                     // This is the sample size used to determine a state value function
       
       /**
        * THashMap
@@ -379,16 +390,15 @@ public class BowserRoutingFuel {
                                                               sampleSize);
       
       int period = 0;
-      int bowserInitialTankLevel = 0;
       int bowserInitialLocation = 0;
       int[] machinesInitialTankLevel = Arrays.copyOf(initialTankLevel, initialTankLevel.length);
       int[] machinesInitialLocation = getMachineLocationArray(M, machineLocation[0]);
       
       BRF_StateDescriptor initialState = new BRF_StateDescriptor(period, 
-                                                               bowserInitialTankLevel, 
-                                                               bowserInitialLocation,
-                                                               machinesInitialTankLevel,
-                                                               machinesInitialLocation);
+                                                                 bowserInitialTankLevel, 
+                                                                 bowserInitialLocation,
+                                                                 machinesInitialTankLevel,
+                                                                 machinesInitialLocation);
 
       StopWatch timer = new StopWatch();
       OperatingSystemMXBean osMBean;

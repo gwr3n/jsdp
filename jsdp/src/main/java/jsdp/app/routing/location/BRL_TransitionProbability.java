@@ -28,9 +28,10 @@ package jsdp.app.routing.location;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Random;
+import java.util.stream.Collectors;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
 import jsdp.sdp.TransitionProbability;
@@ -93,6 +94,18 @@ public class BRL_TransitionProbability extends TransitionProbability {
       generateLocations(machineLocations, 0, this.machineLocationProbability[initialState.getPeriod()+1], machineLocationsArray);
       
       ArrayList<State> finalStates = new ArrayList<State>();
+      finalStates.addAll(machineLocationsArray.parallelStream().map(array ->
+                  this.stateSpace[initialState.getPeriod() + 1].getState(
+                        new BRL_StateDescriptor(initialState.getPeriod() + 1, 
+                              bowserTankLevel,
+                              bowserLocation,
+                              machineTankLevel,
+                              array)
+                        )
+               ).collect(Collectors.toList())
+            );
+      
+      /*ArrayList<State> finalStates = new ArrayList<State>();
       for(int i = 0; i < machineLocationsArray.size(); i++){
          BRL_StateDescriptor descriptor = new BRL_StateDescriptor(initialState.getPeriod() + 1, 
                                                                 bowserTankLevel,
@@ -100,7 +113,7 @@ public class BRL_TransitionProbability extends TransitionProbability {
                                                                 machineTankLevel,
                                                                 machineLocationsArray.get(i));
             finalStates.add(this.stateSpace[initialState.getPeriod() + 1].getState(descriptor));
-      }
+      }*/
       
       if(this.samplingScheme == SamplingScheme.NONE)
          return finalStates;
@@ -108,6 +121,14 @@ public class BRL_TransitionProbability extends TransitionProbability {
          Random rnd = new Random(12345);
          Collections.shuffle(finalStates, rnd);
          return new ArrayList<State>(finalStates.subList(0, this.sampleSize));
+         /*MRG32k3aL rng = new MRG32k3aL();
+         rng.setSeed(new long[]{12345,12345,12345,12345,12345,12345});
+         int[] positions = new int[finalStates.size()];
+         RandomPermutation.init(positions, finalStates.size());
+         RandomPermutation.shuffle(positions, rng);
+         return new ArrayList<State>(Arrays.stream(positions)
+                                           .limit(this.sampleSize)
+                                           .mapToObj(p -> finalStates.get(p)).collect(Collectors.toList()));*/
       }
    }
    

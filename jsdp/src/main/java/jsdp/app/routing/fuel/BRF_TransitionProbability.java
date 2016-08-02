@@ -28,13 +28,15 @@ package jsdp.app.routing.fuel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Random;
+import java.util.stream.Collectors;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
 import jsdp.sdp.TransitionProbability;
 import jsdp.sdp.impl.univariate.SamplingScheme;
+
 import umontreal.ssj.probdist.DiscreteDistribution;
 
 public class BRF_TransitionProbability extends TransitionProbability {
@@ -130,14 +132,25 @@ public class BRF_TransitionProbability extends TransitionProbability {
       }
       
       ArrayList<State> finalStates = new ArrayList<State>();
-      for(int i = 0; i < machineTankLevelArray.size(); i++){
+      finalStates.addAll(machineTankLevelArray.parallelStream().map(array ->
+            this.stateSpace[initialState.getPeriod() + 1].getState(
+                  new BRF_StateDescriptor(initialState.getPeriod() + 1, 
+                                          bowserTankLevel,
+                                          bowserLocation,
+                                          array,
+                                          machineLocations)
+                  )
+            ).collect(Collectors.toList()));
+      
+      
+      /*for(int i = 0; i < machineTankLevelArray.size(); i++){
          BRF_StateDescriptor descriptor = new BRF_StateDescriptor(initialState.getPeriod() + 1, 
                bowserTankLevel,
                bowserLocation,
                machineTankLevelArray.get(i),
                machineLocations);
             finalStates.add(this.stateSpace[initialState.getPeriod() + 1].getState(descriptor));
-      }
+      }*/
       
       if(this.samplingScheme == SamplingScheme.NONE)
          return finalStates;
@@ -145,6 +158,14 @@ public class BRF_TransitionProbability extends TransitionProbability {
          Random rnd = new Random(12345);
          Collections.shuffle(finalStates, rnd);
          return new ArrayList<State>(finalStates.subList(0, this.sampleSize));
+         /*MRG32k3aL rng = new MRG32k3aL();
+         rng.setSeed(new long[]{12345,12345,12345,12345,12345,12345});
+         int[] positions = new int[finalStates.size()];
+         RandomPermutation.init(positions, finalStates.size());
+         RandomPermutation.shuffle(positions, rng);
+         return new ArrayList<State>(Arrays.stream(positions)
+                                           .limit(this.sampleSize)
+                                           .mapToObj(p -> finalStates.get(p)).collect(Collectors.toList()));*/
       }
    }
 

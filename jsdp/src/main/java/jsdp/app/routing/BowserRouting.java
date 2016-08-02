@@ -31,6 +31,7 @@ import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.StopWatch;
 
@@ -53,6 +54,7 @@ import jsdp.sdp.State;
 public class BowserRouting {
    
    static int T, M, N;
+   static int bowserInitialTankLevel;
    static int maxBowserTankLevel;
    static int minRefuelingQty;
    static int[] tankCapacity;
@@ -79,6 +81,7 @@ public class BowserRouting {
       T = 3;   //time horizon
       M = 3;   //machines
       N = 5;   //nodes
+      bowserInitialTankLevel = 10;
       maxBowserTankLevel = 10;
       minRefuelingQty = 1;
       tankCapacity = new int[]{10, 10, 10};
@@ -126,6 +129,7 @@ public class BowserRouting {
       T = 5;   //time horizon
       M = 3;   //machines
       N = 5;   //nodes
+      bowserInitialTankLevel = 10;
       maxBowserTankLevel = 10;
       minRefuelingQty = 1;
       tankCapacity = new int[]{10, 10, 10};
@@ -181,6 +185,7 @@ public class BowserRouting {
       T = 10;   //time horizon
       M = 3;    //machines
       N = 10;   //nodes
+      bowserInitialTankLevel = 10;
       maxBowserTankLevel = 300;
       minRefuelingQty = 5;
       tankCapacity = new int[]{20, 20, 20};
@@ -252,9 +257,9 @@ public class BowserRouting {
       /*******************************************************************
        * Problem parameters
        */
-      tinyInstance();
+      //tinyInstance();
       //smallInstance();
-      //largeInstance();
+      largeInstance();
       
       /*******************************************************************
        * Model definition
@@ -283,15 +288,23 @@ public class BowserRouting {
                if(state.getBowserLocation() == 0){
                   for(int j = 0; j <= BR_State.getMaxBowserTankLevel() - state.getBowserTankLevel(); j += minRefuelingQty){
                      final int bowserRefuelQty = j;
-                     BR_Action.computeMachineRefuelQtys(state, j, minRefuelingQty).parallelStream().forEach(action -> 
+                     feasibleActions.addAll(
+                           BR_Action.computeMachineRefuelQtys(state, j, minRefuelingQty).parallelStream().map(action ->
+                              new BR_Action(state, bowserNewLocation, bowserRefuelQty, action)).collect(Collectors.toList())
+                           );
+                     /*BR_Action.computeMachineRefuelQtys(state, j, minRefuelingQty).parallelStream().forEach(action -> 
                         feasibleActions.add(new BR_Action(state, bowserNewLocation, bowserRefuelQty, action))
-                     );
+                     );*/
                   }
                }else{
                   final int bowserRefuelQty = 0;
-                  BR_Action.computeMachineRefuelQtys(state, 0, minRefuelingQty).parallelStream().forEach(action -> 
+                  feasibleActions.addAll(
+                        BR_Action.computeMachineRefuelQtys(state, 0, minRefuelingQty).parallelStream().map(action ->
+                           new BR_Action(state, bowserNewLocation, bowserRefuelQty, action)).collect(Collectors.toList())
+                        );
+                  /*BR_Action.computeMachineRefuelQtys(state, 0, minRefuelingQty).parallelStream().forEach(action -> 
                      feasibleActions.add(new BR_Action(state, bowserNewLocation, bowserRefuelQty, action))
-                  );
+                  );*/
                }
             }
          }
@@ -326,7 +339,6 @@ public class BowserRouting {
                                                               loadFactor);
       
       int period = 0;
-      int bowserInitialTankLevel = 10;
       int bowserInitialLocation = 0;
       int[] machinesInitialTankLevel = Arrays.copyOf(initialTankLevel, initialTankLevel.length);
       int[] machinesInitialLocation = getMachineLocationArray(M, machineLocation[0]);
@@ -378,10 +390,10 @@ public class BowserRouting {
             machinesInitialTankLevel[i] = Math.max(0, machinesInitialTankLevel[i]) + ((BR_Action)recursion.getOptimalAction(initialState)).getMachineRefuelQty()[i] - fuelConsumption[i][t-1];
          }
          initialState = new BR_StateDescriptor(period + t, 
-               bowserInitialTankLevel, 
-               bowserInitialLocation,
-               machinesInitialTankLevel,
-               machinesInitialLocation);
+                                               bowserInitialTankLevel, 
+                                               bowserInitialLocation,
+                                               machinesInitialTankLevel,
+                                               machinesInitialLocation);
          System.out.println(initialState.toString());
          System.out.println("Expected total cost: "+recursion.getExpectedCost(initialState));
          System.out.println("Optimal action: "+recursion.getOptimalAction(initialState).toString());

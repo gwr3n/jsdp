@@ -31,6 +31,7 @@ import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.StopWatch;
 
@@ -54,6 +55,7 @@ import jsdp.sdp.impl.univariate.SamplingScheme;
 public class BowserRoutingLocation {
    
    static int T, M, N;
+   static int bowserInitialTankLevel;
    static int maxBowserTankLevel;
    static int minRefuelingQty;   
    static int[] tankCapacity;
@@ -80,6 +82,7 @@ public class BowserRoutingLocation {
       T = 3;   //time horizon
       M = 3;   //machines
       N = 5;   //nodes
+      bowserInitialTankLevel = 0;
       maxBowserTankLevel = 10;
       minRefuelingQty = 1;      
       tankCapacity = new int[]{10, 10, 10};
@@ -128,6 +131,7 @@ public class BowserRoutingLocation {
       T = 5;   //time horizon
       M = 3;   //machines
       N = 5;   //nodes
+      bowserInitialTankLevel = 0;
       maxBowserTankLevel = 10;
       minRefuelingQty = 1;
       tankCapacity = new int[]{10, 10, 10};
@@ -183,6 +187,7 @@ public class BowserRoutingLocation {
       T = 10;   //time horizon
       M = 3;    //machines
       N = 10;   //nodes
+      bowserInitialTankLevel = 0;
       maxBowserTankLevel = 300;
       minRefuelingQty = 5;      
       tankCapacity = new int[]{10, 10, 10};
@@ -286,15 +291,23 @@ public class BowserRoutingLocation {
                if(state.getBowserLocation() == 0){
                   for(int j = 0; j <= BRL_State.getMaxBowserTankLevel() - state.getBowserTankLevel(); j+= minRefuelingQty){
                      final int bowserRefuelQty = j;
-                     BRL_Action.computeMachineRefuelQtys(state, j ,minRefuelingQty).parallelStream().forEach(action -> 
+                     feasibleActions.addAll(
+                           BRL_Action.computeMachineRefuelQtys(state, j ,minRefuelingQty).parallelStream().map(action -> 
+                           new BRL_Action(state, bowserNewLocation, bowserRefuelQty, action)).collect(Collectors.toList())
+                           );
+                     /*BRL_Action.computeMachineRefuelQtys(state, j ,minRefuelingQty).parallelStream().forEach(action -> 
                         feasibleActions.add(new BRL_Action(state, bowserNewLocation, bowserRefuelQty, action))
-                     );
+                     );*/
                   }
                }else{
                   final int bowserRefuelQty = 0;
-                  BRL_Action.computeMachineRefuelQtys(state, 0, minRefuelingQty).parallelStream().forEach(action -> 
+                  feasibleActions.addAll(
+                        BRL_Action.computeMachineRefuelQtys(state, 0, minRefuelingQty).parallelStream().map(action -> 
+                           new BRL_Action(state, bowserNewLocation, bowserRefuelQty, action)).collect(Collectors.toList())
+                        );
+                  /*BRL_Action.computeMachineRefuelQtys(state, 0, minRefuelingQty).parallelStream().forEach(action -> 
                      feasibleActions.add(new BRL_Action(state, bowserNewLocation, bowserRefuelQty, action))
-                  );
+                  );*/
                }
             }
          }
@@ -336,17 +349,16 @@ public class BowserRoutingLocation {
                                                               samplingScheme,
                                                               sampleSize);
       
-      int period = 0;
-      int bowserInitialTankLevel = 0;
+      int period = 0;      
       int bowserInitialLocation = 0;
       int[] machinesInitialTankLevel = Arrays.copyOf(initialTankLevel, initialTankLevel.length);
       int[] machinesInitialLocation = getMachineLocationArray(M, machineLocation[0]);
       
       BRL_StateDescriptor initialState = new BRL_StateDescriptor(period, 
-                                                               bowserInitialTankLevel, 
-                                                               bowserInitialLocation,
-                                                               machinesInitialTankLevel,
-                                                               machinesInitialLocation);
+                                                                 bowserInitialTankLevel, 
+                                                                 bowserInitialLocation,
+                                                                 machinesInitialTankLevel,
+                                                                 machinesInitialLocation);
 
       StopWatch timer = new StopWatch();
       OperatingSystemMXBean osMBean;
