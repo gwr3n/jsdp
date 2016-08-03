@@ -131,8 +131,7 @@ public class BRF_TransitionProbability extends TransitionProbability {
          }
       }
       
-      ArrayList<State> finalStates = new ArrayList<State>();
-      finalStates.addAll(machineTankLevelArray.parallelStream().map(array ->
+      ArrayList<State> finalStates = machineTankLevelArray.parallelStream().map(array ->
             this.stateSpace[initialState.getPeriod() + 1].getState(
                   new BRF_StateDescriptor(initialState.getPeriod() + 1, 
                                           bowserTankLevel,
@@ -140,7 +139,7 @@ public class BRF_TransitionProbability extends TransitionProbability {
                                           array,
                                           machineLocations)
                   )
-            ).collect(Collectors.toList()));
+            ).collect(Collectors.toCollection(ArrayList::new));
       
       if(this.samplingScheme == SamplingScheme.NONE)
          return finalStates;

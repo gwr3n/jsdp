@@ -41,6 +41,9 @@ import jsdp.sdp.Action;
 import jsdp.sdp.HashType;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.State;
+import jsdp.utilities.probdist.DiscreteDistributionFactory;
+import umontreal.ssj.probdist.DiscreteDistribution;
+import umontreal.ssj.probdist.PoissonDist;
 
 /**
  * Dynamic Bowser Routing Problem
@@ -177,6 +180,68 @@ public class BowserRouting {
       fuelStockOutPenaltyCost = 20;
    }
    
+   static void mediumInstance(){
+      type = InstanceType.LARGE;
+      /*******************************************************************
+       * Problem parameters
+       */
+      T = 5;   //time horizon
+      M = 3;    //machines
+      N = 10;   //nodes
+      bowserInitialTankLevel = 0;
+      maxBowserTankLevel = 20;
+      minRefuelingQty = 1;
+      tankCapacity = new int[]{10, 10, 10};
+      initialTankLevel = new int[]{10, 10, 10};
+      fuelConsumption = new int[][]{{4, 4, 2, 1, 3},
+                                    {4, 2, 3, 4, 3},
+                                    {2, 4, 1, 2, 2}};
+                     
+      connectivity = new int[][]{
+               {1, 1, 0, 0, 1, 0, 0, 0, 0, 0},
+               {1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+               {0, 1, 0, 1, 1, 0, 0, 1, 0, 1},
+               {0, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+               {0, 0, 0, 0, 0, 1, 0, 0, 1, 0},
+               {0, 0, 1, 0, 1, 0, 1, 0, 0, 0},
+               {0, 0, 0, 0, 0, 1, 0, 1, 0, 0},
+               {0, 1, 0, 0, 0, 0, 0, 0, 1, 1},
+               {1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+               {0, 0, 0, 0, 1, 0, 0, 0, 0, 0}};
+      distance = new double[][]{
+            {0., 96., 0., 0., 107., 0., 0., 0., 0., 0.},
+            {121.0, 0., 0., 0., 0., 0., 0., 0., 0., 0.},
+            {0., 92., 0., 103., 103., 0., 0., 92., 0., 77.},
+            {0., 90., 0., 0., 0., 0., 0., 0., 0., 91.},
+            {0., 0., 0., 0., 0., 102., 0., 0., 126., 0.},
+            {0., 0., 72., 0., 139., 0., 89., 0., 0., 0.},
+            {0., 0., 0., 0., 0., 80., 0., 83., 0., 0.},
+            {0., 119.8, 0., 0., 0., 0., 0., 0., 90., 91.},
+            {83., 0., 0., 0., 0., 0., 0., 0., 0., 0.},
+            {0., 0., 0., 0., 79., 0., 0., 0., 0., 0.}};
+      machineLocation = new double[][][]{
+               {{0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
+               {0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
+               {0, 0, 0, 0, 0, 0, 0, 0, 0, 1}},
+               {{0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+               {1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+               {0, 0, 0, 0, 1, 0, 0, 0, 0, 0}},
+               {{1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+               {0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+               {0, 0, 0, 0, 0, 0, 1, 0, 0, 0}},
+               {{1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+               {0, 0, 1, 0, 0, 0, 0, 0, 0, 0},
+               {0, 0, 0, 0, 1, 0, 0, 0, 0, 0}},
+               {{0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
+               {0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
+               {0, 0, 1, 0, 0, 0, 0, 0, 0, 0}},
+               {{0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
+               {0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
+               {0, 0, 1, 0, 0, 0, 0, 0, 0, 0}}};
+      
+      fuelStockOutPenaltyCost = 20;
+   }
+   
    static void largeInstance(){
       type = InstanceType.LARGE;
       /*******************************************************************
@@ -259,7 +324,8 @@ public class BowserRouting {
        */
       //tinyInstance();
       //smallInstance();
-      largeInstance();
+      mediumInstance();
+      //largeInstance();
       
       /*******************************************************************
        * Model definition

@@ -93,17 +93,16 @@ public class BRL_TransitionProbability extends TransitionProbability {
       int[] machineLocations = new int[((BRL_State) initialState).getMachineLocation().length];
       generateLocations(machineLocations, 0, this.machineLocationProbability[initialState.getPeriod()+1], machineLocationsArray);
       
-      ArrayList<State> finalStates = new ArrayList<State>();
-      finalStates.addAll(machineLocationsArray.parallelStream().map(array ->
+      ArrayList<State> finalStates = machineLocationsArray.parallelStream().map(array ->
                   this.stateSpace[initialState.getPeriod() + 1].getState(
                         new BRL_StateDescriptor(initialState.getPeriod() + 1, 
-                              bowserTankLevel,
-                              bowserLocation,
-                              machineTankLevel,
-                              array)
+                                                bowserTankLevel,
+                                                bowserLocation,
+                                                machineTankLevel,
+                                                array)
                         )
-               ).collect(Collectors.toList())
-            );
+               ).collect(Collectors.toCollection(ArrayList::new));
+            
       
       if(this.samplingScheme == SamplingScheme.NONE)
          return finalStates;
