@@ -26,16 +26,10 @@
 
 package jsdp.app.routing;
 
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.time.StopWatch;
-
-import com.sun.management.OperatingSystemMXBean;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.HashType;

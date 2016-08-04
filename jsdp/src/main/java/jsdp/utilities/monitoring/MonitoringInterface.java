@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 
 import com.sun.management.OperatingSystemMXBean;
@@ -27,18 +28,18 @@ public abstract class MonitoringInterface extends JFrame implements Runnable{
 
    public MonitoringInterface() throws HeadlessException {
       super();
-   }
-
-   public MonitoringInterface(GraphicsConfiguration gc) {
-      super(gc);
-   }
-
-   public MonitoringInterface(String title) throws HeadlessException {
-      super(title);
-   }
-
-   public MonitoringInterface(String title, GraphicsConfiguration gc) {
-      super(title, gc);
+      JFrame frame = this;
+      frame.addWindowListener(new java.awt.event.WindowAdapter() {
+         @Override
+         public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+             if (JOptionPane.showConfirmDialog(frame, 
+                 "Are you sure to close this window?", "Really Closing?", 
+                 JOptionPane.YES_NO_OPTION,
+                 JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION){
+                 System.exit(0);
+             }
+         }
+     });
    }
 
    protected void setText(String text) {
