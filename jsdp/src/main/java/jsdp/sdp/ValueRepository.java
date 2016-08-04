@@ -26,6 +26,7 @@
 
 package jsdp.sdp;
 
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,7 +51,7 @@ public class ValueRepository {
 	protected ImmediateValueFunction<State, Action, Double> immediateValueFunction;
 	
 	/**
-	 * Creates a new value repository. This implementation is based on {@code ConcurrentHashMap}.
+	 * Creates a new value repository. Do not use {@code ConcurrentHashMap} in conjunction with forward recursion.
 	 * 
 	 * @param immediateValueFunction the immediate value of a transition from {@code initialState} to 
 	 * {@code finalState} under a chosen {@code action}.
@@ -72,9 +73,9 @@ public class ValueRepository {
             this.optimalActionHashTable = new ConcurrentHashMap<State,Action>();
             break;
          case THASHMAP:
-            this.valueHashTable = new THashMap<StateAction,Double>();
-            this.optimalValueHashTable = new THashMap<State,Double>();
-            this.optimalActionHashTable = new THashMap<State,Action>();
+            this.valueHashTable = Collections.synchronizedMap(new THashMap<StateAction,Double>());
+            this.optimalValueHashTable = Collections.synchronizedMap(new THashMap<State,Double>());
+            this.optimalActionHashTable = Collections.synchronizedMap(new THashMap<State,Action>());
             break;
          case MAPDB_MEMORY:
             this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable", Storage.MEMORY);
@@ -92,7 +93,7 @@ public class ValueRepository {
 	}
 	
 	/**
-	 * Creates a new value repository. This implementation is based on Trove4j {@code THashMap}.
+	 * Creates a new value repository. Do not use {@code ConcurrentHashMap} in conjunction with forward recursion.
 	 * 
 	 * @param immediateValueFunction the immediate value of a transition from {@code initialState} to 
     * {@code finalState} under a chosen {@code action}.
@@ -116,9 +117,9 @@ public class ValueRepository {
             this.optimalActionHashTable = new ConcurrentHashMap<State,Action>(stateSpaceSizeLowerBound,loadFactor);
             break;
          case THASHMAP:
-            this.valueHashTable = new THashMap<StateAction,Double>(stateSpaceSizeLowerBound,loadFactor);
-            this.optimalValueHashTable = new THashMap<State,Double>(stateSpaceSizeLowerBound,loadFactor);
-            this.optimalActionHashTable = new THashMap<State,Action>(stateSpaceSizeLowerBound,loadFactor);
+            this.valueHashTable = Collections.synchronizedMap(new THashMap<StateAction,Double>(stateSpaceSizeLowerBound,loadFactor));
+            this.optimalValueHashTable = Collections.synchronizedMap(new THashMap<State,Double>(stateSpaceSizeLowerBound,loadFactor));
+            this.optimalActionHashTable = Collections.synchronizedMap(new THashMap<State,Action>(stateSpaceSizeLowerBound,loadFactor));
             break;
          case MAPDB_MEMORY:
             this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable", Storage.MEMORY);
@@ -222,7 +223,7 @@ public class ValueRepository {
 	 * @param state the target state.
 	 * @param expectedValue the optimal expected total cost.
 	 */
-	public synchronized void setOptimalExpectedValue(State state, double expectedValue){
+	public void setOptimalExpectedValue(State state, double expectedValue){
 		this.optimalValueHashTable.put(state, new Double(expectedValue));
 	}
 	
@@ -242,7 +243,7 @@ public class ValueRepository {
 	 * @param state the target state.
 	 * @param action the optimal action.
 	 */
-	public synchronized void setOptimalAction(State state, Action action){
+	public void setOptimalAction(State state, Action action){
 		this.optimalActionHashTable.put(state, action);
 	}
 	

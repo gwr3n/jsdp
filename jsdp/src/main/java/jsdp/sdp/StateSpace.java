@@ -27,6 +27,7 @@
 package jsdp.sdp;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
@@ -61,7 +62,8 @@ public abstract class StateSpace<SD> implements Iterable<State>{
    }
 	
 	/**
-	 * Constructs a container for states associated with a given {@code period}. This implementation is based on {@code ConcurrentHashMap}.
+	 * Constructs a container for states associated with a given {@code period}. 
+	 * Do not use {@code ConcurrentHashMap} in conjunction with forward recursion.
 	 * 
 	 * @param period the period associated with this container.
 	 * @param the type of hash used to store the state space
@@ -76,7 +78,7 @@ public abstract class StateSpace<SD> implements Iterable<State>{
 		   this.states = new ConcurrentHashMap<SD,State>();
 		   break;
 		case THASHMAP:
-		   this.states = new THashMap<SD,State>();
+		   this.states = Collections.synchronizedMap(new THashMap<SD,State>());
 		   break;
 		case MAPDB_MEMORY:
          this.states = new MapDBHashTable<SD,State>("states", Storage.MEMORY);
@@ -90,7 +92,8 @@ public abstract class StateSpace<SD> implements Iterable<State>{
 	}
 	
    /**
-    * Constructs a container for states associated with a given {@code period}. This implementation is based on {@code ConcurrentHashMap}.
+    * Constructs a container for states associated with a given {@code period}. 
+    * Do not use {@code ConcurrentHashMap} in conjunction with forward recursion.
     * 
     * @param period the period associated with this container.
     * @param hash the type of hash used to store the state space
@@ -107,7 +110,7 @@ public abstract class StateSpace<SD> implements Iterable<State>{
             states = new ConcurrentHashMap<SD,State>(stateSpaceSizeLowerBound,loadFactor);
             break;
          case THASHMAP:
-            states = new THashMap<SD,State>(stateSpaceSizeLowerBound,loadFactor);
+            states = Collections.synchronizedMap(new THashMap<SD,State>(stateSpaceSizeLowerBound,loadFactor));
             break;
          case MAPDB_MEMORY:
             this.states = new MapDBHashTable<SD,State>("states", Storage.MEMORY);

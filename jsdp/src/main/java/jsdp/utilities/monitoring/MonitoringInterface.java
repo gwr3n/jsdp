@@ -18,8 +18,12 @@ public abstract class MonitoringInterface extends JFrame implements Runnable{
    
    protected OperatingSystemMXBean osMBean;
    protected long nanoBefore;
+   protected long nanoAfter;
    protected long cpuBefore;
+   protected long cpuAfter;
    protected boolean terminate = false;
+   
+   protected long generatedStates;
 
    public MonitoringInterface() throws HeadlessException {
       super();
@@ -37,7 +41,7 @@ public abstract class MonitoringInterface extends JFrame implements Runnable{
       super(title, gc);
    }
 
-   protected synchronized void setText(String text) {
+   protected void setText(String text) {
       this.text.setText(text);
    }
 
@@ -59,5 +63,22 @@ public abstract class MonitoringInterface extends JFrame implements Runnable{
    public void terminate() {
       this.terminate = true;
    }
-
+   
+   public int getTime(){
+      return (int) Math.ceil(((this.nanoAfter-this.nanoBefore)*Math.pow(10, -9)));
+   }
+   
+   public long getPercentCPU(){
+      long percent;
+      if (this.nanoAfter > this.nanoBefore)
+         percent = ((this.cpuAfter-this.cpuBefore)*100L)/(this.nanoAfter-this.nanoBefore);
+      else percent = 0; 
+      return percent;
+   }
+   
+   public long getGeneratedStates(){
+      return this.generatedStates;
+   }
+   
+   public abstract double getProcessedStatesPerSecond();
 }

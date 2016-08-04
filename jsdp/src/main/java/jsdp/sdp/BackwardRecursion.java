@@ -59,6 +59,10 @@ public abstract class BackwardRecursion extends Recursion{
     * Monitor
     */
    private  MonitoringInterfaceBackward monitor;
+   
+   public MonitoringInterfaceBackward getMonitoringInterfaceBackward(){
+      return this.monitor;
+   }
 	
 	/**
 	 * Creates an instance of {@code BackwardRecursion} with the given optimization direction.
@@ -77,6 +81,7 @@ public abstract class BackwardRecursion extends Recursion{
       this.monitor.startMonitoring();
       runBackwardRecursion();
       this.monitor.terminate();
+      this.monitor.dispose();
    }
 	
 	/**
@@ -103,6 +108,7 @@ public abstract class BackwardRecursion extends Recursion{
       this.monitor.startMonitoring();
       runBackwardRecursion(period);
       this.monitor.terminate();
+      this.monitor.dispose();
    }
 	
 	/**

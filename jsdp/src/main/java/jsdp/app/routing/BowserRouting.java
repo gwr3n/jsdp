@@ -185,17 +185,17 @@ public class BowserRouting {
       /*******************************************************************
        * Problem parameters
        */
-      T = 5;   //time horizon
+      T = 8;   //time horizon
       M = 3;    //machines
       N = 10;   //nodes
       bowserInitialTankLevel = 0;
       maxBowserTankLevel = 20;
-      minRefuelingQty = 1;
+      minRefuelingQty = 5;
       tankCapacity = new int[]{10, 10, 10};
       initialTankLevel = new int[]{10, 10, 10};
-      fuelConsumption = new int[][]{{4, 4, 2, 1, 3},
-                                    {4, 2, 3, 4, 3},
-                                    {2, 4, 1, 2, 2}};
+      fuelConsumption = new int[][]{{4, 4, 2, 1, 3, 1, 4, 4},
+                                    {4, 2, 3, 4, 3, 1, 4, 2},
+                                    {2, 4, 1, 2, 2, 4, 1, 1}};
                      
       connectivity = new int[][]{
                {1, 1, 0, 0, 1, 0, 0, 0, 0, 0},
@@ -219,7 +219,7 @@ public class BowserRouting {
             {0., 119.8, 0., 0., 0., 0., 0., 0., 90., 91.},
             {83., 0., 0., 0., 0., 0., 0., 0., 0., 0.},
             {0., 0., 0., 0., 79., 0., 0., 0., 0., 0.}};
-      machineLocation = new double[][][]{
+            machineLocation = new double[][][]{
                {{0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
                {0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
                {0, 0, 0, 0, 0, 0, 0, 0, 0, 1}},
@@ -232,6 +232,15 @@ public class BowserRouting {
                {{1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                {0, 0, 1, 0, 0, 0, 0, 0, 0, 0},
                {0, 0, 0, 0, 1, 0, 0, 0, 0, 0}},
+               {{0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
+               {0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+               {0, 0, 0, 0, 0, 0, 0, 0, 0, 1}},
+               {{0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
+               {0, 0, 1, 0, 0, 0, 0, 0, 0, 0},
+               {0, 1, 0, 0, 0, 0, 0, 0, 0, 0}},
+               {{0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+               {0, 0, 0, 0, 0, 0, 1, 0, 0, 0},
+               {0, 0, 0, 0, 0, 0, 0, 0, 0, 1}},
                {{0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
                {0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
                {0, 0, 1, 0, 0, 0, 0, 0, 0, 0}},
@@ -239,7 +248,7 @@ public class BowserRouting {
                {0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
                {0, 0, 1, 0, 0, 0, 0, 0, 0, 0}}};
       
-      fuelStockOutPenaltyCost = 20;
+      fuelStockOutPenaltyCost = 100;
    }
    
    static void largeInstance(){
@@ -324,8 +333,8 @@ public class BowserRouting {
        */
       //tinyInstance();
       //smallInstance();
-      mediumInstance();
-      //largeInstance();
+      //mediumInstance();
+      largeInstance();
       
       /*******************************************************************
        * Model definition
@@ -409,37 +418,14 @@ public class BowserRouting {
                                                                machinesInitialTankLevel,
                                                                machinesInitialLocation);
 
-      StopWatch timer = new StopWatch();
-      OperatingSystemMXBean osMBean;
-      try {
-         osMBean = ManagementFactory.newPlatformMXBeanProxy(
-               ManagementFactory.getPlatformMBeanServer(), ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME, OperatingSystemMXBean.class);
-         long nanoBefore = System.nanoTime();
-         long cpuBefore = osMBean.getProcessCpuTime();
-         
-         timer.start();
-         recursion.runForwardRecursionMonitoring(((BR_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
-         timer.stop();
-         
-         long cpuAfter = osMBean.getProcessCpuTime();
-         long nanoAfter = System.nanoTime();
-         
-         long percent;
-         if (nanoAfter > nanoBefore)
-          percent = ((cpuAfter-cpuBefore)*100L)/
-            (nanoAfter-nanoBefore);
-         else percent = 0;
-
-         System.out.println("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)");
-      } catch (IOException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      }
+      recursion.runForwardRecursionMonitoring(((BR_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
+      long percent = recursion.getMonitoringInterfaceForward().getPercentCPU();
+      System.out.println("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)");
       System.out.println();
       double ETC = recursion.getExpectedCost(initialState);
       System.out.println("Expected total cost: "+ETC);
       System.out.println("Optimal initial action: "+recursion.getOptimalAction(initialState).toString());
-      System.out.println("Time elapsed: "+timer);
+      System.out.println("Time elapsed: "+recursion.getMonitoringInterfaceForward().getTime());
       System.out.println();
       
       for(int t = 1; t < T; t++){

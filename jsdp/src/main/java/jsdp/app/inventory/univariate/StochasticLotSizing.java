@@ -185,7 +185,7 @@ public class StochasticLotSizing {
                                                                   maxSampleSize,
                                                                   stateSpaceLowerBound,
                                                                   loadFactor,
-                                                                  HashType.THASHMAP);
+                                                                  HashType.CONCURRENT_HASHMAP);
 
       
       System.out.println("--------------Backward recursion--------------");
@@ -241,7 +241,7 @@ public class StochasticLotSizing {
                                                                       discountFactor,
                                                                       targetPeriod > 0 ? SamplingScheme.NONE : samplingScheme,
                                                                       maxSampleSize,
-                                                                      HashType.THASHMAP);
+                                                                      HashType.CONCURRENT_HASHMAP);
       plotOptimalPolicyCost(targetPeriod, recursionPlot);   //Plot optimal policy cost 
       System.out.println();
       
@@ -265,7 +265,7 @@ public class StochasticLotSizing {
    }
    
    static void plotOptimalPolicyCost(int targetPeriod, BackwardRecursionImpl recursion){
-      recursion.runBackwardRecursion(targetPeriod);
+      recursion.runBackwardRecursionMonitoring(targetPeriod);
       XYSeries series = new XYSeries("Optimal policy");
       for(double i = StateImpl.getMinState(); i <= StateImpl.getMaxState(); i += StateImpl.getStepSize()){
          StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(targetPeriod, i);

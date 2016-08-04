@@ -6,7 +6,6 @@ public class MonitoringInterfaceBackward extends MonitoringInterface{
    
    private static final long serialVersionUID = 1L;
    
-   protected long generatedStates;
    protected long processedStates;
    protected int currentStage;
    
@@ -19,7 +18,7 @@ public class MonitoringInterfaceBackward extends MonitoringInterface{
       this.setVisible(true);
    }
    
-   public synchronized void setStates(long generatedStates, long processedStates, int currentStage) {
+   public void setStates(long generatedStates, long processedStates, int currentStage) {
       this.generatedStates = generatedStates;
       this.processedStates = processedStates;
       this.currentStage = currentStage;
@@ -27,6 +26,8 @@ public class MonitoringInterfaceBackward extends MonitoringInterface{
    
    @Override
    public void run() {
+      this.cpuAfter = this.osMBean.getProcessCpuTime();
+      this.nanoAfter = System.nanoTime();
       while(!terminate){
          try {
             Thread.sleep(1000);
@@ -34,22 +35,34 @@ public class MonitoringInterfaceBackward extends MonitoringInterface{
             // TODO Auto-generated catch block
             e.printStackTrace();
          }
-         long cpuAfter = this.osMBean.getProcessCpuTime();
-         long nanoAfter = System.nanoTime();
+         this.cpuAfter = this.osMBean.getProcessCpuTime();
+         this.nanoAfter = System.nanoTime();
             
-         long percent;
-         if (nanoAfter > this.nanoBefore)
-            percent = ((cpuAfter-this.cpuBefore)*100L)/
-               (nanoAfter-this.nanoBefore);
-         else percent = 0;   
-            
-         setText("Time: " + (int) Math.ceil(((nanoAfter-this.nanoBefore)*Math.pow(10, -9))) +"\n"
-               + "CPU: "  +percent+"%" +" ("+Runtime.getRuntime().availableProcessors()+" cores)\n"
-               + "Generated states: " + generatedStates +"\n"
-               + "States processed: "+ processedStates +"\n"
-               + "States processed per second: "+ (int) Math.ceil((processedStates)/((nanoAfter-this.nanoBefore)*Math.pow(10, -9))) +"\n"
+         setText("Time: " + getTime() +"\n"
+               + "CPU: " +this.getPercentCPU()+ "%" +" ("+Runtime.getRuntime().availableProcessors()+" cores)\n"
+               + "Generated states: " + this.getGeneratedStates() +"\n"
+               + "States processed: "+ this.getProcessedStates() +"\n"
+               + "States processed per second: "+ this.getProcessedStatesPerSecond() +"\n"
                + "Percent completed: "+ (int) Math.floor(processedStates*100.0/generatedStates) +"%\n"
                + "Current stage: " + currentStage);
       }
+   }
+   
+   public long getProcessedStates(){
+      return this.processedStates;
+   }
+   
+   public double getProcessedStatesPerSecond(){
+      return (int) Math.ceil((this.processedStates)/((this.nanoAfter-this.nanoBefore)*Math.pow(10, -9)));
+   }
+   
+   public String toString(){
+      return "Time: " + getTime() +"\n"
+            + "CPU: " +this.getPercentCPU()+ "%" +" ("+Runtime.getRuntime().availableProcessors()+" cores)\n"
+            + "Generated states: " + this.getGeneratedStates() +"\n"
+            + "States processed: "+ this.getProcessedStates() +"\n"
+            + "States processed per second: "+ this.getProcessedStatesPerSecond() +"\n"
+            + "Percent completed: "+ (int) Math.floor(processedStates*100.0/generatedStates) +"%\n"
+            + "Current stage: " + currentStage;
    }
 }

@@ -6,7 +6,6 @@ public class MonitoringInterfaceForward extends MonitoringInterface{
    
    private static final long serialVersionUID = 1L;
    
-   protected long generatedStates;
    protected long reusedStates;
    
    public MonitoringInterfaceForward(Recursion recursion){
@@ -25,6 +24,8 @@ public class MonitoringInterfaceForward extends MonitoringInterface{
    
    @Override
    public void run() {
+      this.cpuAfter = this.osMBean.getProcessCpuTime();
+      this.nanoAfter = System.nanoTime();
       while(!terminate){
          try {
             Thread.sleep(1000);
@@ -32,20 +33,31 @@ public class MonitoringInterfaceForward extends MonitoringInterface{
             // TODO Auto-generated catch block
             e.printStackTrace();
          }
-         long cpuAfter = this.osMBean.getProcessCpuTime();
-         long nanoAfter = System.nanoTime();
+         
+         this.cpuAfter = this.osMBean.getProcessCpuTime();
+         this.nanoAfter = System.nanoTime();
             
-         long percent;
-         if (nanoAfter > this.nanoBefore)
-            percent = ((cpuAfter-this.cpuBefore)*100L)/
-               (nanoAfter-this.nanoBefore);
-         else percent = 0;   
-            
-         setText("Time: " + (int) Math.ceil(((nanoAfter-this.nanoBefore)*Math.pow(10, -9))) +"\n"
-               + "CPU: "  +percent+"%" +" ("+Runtime.getRuntime().availableProcessors()+" cores)\n"
-               + "States processed per second: "+ (int) Math.ceil((generatedStates+reusedStates)/((nanoAfter-this.nanoBefore)*Math.pow(10, -9))) +"\n"
-               + "Generated states: " + generatedStates +"\n"
-               + "Reused states: " + reusedStates);
+         setText("Time: " + this.getTime() +"\n"
+               + "CPU: "  + this.getPercentCPU() +"%" +" ("+Runtime.getRuntime().availableProcessors()+" cores)\n"
+               + "States processed per second: "+ getProcessedStatesPerSecond() +"\n"
+               + "Generated states: " + this.getGeneratedStates() +"\n"
+               + "Reused states: " + this.getReusedStates());
       }
+   }
+   
+   public long getReusedStates(){
+      return this.reusedStates;
+   }
+   
+   public double getProcessedStatesPerSecond(){
+      return (int) Math.ceil((generatedStates+reusedStates)/((this.nanoAfter-this.nanoBefore)*Math.pow(10, -9)));
+   }
+   
+   public String toString(){
+      return "Time: " + this.getTime() +"\n"
+            + "CPU: "  + this.getPercentCPU() +"%" +" ("+Runtime.getRuntime().availableProcessors()+" cores)\n"
+            + "States processed per second: "+ getProcessedStatesPerSecond() +"\n"
+            + "Generated states: " + this.getGeneratedStates() +"\n"
+            + "Reused states: " + this.getReusedStates();
    }
 }

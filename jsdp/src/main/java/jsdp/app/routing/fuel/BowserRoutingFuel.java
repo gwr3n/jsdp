@@ -394,7 +394,7 @@ public class BowserRoutingFuel {
       
       Function<State, ArrayList<Action>> buildActionList = s -> {
          BRF_State state = (BRF_State) s;
-         ArrayList<Action> feasibleActions = new ArrayList<Action>(); // <-- feasibleActions created afresh 
+         ArrayList<Action> feasibleActions = new ArrayList<Action>(); 
          for(int i = 0; i < N; i++){
             if(connectivity[state.getBowserLocation()][i] == 1){
                final int bowserNewLocation = i;
@@ -415,7 +415,6 @@ public class BowserRoutingFuel {
                }
             }
          }
-         //feasibleActions.removeAll(Collections.singleton(null));
          return feasibleActions;
       };
       
@@ -433,7 +432,7 @@ public class BowserRoutingFuel {
       /**
        * Sampling scheme
        */
-      SamplingScheme samplingScheme = SamplingScheme.SIMPLE_RANDOM_SAMPLING;
+      SamplingScheme samplingScheme = SamplingScheme.NONE;
       int sampleSize = 2;                                     // This is the sample size used to determine a state value function
       
       /**
@@ -449,7 +448,7 @@ public class BowserRoutingFuel {
                                                               immediateValueFunction, 
                                                               buildActionList,
                                                               discountFactor,
-                                                              HashType.THASHMAP,
+                                                              HashType.HASHTABLE,
                                                               stateSpaceSizeLowerBound,
                                                               loadFactor,
                                                               samplingScheme,
@@ -466,37 +465,14 @@ public class BowserRoutingFuel {
                                                                  machinesInitialTankLevel,
                                                                  machinesInitialLocation);
 
-      StopWatch timer = new StopWatch();
-      OperatingSystemMXBean osMBean;
-      try {
-         osMBean = ManagementFactory.newPlatformMXBeanProxy(
-               ManagementFactory.getPlatformMBeanServer(), ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME, OperatingSystemMXBean.class);
-         long nanoBefore = System.nanoTime();
-         long cpuBefore = osMBean.getProcessCpuTime();
-         
-         timer.start();
-         recursion.runForwardRecursionMonitoring(((BRF_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
-         timer.stop();
-         
-         long cpuAfter = osMBean.getProcessCpuTime();
-         long nanoAfter = System.nanoTime();
-         
-         long percent;
-         if (nanoAfter > nanoBefore)
-          percent = ((cpuAfter-cpuBefore)*100L)/
-            (nanoAfter-nanoBefore);
-         else percent = 0;
-
-         System.out.println("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)");
-      } catch (IOException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      }
+      recursion.runForwardRecursionMonitoring(((BRF_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
+      long percent = recursion.getMonitoringInterfaceForward().getPercentCPU();
+      System.out.println("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)");
       System.out.println();
       double ETC = recursion.getExpectedCost(initialState);
       System.out.println("Expected total cost: "+ETC);
       System.out.println("Optimal initial action: "+recursion.getOptimalAction(initialState).toString());
-      System.out.println("Time elapsed: "+timer);
+      System.out.println("Time elapsed: "+recursion.getMonitoringInterfaceForward().getTime());
       System.out.println();
       
       
