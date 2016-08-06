@@ -47,12 +47,14 @@ public class BRF_TransitionProbability extends TransitionProbability {
    
    private SamplingScheme samplingScheme;
    private int sampleSize;
+   private int reductionFactorPerStage;
    
    public BRF_TransitionProbability(double[][][] machineLocation, 
                                     DiscreteDistribution[][] fuelConsumption, 
                                     BRF_StateSpace[] stateSpace,
                                     SamplingScheme samplingScheme,
-                                    int sampleSize){
+                                    int sampleSize,
+                                    int reductionFactorPerStage){
       this.machineLocation = machineLocation;
       this.fuelConsumption = fuelConsumption;
       this.stateSpace = stateSpace;
@@ -66,17 +68,22 @@ public class BRF_TransitionProbability extends TransitionProbability {
          this.sampleSize = sampleSize;
       else
          throw new NullPointerException("Sample size must be positive.");
+      
+      if(reductionFactorPerStage < 1) 
+         this.reductionFactorPerStage = 1;
+      else
+         this.reductionFactorPerStage = reductionFactorPerStage;
    }
    
    @Override
    public double getTransitionProbability(State initialState, Action action, State finalState) {
-      double probability = 1;
+      double probability = 1; 
       
-      int initialMachineTankLevel[] = ((BRF_State) initialState).getMachineTankLevel();
+      int initialMachineTankLevel[] = Arrays.stream(((BRF_State) initialState).getMachineTankLevel()).map(i -> Math.max(i, 0)).toArray();;
       int finalMachineTankLevel[] = ((BRF_State) finalState).getMachineTankLevel();
       
       for(int i = 0; i < initialMachineTankLevel.length; i++){
-         int fuelConsumed = initialMachineTankLevel[i] + ((BRF_Action) action).getMachineRefuelQty()[i] - finalMachineTankLevel[i];
+         int fuelConsumed = Math.max(0, initialMachineTankLevel[i]) + ((BRF_Action) action).getMachineRefuelQty()[i] - finalMachineTankLevel[i];
          DiscreteDistribution dist = fuelConsumption[i][initialState.getPeriod()];
          probability *= dist.cdf(fuelConsumed) - dist.cdf(fuelConsumed - 1);
       }
@@ -146,7 +153,9 @@ public class BRF_TransitionProbability extends TransitionProbability {
       else{
          Random rnd = new Random(12345);
          Collections.shuffle(finalStates, rnd);
-         return new ArrayList<State>(finalStates.subList(0, this.sampleSize));
+         //int reductionFactor = reductionFactorPerStage*initialState.getPeriod() == 0 ? 1 : reductionFactorPerStage*initialState.getPeriod();
+         int reductionFactor = (int) Math.pow(reductionFactorPerStage, initialState.getPeriod());
+         return new ArrayList<State>(finalStates.subList(0, this.sampleSize/reductionFactor < 1 ? 1 : this.sampleSize/reductionFactor));
       }
    }
 

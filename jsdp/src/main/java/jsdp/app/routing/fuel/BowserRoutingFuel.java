@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.HashType;
@@ -39,6 +40,7 @@ import jsdp.sdp.impl.univariate.SamplingScheme;
 import jsdp.utilities.probdist.DiscreteDistributionFactory;
 import umontreal.ssj.probdist.DiscreteDistribution;
 import umontreal.ssj.probdist.PoissonDist;
+import umontreal.ssj.rng.MRG32k3a;
 
 /**
  * Stochastic Dynamic Bowser Routing Problem under Asset Fuel Consumption Uncertainty
@@ -81,7 +83,7 @@ public class BowserRoutingFuel {
       N = 5;   //nodes
       bowserInitialTankLevel = 0;
       maxBowserTankLevel = 10;
-      minRefuelingQty = 1;
+      minRefuelingQty = 5;
       tankCapacity = new int[]{10, 10, 10};
       initialTankLevel = new int[]{2, 0, 2};
       
@@ -197,7 +199,7 @@ public class BowserRoutingFuel {
       {0, 0, 0, 1, 0},
       {0, 0, 1, 0, 0}}};
       
-      fuelStockOutPenaltyCost = 20;
+      fuelStockOutPenaltyCost = 100;
    }
    
    static void mediumInstance(){
@@ -359,15 +361,7 @@ public class BowserRoutingFuel {
       fuelStockOutPenaltyCost = 20;
    }
    
-   public static void main(String args[]){
-      /*******************************************************************
-       * Problem parameters
-       */
-      //tinyInstance();
-      //smallInstance();
-      mediumInstance();
-      //largeInstance();
-      
+   static BRF_ForwardRecursion buildModel(){
       /*******************************************************************
        * Model definition
        */
@@ -424,12 +418,6 @@ public class BowserRoutingFuel {
       };
       
       /**
-       * Sampling scheme
-       */
-      SamplingScheme samplingScheme = SamplingScheme.NONE;
-      int sampleSize = 2;                                     // This is the sample size used to determine a state value function
-      
-      /**
        * THashMap
        */
       int stateSpaceSizeLowerBound = 10000000;
@@ -446,7 +434,41 @@ public class BowserRoutingFuel {
                                                               stateSpaceSizeLowerBound,
                                                               loadFactor,
                                                               samplingScheme,
-                                                              sampleSize);
+                                                              sampleSize,
+                                                              reductionFactorPerStage);
+      
+      return recursion;
+   }
+   
+   /**
+    * Sampling scheme
+    */
+   static SamplingScheme samplingScheme = SamplingScheme.SIMPLE_RANDOM_SAMPLING;
+   static int sampleSize = 50;                                     // This is the sample size used to determine a state value function
+   static int reductionFactorPerStage = 5;
+   
+   static MRG32k3a rng = new MRG32k3a();
+   
+   public static void main(String args[]){
+      //runInstance();
+      
+      rng.setSeed(new long[]{12345,12345,12345,12345,12345,12345});
+      double cost = 0;
+      for(int i = 0; i < 20; i++)
+         cost += runInstanceReplanning();
+      System.out.println("Expected cost: "+cost/20);
+   }
+   
+   public static void runInstance(){
+      /*******************************************************************
+       * Problem parameters
+       */
+      //tinyInstance();
+      smallInstance();
+      //mediumInstance();
+      //largeInstance();
+      
+      BRF_ForwardRecursion recursion = buildModel();
       
       int period = 0;
       int bowserInitialLocation = 0;
@@ -493,6 +515,79 @@ public class BowserRoutingFuel {
             System.out.println("Optimal action: "+recursion.getOptimalAction(initialState).toString());
          }
       }
+   }
+   
+   public static double runInstanceReplanning(){
+      /*******************************************************************
+       * Problem parameters
+       */
+      //tinyInstance();
+      smallInstance();
+      //mediumInstance();
+      //largeInstance();
+      
+      BRF_ForwardRecursion recursion = null;
+      
+      int period = 0;
+      int bowserInitialLocation = 0;
+      int[] machinesInitialTankLevel = Arrays.copyOf(initialTankLevel, initialTankLevel.length);
+      int[] machinesInitialLocation = getMachineLocationArray(M, machineLocation[0]);
+   
+      int[][] fuelConsumption = new int[M][T];
+      
+      for(int m = 0; m < M; m++){
+         for(int t = 0; t < T; t++){
+            fuelConsumption[m][t] = (int) fuelConsumptionProb[m][t].inverseF(rng.nextDouble());
+         }
+      }
+         
+      double cost = 0;
+      int timeHorizon = T;
+      for(int t = 0; t < timeHorizon; t++){
+         BRF_StateDescriptor initialState = new BRF_StateDescriptor(period, 
+                                                                    bowserInitialTankLevel, 
+                                                                    bowserInitialLocation,
+                                                                    machinesInitialTankLevel,
+                                                                    machinesInitialLocation);
+         
+         recursion = buildModel(); 
+         recursion.runForwardRecursionMonitoring(((BRF_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
+         
+         double ETC = recursion.getExpectedCost(initialState);
+         long percent = recursion.getMonitoringInterfaceForward().getPercentCPU();
+         System.out.println("Expected total cost: "+ETC);
+         System.out.println("Initial state: "+initialState);
+         System.out.println("Optimal initial action: "+recursion.getOptimalAction(initialState).toString());
+         System.out.println("Time elapsed: "+recursion.getMonitoringInterfaceForward().getTime());
+         System.out.println("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)");
+         System.out.println();
+         
+         if(t < timeHorizon - 1)
+            cost += distance[bowserInitialLocation][((BRF_Action)recursion.getOptimalAction(initialState)).getBowserNewLocation()];
+         bowserInitialLocation = ((BRF_Action)recursion.getOptimalAction(initialState)).getBowserNewLocation();
+         bowserInitialTankLevel += ((BRF_Action)recursion.getOptimalAction(initialState)).getBowserRefuelQty() - Arrays.stream(((BRF_Action)recursion.getOptimalAction(initialState)).getMachineRefuelQty()).sum();
+         machinesInitialLocation = getMachineLocationArray(M, machineLocation[1]);
+         for(int i = 0; i < M; i++){
+            machinesInitialTankLevel[i] = Math.max(0, machinesInitialTankLevel[i]) + ((BRF_Action)recursion.getOptimalAction(initialState)).getMachineRefuelQty()[i] - fuelConsumption[i][t];
+            cost += Math.max(-machinesInitialTankLevel[i], 0)*fuelStockOutPenaltyCost;
+         }
+         
+         T -= 1;
+         for(int m = 0; m < M; m++){
+            final int machine = m;
+            fuelConsumptionProb[machine] = IntStream.iterate(1, i -> i + 1)
+                                              .limit(fuelConsumptionProb[machine].length - 1)
+                                              .mapToObj(i -> fuelConsumptionProb[machine][i])
+                                              .toArray(DiscreteDistribution[]::new);
+         }
+         machineLocation = IntStream.iterate(1, i -> i + 1)
+                                     .limit(machineLocation.length - 1)
+                                     .mapToObj(i -> machineLocation[i])
+                                     .toArray(double[][][]::new);
+                                     
+      }
+      System.out.println(cost);
+      return cost;
    }
    
    public static int[] getMachineLocationArray(int M, double[][] machineLocationMatrix){

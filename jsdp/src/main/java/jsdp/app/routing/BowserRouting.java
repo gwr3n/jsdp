@@ -321,15 +321,7 @@ public class BowserRouting {
       fuelStockOutPenaltyCost = 100;
    }
    
-   public static void main(String args[]){
-      /*******************************************************************
-       * Problem parameters
-       */
-      //tinyInstance();
-      //smallInstance();
-      //mediumInstance();
-      largeInstance();
-      
+   static BR_ForwardRecursion buildModel(){
       /*******************************************************************
        * Model definition
        */
@@ -400,6 +392,24 @@ public class BowserRouting {
                                                               HashType.THASHMAP,
                                                               stateSpaceSizeLowerBound,
                                                               loadFactor);
+      
+      return recursion;
+   }
+   
+   public static void main(String args[]){
+      runInstance();
+   }
+   
+   public static void runInstance(){
+      /*******************************************************************
+       * Problem parameters
+       */
+      //tinyInstance();
+      //smallInstance();
+      //mediumInstance();
+      largeInstance();
+      
+      BR_ForwardRecursion recursion = buildModel();
       
       int period = 0;
       int bowserInitialLocation = 0;

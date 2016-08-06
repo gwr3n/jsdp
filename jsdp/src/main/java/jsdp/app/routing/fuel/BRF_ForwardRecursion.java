@@ -53,7 +53,8 @@ public class BRF_ForwardRecursion extends ForwardRecursion {
                                int stateSpaceSizeLowerBound,
                                float loadFactor,
                                SamplingScheme samplingScheme,
-                               int sampleSize){
+                               int sampleSize,
+                               int reductionFactorPerStage){
       super(OptimisationDirection.MIN);
       this.horizonLength = horizonLength;
       this.machineLocation = machineLocation;
@@ -66,7 +67,8 @@ public class BRF_ForwardRecursion extends ForwardRecursion {
                                                                 fuelConsumption, 
                                                                 (BRF_StateSpace[])this.getStateSpace(),
                                                                 samplingScheme,
-                                                                sampleSize);
+                                                                sampleSize,
+                                                                reductionFactorPerStage);
       this.valueRepository = new ValueRepository(immediateValueFunction, 
                                                  discountFactor, 
                                                  stateSpaceSizeLowerBound, 

@@ -36,6 +36,7 @@ import jsdp.sdp.HashType;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.State;
 import jsdp.sdp.impl.univariate.SamplingScheme;
+import umontreal.ssj.rng.MRG32k3a;
 
 /**
  * Stochastic Dynamic Bowser Routing Problem under Asset Location Uncertainty
@@ -311,7 +312,7 @@ public class BowserRoutingLocation {
       fuelStockOutPenaltyCost = 20;
    }
    
-   public static void main(String args[]){
+   static BRL_ForwardRecursion buildModel(){
       /*******************************************************************
        * Problem parameters
        */
@@ -377,12 +378,6 @@ public class BowserRoutingLocation {
       };
       
       /**
-       * Sampling scheme
-       */
-      SamplingScheme samplingScheme = SamplingScheme.NONE;
-      int sampleSize = 10;                                     // This is the sample size used to determine a state value function
-      
-      /**
        * THashMap
        */
       int stateSpaceSizeLowerBound = 10000000;
@@ -398,7 +393,34 @@ public class BowserRoutingLocation {
                                                               stateSpaceSizeLowerBound,
                                                               loadFactor,
                                                               samplingScheme,
-                                                              sampleSize);
+                                                              sampleSize,
+                                                              reductionFactorPerStage);
+      
+      return recursion;
+   }
+   
+   /**
+    * Sampling scheme
+    */
+   static SamplingScheme samplingScheme = SamplingScheme.NONE;
+   static int sampleSize = 10;                                     // This is the sample size used to determine a state value function
+   static int reductionFactorPerStage = 5;
+   
+   static MRG32k3a rng = new MRG32k3a();
+   
+   public static void main(String args[]){
+      runInstance();
+      
+      /*
+      rng.setSeed(new long[]{12345,12345,12345,12345,12345,12345});
+      double cost = 0;
+      for(int i = 0; i < 20; i++)
+         cost += runInstanceReplanning();
+      System.out.println("Expected cost: "+cost/20);*/
+   }
+   
+   public static void runInstance(){
+      BRL_ForwardRecursion recursion = buildModel();
       
       int period = 0;      
       int bowserInitialLocation = 0;
@@ -458,6 +480,10 @@ public class BowserRoutingLocation {
             System.out.println("Optimal action: "+recursion.getOptimalAction(initialState).toString());
          }
       }
+   }
+   
+   public static double runInstanceReplanning(){
+      throw new NullPointerException("Method not implemented");
    }
    
    public static int[] getMachineLocationArray(int M, double[][] machineLocationMatrix){
