@@ -72,13 +72,14 @@ public class BackwardRecursionImpl extends BackwardRecursion{
                                 double discountFactor,
                                 SamplingScheme samplingScheme,
                                 int maxSampleSize,
+                                double reductionFactorPerStage,
                                 HashType hash){
       super(optimisationDirection);
       this.horizonLength = demand.length;
       
       this.stateSpace = new StateSpaceImpl[this.horizonLength+1];
       for(int i = 0; i < this.horizonLength + 1; i++) 
-         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, hash, samplingScheme, maxSampleSize);
+         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, hash, samplingScheme, maxSampleSize, reductionFactorPerStage);
       this.transitionProbability = new TransitionProbabilityImpl(
             demand,supportLB,supportUB,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace(),StateImpl.getStepSize());
       this.valueRepository = new ValueRepository(immediateValueFunction, discountFactor, hash);
@@ -112,6 +113,7 @@ public class BackwardRecursionImpl extends BackwardRecursion{
                                 double discountFactor,
                                 SamplingScheme samplingScheme,
                                 int maxSampleSize,
+                                double reductionFactorPerStage,
                                 int stateSpaceSizeLowerBound, 
                                 float loadFactor,
                                 HashType hash){
@@ -120,7 +122,7 @@ public class BackwardRecursionImpl extends BackwardRecursion{
       
       this.stateSpace = new StateSpaceImpl[this.horizonLength+1];
       for(int i = 0; i < this.horizonLength + 1; i++) 
-         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, hash, samplingScheme, maxSampleSize, stateSpaceSizeLowerBound, loadFactor);
+         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, hash, samplingScheme, maxSampleSize, reductionFactorPerStage, stateSpaceSizeLowerBound, loadFactor);
       this.transitionProbability = new TransitionProbabilityImpl(
             demand,supportLB,supportUB,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace(),StateImpl.getStepSize());
       this.valueRepository = new ValueRepository(immediateValueFunction, discountFactor, stateSpaceSizeLowerBound, loadFactor, hash);
@@ -176,13 +178,14 @@ public class BackwardRecursionImpl extends BackwardRecursion{
                                 double discountFactor,
                                 SamplingScheme samplingScheme,
                                 int maxSampleSize,
+                                double reductionFactorPerStage,
                                 HashType hash){
       super(optimisationDirection);
       this.horizonLength = demand.length;
 
       this.stateSpace = new StateSpaceImpl[this.horizonLength+1];
       for(int i = 0; i < this.horizonLength + 1; i++) 
-         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, hash, samplingScheme, maxSampleSize);
+         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, hash, samplingScheme, maxSampleSize, reductionFactorPerStage);
       this.transitionProbability = new TransitionProbabilityImpl(
             demand,supportLB,supportUB,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace(),StateImpl.getStepSize());
       this.valueRepository = new ValueRepository(immediateValueFunction, discountFactor, hash);

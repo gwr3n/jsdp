@@ -168,6 +168,7 @@ public class MultiItemStochasticLotSizing {
       
       SamplingScheme samplingScheme = SamplingScheme.JENSENS_PARTITIONING;
       int maxSampleSize = 500;
+      double reductionFactorPerStage = 1;
       
       
       // Value Function Processing Method: backward recursion
@@ -183,6 +184,7 @@ public class MultiItemStochasticLotSizing {
                                                                   discountFactor,
                                                                   samplingScheme,
                                                                   maxSampleSize,
+                                                                  reductionFactorPerStage,
                                                                   stateSpaceLowerBound,
                                                                   loadFactor,
                                                                   HashType.CONCURRENT_HASHMAP);

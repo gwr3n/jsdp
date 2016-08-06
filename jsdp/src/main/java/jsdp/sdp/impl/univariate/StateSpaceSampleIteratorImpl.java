@@ -55,13 +55,16 @@ public class StateSpaceSampleIteratorImpl extends StateSpaceIterator {
    
    int pointer;
 
-   public StateSpaceSampleIteratorImpl(StateSpaceImpl stateSpace, SamplingScheme samplingScheme, int maxSamples){
+   public StateSpaceSampleIteratorImpl(StateSpaceImpl stateSpace, SamplingScheme samplingScheme, int maxSamples, double reductionFactorPerStage){
       this.stateSpace = stateSpace;
       
       stream.resetStartStream();
       for(int i = 0; i < stateSpace.getPeriod(); i++){
          stream.resetNextSubstream();
       }
+      
+      int stateSpaceSize = StateImpl.getMaxIntState() - StateImpl.getMinIntState() + 1;
+      maxSamples = (int) Math.min(stateSpaceSize, Math.ceil(maxSamples/Math.pow(reductionFactorPerStage, stateSpace.getPeriod())));
       
       switch(samplingScheme){
       case SIMPLE_RANDOM_SAMPLING:
@@ -84,6 +87,8 @@ public class StateSpaceSampleIteratorImpl extends StateSpaceIterator {
    
    public int[] getNextSample(int samples){
       int x[] = new int[samples];
+      int stateSpaceSize = StateImpl.getMaxIntState() - StateImpl.getMinIntState() + 1;
+      if(samples > stateSpaceSize) throw new NullPointerException("Samples larger than state space");
       x = IntStream.iterate(0, i -> i + 1)
                    .limit(samples)
                    .map(i -> UniformIntGen.nextInt(stream, StateImpl.getMinIntState(), StateImpl.getMaxIntState()))

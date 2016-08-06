@@ -71,6 +71,7 @@ public class BackwardRecursionImpl extends BackwardRecursion{
                                 double discountFactor,
                                 SamplingScheme samplingScheme,
                                 int maxSampleSize,
+                                double reductionFactorPerStage,
                                 HashType hash){
       super(optimisationDirection);
       this.horizonLength = demand.length;
@@ -82,7 +83,7 @@ public class BackwardRecursionImpl extends BackwardRecursion{
       
       this.stateSpace = new StateSpaceImpl[this.horizonLength+1];
       for(int i = 0; i < this.horizonLength + 1; i++) 
-         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, samplingScheme, maxSampleSize, hash);
+         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, samplingScheme, maxSampleSize, hash, reductionFactorPerStage);
       this.transitionProbability = new TransitionProbabilityImpl(
             demand,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace());
       this.valueRepository = new ValueRepository(immediateValueFunction, discountFactor, hash);
@@ -112,6 +113,7 @@ public class BackwardRecursionImpl extends BackwardRecursion{
                                 double discountFactor,
                                 SamplingScheme samplingScheme,
                                 int maxSampleSize,
+                                double reductionFactorPerStage,
                                 int stateSpaceSizeLowerBound, 
                                 float loadFactor,
                                 HashType hash){
@@ -125,7 +127,7 @@ public class BackwardRecursionImpl extends BackwardRecursion{
       
       this.stateSpace = new StateSpaceImpl[this.horizonLength+1];
       for(int i = 0; i < this.horizonLength + 1; i++) 
-         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, samplingScheme, maxSampleSize, hash, stateSpaceSizeLowerBound, loadFactor);
+         this.stateSpace[i] = new StateSpaceImpl(i, buildActionList, idempotentAction, samplingScheme, maxSampleSize, reductionFactorPerStage, hash, stateSpaceSizeLowerBound, loadFactor);
       this.transitionProbability = new TransitionProbabilityImpl(
             demand,randomOutcomeFunction,(StateSpaceImpl[])this.getStateSpace());
       this.valueRepository = new ValueRepository(immediateValueFunction, discountFactor, hash);

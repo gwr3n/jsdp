@@ -30,12 +30,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.HashType;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.State;
 import jsdp.sdp.impl.univariate.SamplingScheme;
+import kotlin.collections.IntIterator;
+import umontreal.ssj.probdist.DiscreteDistribution;
 import umontreal.ssj.rng.MRG32k3a;
 
 /**
@@ -58,7 +61,7 @@ public class BowserRoutingLocation {
    static int[][] fuelConsumption;
    static int[][] connectivity;
    static double[][] distance;
-   static double[][][] machineLocation;
+   static double[][][] machineLocationProb;
    static int fuelStockOutPenaltyCost;
    
    static enum InstanceType {
@@ -98,7 +101,7 @@ public class BowserRoutingLocation {
       {44.2516, 0., 0., 0., 99.4693},
       {0., 0., 87.9929, 0., 0.},
       {0., 0., 0., 78.212, 0.}};
-      machineLocation = new double[][][]{
+      machineLocationProb = new double[][][]{
            {{0, 0, 0, 1, 0},
             {0, 1, 0, 0, 0},
             {0, 0, 0, 0, 1}},
@@ -146,7 +149,7 @@ public class BowserRoutingLocation {
       {44.2516, 0., 0., 0., 99.4693},
       {0., 0., 87.9929, 0., 0.},
       {0., 0., 0., 78.212, 0.}};
-      machineLocation = new double[][][]{
+      machineLocationProb = new double[][][]{
       {{0, 0, 0, 0, 1},
       {0, 1, 0, 0, 0},
       {0, 0, 0, 0, 1}},
@@ -213,7 +216,7 @@ public class BowserRoutingLocation {
             {0., 119.8, 0., 0., 0., 0., 0., 0., 90., 91.},
             {83., 0., 0., 0., 0., 0., 0., 0., 0., 0.},
             {0., 0., 0., 0., 79., 0., 0., 0., 0., 0.}};
-      machineLocation = new double[][][]{
+      machineLocationProb = new double[][][]{
                {{0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
                {0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
                {0, 0, 0, 0, 0, 0, 0, 0, 0, 1}},
@@ -274,7 +277,7 @@ public class BowserRoutingLocation {
             {0., 119.8, 0., 0., 0., 0., 0., 0., 90., 91.},
             {83., 0., 0., 0., 0., 0., 0., 0., 0., 0.},
             {0., 0., 0., 0., 79., 0., 0., 0., 0., 0.}};
-      machineLocation = new double[][][]{
+      machineLocationProb = new double[][][]{
                {{0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
                {0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
                {0, 0, 0, 0, 0, 0, 0, 0, 0, 1}},
@@ -313,13 +316,6 @@ public class BowserRoutingLocation {
    }
    
    static BRL_ForwardRecursion buildModel(){
-      /*******************************************************************
-       * Problem parameters
-       */
-      //tinyInstance();
-      smallInstance();
-      //mediumInstance();
-      //largeInstance();
       
       /*******************************************************************
        * Model definition
@@ -384,7 +380,7 @@ public class BowserRoutingLocation {
       float loadFactor = 0.8F;
       double discountFactor = 1.0;
       BRL_ForwardRecursion recursion = new BRL_ForwardRecursion(T, 
-                                                              machineLocation, 
+                                                              machineLocationProb, 
                                                               fuelConsumption, 
                                                               immediateValueFunction, 
                                                               buildActionList,
@@ -404,28 +400,35 @@ public class BowserRoutingLocation {
     */
    static SamplingScheme samplingScheme = SamplingScheme.NONE;
    static int sampleSize = 10;                                     // This is the sample size used to determine a state value function
-   static int reductionFactorPerStage = 5;
+   static double reductionFactorPerStage = 5;
    
    static MRG32k3a rng = new MRG32k3a();
    
    public static void main(String args[]){
-      runInstance();
+      //runInstance();
       
-      /*
       rng.setSeed(new long[]{12345,12345,12345,12345,12345,12345});
       double cost = 0;
       for(int i = 0; i < 20; i++)
          cost += runInstanceReplanning();
-      System.out.println("Expected cost: "+cost/20);*/
+      System.out.println("Expected cost: "+cost/20);
    }
    
    public static void runInstance(){
+      /*******************************************************************
+       * Problem parameters
+       */
+      //tinyInstance();
+      smallInstance();
+      //mediumInstance();
+      //largeInstance();
+      
       BRL_ForwardRecursion recursion = buildModel();
       
       int period = 0;      
       int bowserInitialLocation = 0;
       int[] machinesInitialTankLevel = Arrays.copyOf(initialTankLevel, initialTankLevel.length);
-      int[] machinesInitialLocation = getMachineLocationArray(M, machineLocation[0]);
+      int[] machinesInitialLocation = getMachineLocationArray(M, machineLocationProb[0]);
       
       BRL_StateDescriptor initialState = new BRL_StateDescriptor(period, 
                                                                  bowserInitialTankLevel, 
@@ -446,7 +449,7 @@ public class BowserRoutingLocation {
       
       if(type == InstanceType.TINY  && samplingScheme == SamplingScheme.NONE){  
          /* This set of realisations is valid for tinyInstance */
-         machineLocation = new double[][][]{
+         double[][][] machineLocation = new double[][][]{
             {{0, 0, 0, 1, 0},
              {0, 1, 0, 0, 0},
              {0, 0, 0, 0, 1}},
@@ -483,7 +486,94 @@ public class BowserRoutingLocation {
    }
    
    public static double runInstanceReplanning(){
-      throw new NullPointerException("Method not implemented");
+      /*******************************************************************
+       * Problem parameters
+       */
+      //tinyInstance();
+      smallInstance();
+      //mediumInstance();
+      //largeInstance();
+      
+      BRL_ForwardRecursion recursion = null;
+      
+      int period = 0;      
+      int bowserInitialLocation = 0;
+      int[] machinesInitialTankLevel = Arrays.copyOf(initialTankLevel, initialTankLevel.length);
+      int[] machinesInitialLocation = getMachineLocationArray(M, machineLocationProb[0]);
+      
+      double[][][] machineLocation = new double[T+1][M][N];
+      
+      for(int m = 0; m < M; m++) 
+         System.arraycopy(machineLocationProb[0][m], 0, machineLocation[0][m], 0, machineLocationProb[0][m].length); 
+      for(int t = 1; t < T + 1; t++){
+         for(int m = 0; m < M; m++){
+            DiscreteDistribution dist = new DiscreteDistribution(IntStream.iterate(0, i -> i + 1)
+                                                                          .limit(machineLocationProb[t][m].length)
+                                                                          .toArray(), 
+                                                                 machineLocationProb[t][m], 
+                                                                 machineLocationProb[t][m].length);
+            machineLocation[t][m][(int) dist.inverseF(rng.nextDouble())] = 1;
+         }
+      }
+      
+      BRL_StateDescriptor initialState = new BRL_StateDescriptor(period, 
+            bowserInitialTankLevel, 
+            bowserInitialLocation,
+            machinesInitialTankLevel,
+            machinesInitialLocation);
+      
+      BRL_ForwardRecursion recursionOriginal = buildModel();
+      recursionOriginal.runForwardRecursionMonitoring(((BRL_StateSpace)recursionOriginal.getStateSpace()[initialState.getPeriod()]).getState(initialState));
+      
+      double cost = 0;
+      int timeHorizon = T;
+      for(int t = 0; t < timeHorizon; t++){
+         initialState = new BRL_StateDescriptor(period, 
+                                                                    bowserInitialTankLevel, 
+                                                                    bowserInitialLocation,
+                                                                    machinesInitialTankLevel,
+                                                                    machinesInitialLocation);
+         
+         recursion = buildModel();
+         recursion.runForwardRecursionMonitoring(((BRL_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
+         
+         double ETC = recursion.getExpectedCost(initialState);
+         long percent = recursion.getMonitoringInterfaceForward().getPercentCPU();
+         System.out.println("Expected total cost: "+ETC);
+         System.out.println("Initial state: "+initialState);
+         System.out.println("Optimal initial action: "+recursion.getOptimalAction(initialState).toString());
+         System.out.println("Time elapsed: "+recursion.getMonitoringInterfaceForward().getTime());
+         System.out.println("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)"); 
+         System.out.println();
+         
+         if(t < timeHorizon - 1)
+            cost += distance[bowserInitialLocation][((BRL_Action)recursion.getOptimalAction(initialState)).getBowserNewLocation()];
+         bowserInitialLocation = ((BRL_Action)recursion.getOptimalAction(initialState)).getBowserNewLocation();
+         bowserInitialTankLevel += ((BRL_Action)recursion.getOptimalAction(initialState)).getBowserRefuelQty() - Arrays.stream(((BRL_Action)recursion.getOptimalAction(initialState)).getMachineRefuelQty()).sum();
+         if(t < timeHorizon - 1)
+            machinesInitialLocation = getMachineLocationArray(M, machineLocation[t+1]);
+         for(int i = 0; i < M; i++){
+            machinesInitialTankLevel[i] = Math.max(0, machinesInitialTankLevel[i]) + ((BRL_Action)recursion.getOptimalAction(initialState)).getMachineRefuelQty()[i] - fuelConsumption[i][0];
+            cost += Math.max(-machinesInitialTankLevel[i], 0)*fuelStockOutPenaltyCost;
+         }
+         
+         T -= 1;
+         for(int m = 0; m < M; m++){
+            final int machine = m;
+            fuelConsumption[machine] = IntStream.iterate(1, i -> i + 1)
+                                                .limit(fuelConsumption[machine].length - 1)
+                                                .map(i -> fuelConsumption[machine][i])
+                                                .toArray();
+         }
+         machineLocationProb = IntStream.iterate(1, i -> i + 1)
+                                        .limit(machineLocationProb.length - 1)
+                                        .mapToObj(i -> machineLocationProb[i])
+                                        .toArray(double[][][]::new);
+         for(int m = 0; m < M; m++) 
+            System.arraycopy(machineLocationProb[0][m], 0, machineLocation[0][m], 0, machineLocationProb[0][m].length); 
+      }
+      System.out.println(cost);
+      return cost;
    }
    
    public static int[] getMachineLocationArray(int M, double[][] machineLocationMatrix){

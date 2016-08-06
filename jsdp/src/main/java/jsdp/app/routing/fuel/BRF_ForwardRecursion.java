@@ -54,7 +54,7 @@ public class BRF_ForwardRecursion extends ForwardRecursion {
                                float loadFactor,
                                SamplingScheme samplingScheme,
                                int sampleSize,
-                               int reductionFactorPerStage){
+                               double reductionFactorPerStage){
       super(OptimisationDirection.MIN);
       this.horizonLength = horizonLength;
       this.machineLocation = machineLocation;

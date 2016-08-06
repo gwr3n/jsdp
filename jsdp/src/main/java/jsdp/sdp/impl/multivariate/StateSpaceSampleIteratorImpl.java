@@ -33,6 +33,7 @@ import java.util.stream.IntStream;
 
 import jsdp.sdp.State;
 import jsdp.sdp.StateSpaceIterator;
+import jsdp.sdp.impl.multivariate.StateImpl;
 
 import umontreal.ssj.randvar.UniformIntGen;
 import umontreal.ssj.rng.MRG32k3aL;
@@ -55,13 +56,16 @@ public class StateSpaceSampleIteratorImpl extends StateSpaceIterator {
    
    int pointer;
 
-   public StateSpaceSampleIteratorImpl(StateSpaceImpl stateSpace, SamplingScheme samplingScheme, int maxSamples){
+   public StateSpaceSampleIteratorImpl(StateSpaceImpl stateSpace, SamplingScheme samplingScheme, int maxSamples, double reductionFactorPerStage){
       this.stateSpace = stateSpace;
       
       stream.resetStartStream();
       for(int i = 0; i < stateSpace.getPeriod(); i++){
          stream.resetNextSubstream();
       }
+      
+      int stateSpaceSize = getStateSpaceCardinality();
+      maxSamples = (int) Math.min(stateSpaceSize, Math.ceil(maxSamples/Math.pow(reductionFactorPerStage, stateSpace.getPeriod())));
       
       switch(samplingScheme){
       case SIMPLE_RANDOM_SAMPLING:

@@ -445,7 +445,7 @@ public class BowserRoutingFuel {
     */
    static SamplingScheme samplingScheme = SamplingScheme.SIMPLE_RANDOM_SAMPLING;
    static int sampleSize = 50;                                     // This is the sample size used to determine a state value function
-   static int reductionFactorPerStage = 5;
+   static double reductionFactorPerStage = 5;
    
    static MRG32k3a rng = new MRG32k3a();
    

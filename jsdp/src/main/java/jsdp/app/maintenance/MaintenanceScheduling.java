@@ -155,7 +155,8 @@ public class MaintenanceScheduling {
 
       SamplingScheme samplingScheme = SamplingScheme.NONE;
       int maxSampleSize = 5;
-
+      double reductionFactorPerStage = 1;
+      
 
       // Value Function Processing Method: backward recursion
       double discountFactor = 0.95;
@@ -170,6 +171,7 @@ public class MaintenanceScheduling {
                                                                   discountFactor,
                                                                   samplingScheme,
                                                                   maxSampleSize,
+                                                                  reductionFactorPerStage,
                                                                   HashType.HASHTABLE);
 
       System.out.println("--------------Backward recursion--------------");

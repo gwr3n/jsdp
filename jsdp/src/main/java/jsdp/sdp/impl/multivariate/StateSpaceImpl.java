@@ -45,6 +45,7 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
 
    SamplingScheme samplingScheme = SamplingScheme.NONE;
    int maxSampleSize = Integer.MAX_VALUE;
+   double reductionFactorPerStage = 1;
    
    public StateSpaceImpl(int period,
                          Function<State, ArrayList<Action>> buildActionList,
@@ -71,11 +72,12 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
                          Function<State, Action> idempotentAction,
                          SamplingScheme samplingScheme,
                          int maxSampleSize,
-                         HashType hash){
+                         HashType hash,
+                         double reductionFactorPerStage){
       super(period, hash);
       StateSpace.buildActionList = buildActionList;
       StateSpace.idempotentAction = idempotentAction;
-      this.setSamplingScheme(samplingScheme, maxSampleSize);
+      this.setSamplingScheme(samplingScheme, maxSampleSize, reductionFactorPerStage);
    }
    
    public StateSpaceImpl(int period, 
@@ -83,24 +85,27 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
                          Function<State, Action> idempotentAction,
                          SamplingScheme samplingScheme,
                          int maxSampleSize,
+                         double reductionFactorPerStage,
                          HashType hash,
                          int stateSpaceSizeLowerBound, 
                          float loadFactor){
       super(period, hash, stateSpaceSizeLowerBound, loadFactor);
       StateSpace.buildActionList = buildActionList;
       StateSpace.idempotentAction = idempotentAction;
-      this.setSamplingScheme(samplingScheme, maxSampleSize);
+      this.setSamplingScheme(samplingScheme, maxSampleSize, reductionFactorPerStage);
    }
    
-   public void setSamplingScheme(SamplingScheme samplingScheme, int maxSampleSize){
+   public void setSamplingScheme(SamplingScheme samplingScheme, int maxSampleSize, double reductionFactorPerStage){
       switch(samplingScheme){
       case NONE:
          this.samplingScheme = SamplingScheme.NONE;
          this.maxSampleSize = Integer.MAX_VALUE;
+         this.reductionFactorPerStage = 1;
          break;
       default: 
          this.samplingScheme = samplingScheme;
          this.maxSampleSize = maxSampleSize;
+         this.reductionFactorPerStage = reductionFactorPerStage;
       }
    }
 
@@ -124,6 +129,6 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
       else if(this.samplingScheme == SamplingScheme.NONE)
          return new StateSpaceIteratorImpl(this);
       else
-         return new StateSpaceSampleIteratorImpl(this, this.samplingScheme, this.maxSampleSize);
+         return new StateSpaceSampleIteratorImpl(this, this.samplingScheme, this.maxSampleSize, this.reductionFactorPerStage);
    }
 }

@@ -156,7 +156,8 @@ public class CLQG {
       // Sampling scheme
       
       SamplingScheme samplingScheme = SamplingScheme.NONE;
-      int maxSampleSize = 20;
+      int maxSampleSize = 50;
+      double reductionFactorPerStage = 1;
       
       
       // Value Function Processing Method: backward recursion
@@ -174,6 +175,7 @@ public class CLQG {
                                                                   discountFactor,
                                                                   samplingScheme,
                                                                   maxSampleSize,
+                                                                  reductionFactorPerStage,
                                                                   stateSpaceLowerBound,
                                                                   loadFactor,
                                                                   HashType.THASHMAP);

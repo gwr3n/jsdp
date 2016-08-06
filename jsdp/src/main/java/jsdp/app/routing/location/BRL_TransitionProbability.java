@@ -45,14 +45,14 @@ public class BRL_TransitionProbability extends TransitionProbability {
    
    private SamplingScheme samplingScheme;
    private int sampleSize;
-   private int reductionFactorPerStage;
+   private double reductionFactorPerStage;
    
    public BRL_TransitionProbability(double[][][] machineLocationProbability, 
                                     int[][] fuelConsumption, 
                                     BRL_StateSpace[] stateSpace,
                                     SamplingScheme samplingScheme,
                                     int sampleSize,
-                                    int reductionFactorPerStage){
+                                    double reductionFactorPerStage){
       this.machineLocationProbability = machineLocationProbability;
       this.fuelConsumption = fuelConsumption;
       this.stateSpace = stateSpace;
@@ -118,7 +118,7 @@ public class BRL_TransitionProbability extends TransitionProbability {
          Collections.shuffle(finalStates, rnd);
          //return new ArrayList<State>(finalStates.subList(0, this.sampleSize));
          int reductionFactor = (int) Math.pow(reductionFactorPerStage, initialState.getPeriod());
-         return new ArrayList<State>(finalStates.subList(0, this.sampleSize/reductionFactor < 1 ? 1 : this.sampleSize/reductionFactor));
+         return new ArrayList<State>(finalStates.subList(0, this.sampleSize/reductionFactor < 1 ? 1 : Math.min(this.sampleSize/reductionFactor, finalStates.size())));
       }
    }
    

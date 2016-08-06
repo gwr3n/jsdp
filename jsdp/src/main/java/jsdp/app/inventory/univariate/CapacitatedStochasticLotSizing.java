@@ -152,6 +152,7 @@ public class CapacitatedStochasticLotSizing {
       
       SamplingScheme samplingScheme = SamplingScheme.NONE;
       int maxSampleSize = 200;
+      double reductionFactorPerStage = 1;
       
       
       // Value Function Processing Method: backward recursion
@@ -167,6 +168,7 @@ public class CapacitatedStochasticLotSizing {
                                                                   discountFactor,
                                                                   samplingScheme,
                                                                   maxSampleSize,
+                                                                  reductionFactorPerStage,
                                                                   HashType.HASHTABLE);
 
       System.out.println("--------------Backward recursion--------------");
@@ -200,6 +202,7 @@ public class CapacitatedStochasticLotSizing {
                                                                       discountFactor,
                                                                       samplingScheme,
                                                                       maxSampleSize,
+                                                                      reductionFactorPerStage,
                                                                       HashType.HASHTABLE);
       plotOptimalPolicyCost(targetPeriod, recursionPlot);   //Plot optimal policy cost      
       System.out.println();
