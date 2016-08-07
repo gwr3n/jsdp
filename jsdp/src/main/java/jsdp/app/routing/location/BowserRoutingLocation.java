@@ -37,7 +37,7 @@ import jsdp.sdp.HashType;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.State;
 import jsdp.sdp.impl.univariate.SamplingScheme;
-import kotlin.collections.IntIterator;
+
 import umontreal.ssj.probdist.DiscreteDistribution;
 import umontreal.ssj.rng.MRG32k3a;
 
@@ -407,11 +407,16 @@ public class BowserRoutingLocation {
    public static void main(String args[]){
       //runInstance();
       
+      int replications = 20;
+      simulateInstanceReplanning(replications);
+   }
+   
+   private static void simulateInstanceReplanning(int replications) {
       rng.setSeed(new long[]{12345,12345,12345,12345,12345,12345});
       double cost = 0;
-      for(int i = 0; i < 20; i++)
+      for(int i = 0; i < replications; i++)
          cost += runInstanceReplanning();
-      System.out.println("Expected cost: "+cost/20);
+      System.out.println("Expected cost: "+cost/replications);
    }
    
    public static void runInstance(){

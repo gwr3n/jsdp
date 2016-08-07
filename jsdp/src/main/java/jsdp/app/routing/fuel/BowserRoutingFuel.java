@@ -452,13 +452,18 @@ public class BowserRoutingFuel {
    public static void main(String args[]){
       //runInstance();
       
-      rng.setSeed(new long[]{12345,12345,12345,12345,12345,12345});
-      double cost = 0;
-      for(int i = 0; i < 20; i++)
-         cost += runInstanceReplanning();
-      System.out.println("Expected cost: "+cost/20);
+      int replications = 20;
+      simulateInstanceReplanning(replications);
    }
    
+   private static void simulateInstanceReplanning(int replications) {
+      rng.setSeed(new long[]{12345,12345,12345,12345,12345,12345});
+      double cost = 0;
+      for(int i = 0; i < replications; i++)
+         cost += runInstanceReplanning();
+      System.out.println("Expected cost: "+cost/replications);
+   }
+
    public static void runInstance(){
       /*******************************************************************
        * Problem parameters
