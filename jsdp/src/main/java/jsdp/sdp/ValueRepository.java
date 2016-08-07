@@ -68,9 +68,9 @@ public class ValueRepository {
             this.optimalActionHashTable = new Hashtable<State,Action>();
             break;
          case CONCURRENT_HASHMAP:
-            this.valueHashTable = new ConcurrentHashMap<StateAction,Double>();
-            this.optimalValueHashTable = new ConcurrentHashMap<State,Double>();
-            this.optimalActionHashTable = new ConcurrentHashMap<State,Action>();
+            this.valueHashTable = Collections.synchronizedMap(new ConcurrentHashMap<StateAction,Double>());
+            this.optimalValueHashTable = Collections.synchronizedMap(new ConcurrentHashMap<State,Double>());
+            this.optimalActionHashTable = Collections.synchronizedMap(new ConcurrentHashMap<State,Action>());
             break;
          case THASHMAP:
             this.valueHashTable = Collections.synchronizedMap(new THashMap<StateAction,Double>());
@@ -112,9 +112,9 @@ public class ValueRepository {
             this.optimalActionHashTable = new Hashtable<State,Action>(stateSpaceSizeLowerBound,loadFactor);
             break;
          case CONCURRENT_HASHMAP:
-            this.valueHashTable = new ConcurrentHashMap<StateAction,Double>(stateSpaceSizeLowerBound,loadFactor);
-            this.optimalValueHashTable = new ConcurrentHashMap<State,Double>(stateSpaceSizeLowerBound,loadFactor);
-            this.optimalActionHashTable = new ConcurrentHashMap<State,Action>(stateSpaceSizeLowerBound,loadFactor);
+            this.valueHashTable = Collections.synchronizedMap(new ConcurrentHashMap<StateAction,Double>(stateSpaceSizeLowerBound,loadFactor));
+            this.optimalValueHashTable = Collections.synchronizedMap(new ConcurrentHashMap<State,Double>(stateSpaceSizeLowerBound,loadFactor));
+            this.optimalActionHashTable = Collections.synchronizedMap(new ConcurrentHashMap<State,Action>(stateSpaceSizeLowerBound,loadFactor));
             break;
          case THASHMAP:
             this.valueHashTable = Collections.synchronizedMap(new THashMap<StateAction,Double>(stateSpaceSizeLowerBound,loadFactor));

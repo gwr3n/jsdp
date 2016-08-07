@@ -129,9 +129,11 @@ public class StochasticLotSizing {
       Function<State, ArrayList<Action>> buildActionList = s -> {
          StateImpl state = (StateImpl) s;
          ArrayList<Action> feasibleActions = new ArrayList<Action>();
-         ActionIterator feasibleActionsIterator = new ActionIteratorImpl(state);
-         while(feasibleActionsIterator.hasNext())
-            feasibleActions.add(feasibleActionsIterator.next());
+         for(double i = state.getInitialState(); 
+             i <= StateImpl.getMaxState(); 
+             i += StateImpl.getStepSize()){
+            feasibleActions.add(new ActionImpl(state, i - state.getInitialState()));
+         }
          return feasibleActions;
       };
       
@@ -164,7 +166,7 @@ public class StochasticLotSizing {
       
       // Sampling scheme
       
-      SamplingScheme samplingScheme = SamplingScheme.NONE;
+      SamplingScheme samplingScheme = SamplingScheme.SIMPLE_RANDOM_SAMPLING;
       int maxSampleSize = 100;
       double reductionFactorPerStage = 1;
       
@@ -187,7 +189,7 @@ public class StochasticLotSizing {
                                                                   reductionFactorPerStage,
                                                                   stateSpaceLowerBound,
                                                                   loadFactor,
-                                                                  HashType.CONCURRENT_HASHMAP);
+                                                                  HashType.HASHTABLE);
 
       
       System.out.println("--------------Backward recursion--------------");
@@ -244,7 +246,7 @@ public class StochasticLotSizing {
                                                                       targetPeriod > 0 ? SamplingScheme.NONE : samplingScheme,
                                                                       maxSampleSize,
                                                                       reductionFactorPerStage,
-                                                                      HashType.CONCURRENT_HASHMAP);
+                                                                      HashType.HASHTABLE);
       plotOptimalPolicyCost(targetPeriod, recursionPlot);   //Plot optimal policy cost 
       System.out.println();
       

@@ -150,7 +150,7 @@ public class CapacitatedStochasticLotSizing {
       
       // Sampling scheme
       
-      SamplingScheme samplingScheme = SamplingScheme.NONE;
+      SamplingScheme samplingScheme = SamplingScheme.SIMPLE_RANDOM_SAMPLING;
       int maxSampleSize = 200;
       double reductionFactorPerStage = 1;
       

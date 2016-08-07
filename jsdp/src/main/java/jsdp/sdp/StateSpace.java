@@ -75,7 +75,7 @@ public abstract class StateSpace<SD> implements Iterable<State>{
 		   this.states = new Hashtable<SD,State>();
 		   break;
 		case CONCURRENT_HASHMAP:
-		   this.states = new ConcurrentHashMap<SD,State>();
+		   this.states = Collections.synchronizedMap(new ConcurrentHashMap<SD,State>());
 		   break;
 		case THASHMAP:
 		   this.states = Collections.synchronizedMap(new THashMap<SD,State>());
@@ -107,7 +107,7 @@ public abstract class StateSpace<SD> implements Iterable<State>{
             states = new Hashtable<SD,State>(stateSpaceSizeLowerBound,loadFactor);
             break;
          case CONCURRENT_HASHMAP:
-            states = new ConcurrentHashMap<SD,State>(stateSpaceSizeLowerBound,loadFactor);
+            states = Collections.synchronizedMap(new ConcurrentHashMap<SD,State>(stateSpaceSizeLowerBound,loadFactor));
             break;
          case THASHMAP:
             states = Collections.synchronizedMap(new THashMap<SD,State>(stateSpaceSizeLowerBound,loadFactor));
