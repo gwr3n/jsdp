@@ -129,7 +129,7 @@ public class BRF_TransitionProbability extends TransitionProbability {
       }
       
       int[] machineLocations = new int[((BRF_State) initialState).getMachineLocation().length];
-      double[][] locationProbabilityMatrix = this.machineLocation[initialState.getPeriod()+1];
+      double[][] locationProbabilityMatrix = this.machineLocation[Math.min(initialState.getPeriod()+1, this.machineLocation.length-1)];
       for(int machine = 0; machine < machineLocations.length; machine++){
          for(int i = 0; i < locationProbabilityMatrix[machine].length; i++){
             if(locationProbabilityMatrix[machine][i] == 1){

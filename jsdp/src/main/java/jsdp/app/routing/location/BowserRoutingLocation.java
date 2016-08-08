@@ -32,6 +32,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import jsdp.sdp.Action;
 import jsdp.sdp.HashType;
 import jsdp.sdp.ImmediateValueFunction;
@@ -52,28 +55,97 @@ import umontreal.ssj.rng.MRG32k3a;
 
 public class BowserRoutingLocation {
    
-   static int T, M, N;
-   static int bowserInitialTankLevel;
-   static int maxBowserTankLevel;
-   static int minRefuelingQty;   
-   static int[] tankCapacity;
-   static int[] initialTankLevel;
-   static int[][] fuelConsumption;
-   static int[][] connectivity;
-   static double[][] distance;
-   static double[][][] machineLocationProb;
-   static int fuelStockOutPenaltyCost;
+   static final Logger logger = LogManager.getLogger(BowserRoutingLocation.class.getName());
    
-   static enum InstanceType {
+   int T, M, N;
+   int bowserInitialTankLevel;
+   int maxBowserTankLevel;
+   int minRefuelingQty;   
+   int[] tankCapacity;
+   int[] initialTankLevel;
+   int[][] fuelConsumption;
+   int[][] connectivity;
+   double[][] distance;
+   double[][][] machineLocationProb;
+   int fuelStockOutPenaltyCost;
+   
+   BRL_ForwardRecursion recursion;
+   
+   SamplingScheme samplingScheme;
+   int sampleSize;
+   double reductionFactorPerStage;
+   
+   static MRG32k3a rng = new MRG32k3a();
+   
+   enum InstanceType {
       TINY,
       SMALL,
+      MEDIUM,
       LARGE
    }
    
-   static InstanceType type;
+   InstanceType type = null;
    
-   static void tinyInstance(){
-      type = InstanceType.TINY;
+   public BowserRoutingLocation(InstanceType type,
+                                SamplingScheme samplingScheme,
+                                int sampleSize,
+                                double reductionFactorPerStage){
+      this.type = type;
+      switch(type){
+      case TINY:
+         this.tinyInstance();
+         break;
+      case SMALL:
+         this.smallInstance();
+         break;
+      case MEDIUM:
+         this.mediumInstance();
+         break;
+      case LARGE:
+         this.largeInstance();
+         break;
+      default:
+         throw new NullPointerException("Instance type undefined");
+      }
+      
+      this.samplingScheme = samplingScheme;
+      this.sampleSize = sampleSize;
+      this.reductionFactorPerStage = reductionFactorPerStage;
+   }
+   
+   public BowserRoutingLocation(int T, int M, int N,
+                                int bowserInitialTankLevel,
+                                int maxBowserTankLevel,
+                                int minRefuelingQty,
+                                int[] tankCapacity,
+                                int[] initialTankLevel,
+                                int[][] fuelConsumption,
+                                int[][] connectivity,
+                                double[][] distance,
+                                double[][][] machineLocationProb,
+                                int fuelStockOutPenaltyCost,
+                                SamplingScheme samplingScheme,
+                                int sampleSize,
+                                double reductionFactorPerStage){
+      this.T = T;
+      this.M = M;
+      this.N = N;
+      this.maxBowserTankLevel = maxBowserTankLevel;
+      this.minRefuelingQty = minRefuelingQty;
+      this.tankCapacity = tankCapacity.clone();
+      this.initialTankLevel = initialTankLevel.clone();
+      this.fuelConsumption = fuelConsumption.clone();
+      this.connectivity = connectivity.clone();
+      this.distance = distance.clone();
+      this.machineLocationProb = machineLocationProb.clone();
+      this.fuelStockOutPenaltyCost = fuelStockOutPenaltyCost;
+      
+      this.samplingScheme = samplingScheme;
+      this.sampleSize = sampleSize;
+      this.reductionFactorPerStage = reductionFactorPerStage;
+   }
+   
+   void tinyInstance(){
       /*******************************************************************
        * Problem parameters
        */
@@ -112,17 +184,12 @@ public class BowserRoutingLocation {
             
             {{0, 0.5, 0, 0, 0.5},
             {0, 0, 0.5, 0.5, 0},
-            {0, 0.5, 0, 0, 0.5}},
-            
-            {{0, 0.5, 0, 0, 0.5},
-            {0, 0.5, 0, 0.5, 0},
-            {0.5, 0, 0.5, 0, 0}}};
+            {0, 0.5, 0, 0, 0.5}}};
       
       fuelStockOutPenaltyCost = 100;
    }
    
-   static void smallInstance(){
-      type = InstanceType.SMALL;
+   void smallInstance(){
       /*******************************************************************
        * Problem parameters
        */
@@ -168,17 +235,12 @@ public class BowserRoutingLocation {
       
       {{0, 0, 0, 0, 1},
       {0, 0, 0.5, 0.5, 0},
-      {0, 0, 0.5, 0, 0.5}},
-      
-      {{0, 0, 0, 0, 1},
-      {0, 0, 0, 1, 0},
-      {0, 0, 1, 0, 0}}};
+      {0, 0, 0.5, 0, 0.5}}};
       
       fuelStockOutPenaltyCost = 20;
    }
    
-   static void mediumInstance(){
-      type = InstanceType.LARGE;
+   void mediumInstance(){
       /*******************************************************************
        * Problem parameters
        */
@@ -231,16 +293,12 @@ public class BowserRoutingLocation {
                {0, 0, 0, 0, 0.5, 0.5, 0, 0, 0, 0}},
                {{0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
                {0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-               {0, 0, 0.5, 0, 0, 0, 0, 0.5, 0, 0}},
-               {{0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
-               {0, 0, 0, 0, 0.5, 0, 0, 0.5, 0, 0},
-               {0, 0, 1, 0, 0, 0, 0, 0, 0, 0}}};
+               {0, 0, 0.5, 0, 0, 0, 0, 0.5, 0, 0}}};
       
       fuelStockOutPenaltyCost = 20;
    }
    
-   static void largeInstance(){
-      type = InstanceType.LARGE;
+   void largeInstance(){
       /*******************************************************************
        * Problem parameters
        */
@@ -307,15 +365,12 @@ public class BowserRoutingLocation {
                {0, 0, 0, 0, 0, 1, 0, 0, 0, 0}},
                {{0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
                {0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-               {0, 0, 1, 0, 0, 0, 0, 0, 0, 0}},
-               {{0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
-               {0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
                {0, 0, 1, 0, 0, 0, 0, 0, 0, 0}}};
       
       fuelStockOutPenaltyCost = 20;
    }
    
-   static BRL_ForwardRecursion buildModel(){
+   public BRL_ForwardRecursion buildModel(){
       
       /*******************************************************************
        * Model definition
@@ -395,40 +450,37 @@ public class BowserRoutingLocation {
       return recursion;
    }
    
-   /**
-    * Sampling scheme
-    */
-   static SamplingScheme samplingScheme = SamplingScheme.NONE;
-   static int sampleSize = 10;                                     // This is the sample size used to determine a state value function
-   static double reductionFactorPerStage = 5;
-   
-   static MRG32k3a rng = new MRG32k3a();
-   
    public static void main(String args[]){
-      //runInstance();
+      /**
+       * Sampling scheme
+       */
+      SamplingScheme samplingScheme = SamplingScheme.NONE;
+      int sampleSize = 10;                                     // This is the sample size used to determine a state value function
+      double reductionFactorPerStage = 5;
+      
+      BowserRoutingLocation bowserRoutingLocation = new BowserRoutingLocation(InstanceType.TINY,
+                                                                              samplingScheme,
+                                                                              sampleSize,
+                                                                              reductionFactorPerStage);
+      
+      //bowserRoutingLocation.runInstance();
+      //bowserRoutingLocation.printPolicy();
       
       int replications = 20;
-      simulateInstanceReplanning(replications);
+      bowserRoutingLocation.simulateInstanceReplanning(replications);
    }
    
-   private static void simulateInstanceReplanning(int replications) {
+   private void simulateInstanceReplanning(int replications) {
       rng.setSeed(new long[]{12345,12345,12345,12345,12345,12345});
       double cost = 0;
       for(int i = 0; i < replications; i++)
          cost += runInstanceReplanning();
-      System.out.println("Expected cost: "+cost/replications);
+      logger.info("Simulated expected total cost: "+cost/replications);
    }
    
-   public static void runInstance(){
-      /*******************************************************************
-       * Problem parameters
-       */
-      //tinyInstance();
-      smallInstance();
-      //mediumInstance();
-      //largeInstance();
+   public void runInstance(){
       
-      BRL_ForwardRecursion recursion = buildModel();
+      recursion = buildModel();
       
       int period = 0;      
       int bowserInitialLocation = 0;
@@ -442,15 +494,27 @@ public class BowserRoutingLocation {
                                                                  machinesInitialLocation);
 
       recursion.runForwardRecursionMonitoring(((BRL_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
-      long percent = recursion.getMonitoringInterfaceForward().getPercentCPU();
-      System.out.println("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)");    
-      System.out.println();
+      long percent = recursion.getMonitoringInterfaceForward().getPercentCPU();   
       double ETC = recursion.getExpectedCost(initialState);
-      System.out.println("Expected total cost: "+ETC);
-      System.out.println("Optimal initial action: "+recursion.getOptimalAction(initialState).toString());
-      System.out.println("Time elapsed: "+recursion.getMonitoringInterfaceForward().getTime());
-      System.out.println();
+      logger.info("---");
+      logger.info("Expected total cost: "+ETC);
+      logger.info("Optimal initial action: "+recursion.getOptimalAction(initialState).toString());
+      logger.info("Time elapsed: "+recursion.getMonitoringInterfaceForward().getTime());
+      logger.info("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)"); 
+      logger.info("---");
+   }
+   
+   public void printPolicy(){
+      int period = 0;      
+      int bowserInitialLocation = 0;
+      int[] machinesInitialTankLevel = Arrays.copyOf(initialTankLevel, initialTankLevel.length);
+      int[] machinesInitialLocation = getMachineLocationArray(M, machineLocationProb[0]);
       
+      BRL_StateDescriptor initialState = new BRL_StateDescriptor(period, 
+                                                                 bowserInitialTankLevel, 
+                                                                 bowserInitialLocation,
+                                                                 machinesInitialTankLevel,
+                                                                 machinesInitialLocation);
       
       if(type == InstanceType.TINY  && samplingScheme == SamplingScheme.NONE){  
          /* This set of realisations is valid for tinyInstance */
@@ -483,34 +547,29 @@ public class BowserRoutingLocation {
                   bowserInitialLocation,
                   machinesInitialTankLevel,
                   machinesInitialLocation);
-            System.out.println(initialState.toString());
-            System.out.println("Expected total cost: "+recursion.getExpectedCost(initialState));
-            System.out.println("Optimal action: "+recursion.getOptimalAction(initialState).toString());
+            logger.info("--- t = " +t+ " ---");
+            logger.info(initialState.toString());
+            logger.info("Expected total cost: "+recursion.getExpectedCost(initialState));
+            logger.info("Optimal action: "+recursion.getOptimalAction(initialState).toString());
+            logger.info("---");
          }
       }
    }
    
-   public static double runInstanceReplanning(){
-      /*******************************************************************
-       * Problem parameters
-       */
-      //tinyInstance();
-      smallInstance();
-      //mediumInstance();
-      //largeInstance();
+   private double runInstanceReplanning(){
       
-      BRL_ForwardRecursion recursion = null;
+      smallInstance(); // Create method to reset current instance
       
       int period = 0;      
       int bowserInitialLocation = 0;
       int[] machinesInitialTankLevel = Arrays.copyOf(initialTankLevel, initialTankLevel.length);
       int[] machinesInitialLocation = getMachineLocationArray(M, machineLocationProb[0]);
       
-      double[][][] machineLocation = new double[T+1][M][N];
+      double[][][] machineLocation = new double[T][M][N];
       
       for(int m = 0; m < M; m++) 
          System.arraycopy(machineLocationProb[0][m], 0, machineLocation[0][m], 0, machineLocationProb[0][m].length); 
-      for(int t = 1; t < T + 1; t++){
+      for(int t = 1; t < T; t++){
          for(int m = 0; m < M; m++){
             DiscreteDistribution dist = new DiscreteDistribution(IntStream.iterate(0, i -> i + 1)
                                                                           .limit(machineLocationProb[t][m].length)
@@ -527,9 +586,6 @@ public class BowserRoutingLocation {
             machinesInitialTankLevel,
             machinesInitialLocation);
       
-      BRL_ForwardRecursion recursionOriginal = buildModel();
-      recursionOriginal.runForwardRecursionMonitoring(((BRL_StateSpace)recursionOriginal.getStateSpace()[initialState.getPeriod()]).getState(initialState));
-      
       double cost = 0;
       int timeHorizon = T;
       for(int t = 0; t < timeHorizon; t++){
@@ -544,12 +600,13 @@ public class BowserRoutingLocation {
          
          double ETC = recursion.getExpectedCost(initialState);
          long percent = recursion.getMonitoringInterfaceForward().getPercentCPU();
-         System.out.println("Expected total cost: "+ETC);
-         System.out.println("Initial state: "+initialState);
-         System.out.println("Optimal initial action: "+recursion.getOptimalAction(initialState).toString());
-         System.out.println("Time elapsed: "+recursion.getMonitoringInterfaceForward().getTime());
-         System.out.println("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)"); 
-         System.out.println();
+         logger.info("---");
+         logger.info("Expected total cost: "+ETC);
+         logger.info("Initial state: "+initialState);
+         logger.info("Optimal initial action: "+recursion.getOptimalAction(initialState).toString());
+         logger.info("Time elapsed: "+recursion.getMonitoringInterfaceForward().getTime());
+         logger.info("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)"); 
+         logger.info("---");
          
          if(t < timeHorizon - 1)
             cost += distance[bowserInitialLocation][((BRL_Action)recursion.getOptimalAction(initialState)).getBowserNewLocation()];
@@ -574,10 +631,14 @@ public class BowserRoutingLocation {
                                         .limit(machineLocationProb.length - 1)
                                         .mapToObj(i -> machineLocationProb[i])
                                         .toArray(double[][][]::new);
-         for(int m = 0; m < M; m++) 
-            System.arraycopy(machineLocationProb[0][m], 0, machineLocation[0][m], 0, machineLocationProb[0][m].length); 
+         if(t < timeHorizon - 1){
+            for(int m = 0; m < M; m++) 
+               System.arraycopy(machineLocationProb[0][m], 0, machineLocation[0][m], 0, machineLocationProb[0][m].length);
+         }
       }
-      System.out.println(cost);
+      logger.info("---");
+      logger.info("Expected total cost: "+cost);
+      logger.info("---");
       return cost;
    }
    

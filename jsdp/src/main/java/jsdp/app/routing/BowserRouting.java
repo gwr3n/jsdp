@@ -31,13 +31,13 @@ import java.util.Arrays;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import jsdp.sdp.Action;
 import jsdp.sdp.HashType;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.State;
-import jsdp.utilities.probdist.DiscreteDistributionFactory;
-import umontreal.ssj.probdist.DiscreteDistribution;
-import umontreal.ssj.probdist.PoissonDist;
 
 /**
  * Dynamic Bowser Routing Problem
@@ -50,28 +50,78 @@ import umontreal.ssj.probdist.PoissonDist;
 
 public class BowserRouting {
    
-   static int T, M, N;
-   static int bowserInitialTankLevel;
-   static int maxBowserTankLevel;
-   static int minRefuelingQty;
-   static int[] tankCapacity;
-   static int[] initialTankLevel;
-   static int[][] fuelConsumption;
-   static int[][] connectivity;
-   static double[][] distance;
-   static double[][][] machineLocation;
-   static int fuelStockOutPenaltyCost;
+   static final Logger logger = LogManager.getLogger(BowserRouting.class.getName());
    
-   static enum InstanceType {
+   int T, M, N;
+   int bowserInitialTankLevel;
+   int maxBowserTankLevel;
+   int minRefuelingQty;
+   int[] tankCapacity;
+   int[] initialTankLevel;
+   int[][] fuelConsumption;
+   int[][] connectivity;
+   double[][] distance;
+   double[][][] machineLocation;
+   int fuelStockOutPenaltyCost;
+   
+   BR_ForwardRecursion recursion;
+   
+   enum InstanceType {
       TINY,
       SMALL,
+      MEDIUM,
       LARGE
    }
    
-   static InstanceType type;
+   public BowserRouting(InstanceType type){
+      switch(type){
+      case TINY:
+         this.tinyInstance();
+         break;
+      case SMALL:
+         this.smallInstance();
+         break;
+      case MEDIUM:
+         this.mediumInstance();
+         break;
+      case LARGE:
+         this.largeInstance();
+         break;
+      default:
+         throw new NullPointerException("Instance type undefined");
+      }
+      
+      this.runInstance();
+   }
    
-   static void tinyInstance(){
-      type = InstanceType.TINY;
+   public BowserRouting(int T, int M, int N,
+                        int bowserInitialTankLevel,
+                        int maxBowserTankLevel,
+                        int minRefuelingQty,
+                        int[] tankCapacity,
+                        int[] initialTankLevel,
+                        int[][] fuelConsumption,
+                        int[][] connectivity,
+                        double[][] distance,
+                        double[][][] machineLocation,
+                        int fuelStockOutPenaltyCost){
+      this.T = T;
+      this.M = M;
+      this.N = N;
+      this.maxBowserTankLevel = maxBowserTankLevel;
+      this.minRefuelingQty = minRefuelingQty;
+      this.tankCapacity = tankCapacity.clone();
+      this.initialTankLevel = initialTankLevel.clone();
+      this.fuelConsumption = fuelConsumption.clone();
+      this.connectivity = connectivity.clone();
+      this.distance = distance.clone();
+      this.machineLocation = machineLocation.clone();
+      this.fuelStockOutPenaltyCost = fuelStockOutPenaltyCost;
+      
+      this.runInstance();
+   }
+
+   public void tinyInstance(){
       /*******************************************************************
        * Problem parameters
        */
@@ -109,17 +159,12 @@ public class BowserRouting {
       
       {{0, 0, 0, 0, 1},
       {0, 0, 0, 1, 0},
-      {0, 0, 1, 0, 0}},
-      
-      {{0, 0, 0, 0, 1},
-      {0, 0, 0, 1, 0},
       {0, 0, 1, 0, 0}}};
       
       fuelStockOutPenaltyCost = 100;
    }
    
-   static void smallInstance(){
-      type = InstanceType.SMALL;
+   public void smallInstance(){
       /*******************************************************************
        * Problem parameters
        */
@@ -165,17 +210,12 @@ public class BowserRouting {
       
       {{0, 0, 0, 0, 1},
       {0, 0, 0, 1, 0},
-      {0, 0, 1, 0, 0}},
-      
-      {{0, 0, 0, 0, 1},
-      {0, 0, 0, 1, 0},
       {0, 0, 1, 0, 0}}};
       
       fuelStockOutPenaltyCost = 20;
    }
    
-   static void mediumInstance(){
-      type = InstanceType.LARGE;
+   public void mediumInstance(){
       /*******************************************************************
        * Problem parameters
        */
@@ -237,16 +277,12 @@ public class BowserRouting {
                {0, 0, 0, 0, 0, 0, 0, 0, 0, 1}},
                {{0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
                {0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-               {0, 0, 1, 0, 0, 0, 0, 0, 0, 0}},
-               {{0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
-               {0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
                {0, 0, 1, 0, 0, 0, 0, 0, 0, 0}}};
       
       fuelStockOutPenaltyCost = 100;
    }
    
-   static void largeInstance(){
-      type = InstanceType.LARGE;
+   public void largeInstance(){
       /*******************************************************************
        * Problem parameters
        */
@@ -313,15 +349,12 @@ public class BowserRouting {
                {0, 0, 0, 0, 0, 1, 0, 0, 0, 0}},
                {{0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
                {0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-               {0, 0, 1, 0, 0, 0, 0, 0, 0, 0}},
-               {{0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
-               {0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
                {0, 0, 1, 0, 0, 0, 0, 0, 0, 0}}};
       
       fuelStockOutPenaltyCost = 100;
    }
    
-   static BR_ForwardRecursion buildModel(){
+   public BR_ForwardRecursion buildModel(){
       /*******************************************************************
        * Model definition
        */
@@ -397,19 +430,13 @@ public class BowserRouting {
    }
    
    public static void main(String args[]){
-      runInstance();
+      BowserRouting bowserRouting = new BowserRouting(InstanceType.LARGE);
+      bowserRouting.printPolicy();
    }
    
-   public static void runInstance(){
-      /*******************************************************************
-       * Problem parameters
-       */
-      //tinyInstance();
-      //smallInstance();
-      //mediumInstance();
-      largeInstance();
-      
-      BR_ForwardRecursion recursion = buildModel();
+   public void runInstance(){
+
+      recursion = buildModel();
       
       int period = 0;
       int bowserInitialLocation = 0;
@@ -424,14 +451,24 @@ public class BowserRouting {
 
       recursion.runForwardRecursionMonitoring(((BR_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
       long percent = recursion.getMonitoringInterfaceForward().getPercentCPU();
-      System.out.println("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)");
+      logger.info("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)");
       System.out.println();
       double ETC = recursion.getExpectedCost(initialState);
-      System.out.println("Expected total cost: "+ETC);
-      System.out.println("Optimal initial action: "+recursion.getOptimalAction(initialState).toString());
-      System.out.println("Time elapsed: "+recursion.getMonitoringInterfaceForward().getTime());
-      System.out.println();
-      
+      logger.info("Expected total cost: "+ETC);
+      logger.info("Optimal initial action: "+recursion.getOptimalAction(initialState).toString());
+      logger.info("Time elapsed: "+recursion.getMonitoringInterfaceForward().getTime());
+   }
+   
+   public void printPolicy(){
+      int period = 0;
+      int bowserInitialLocation = 0;
+      int[] machinesInitialTankLevel = Arrays.copyOf(initialTankLevel, initialTankLevel.length);
+      int[] machinesInitialLocation = getMachineLocationArray(M, machineLocation[0]);
+      BR_StateDescriptor initialState = new BR_StateDescriptor(period, 
+            bowserInitialTankLevel, 
+            bowserInitialLocation,
+            machinesInitialTankLevel,
+            machinesInitialLocation);
       for(int t = 1; t < T; t++){
          bowserInitialLocation = ((BR_Action)recursion.getOptimalAction(initialState)).getBowserNewLocation();
          bowserInitialTankLevel += ((BR_Action)recursion.getOptimalAction(initialState)).getBowserRefuelQty() - Arrays.stream(((BR_Action)recursion.getOptimalAction(initialState)).getMachineRefuelQty()).sum();
@@ -444,13 +481,13 @@ public class BowserRouting {
                                                bowserInitialLocation,
                                                machinesInitialTankLevel,
                                                machinesInitialLocation);
-         System.out.println(initialState.toString());
-         System.out.println("Expected total cost: "+recursion.getExpectedCost(initialState));
-         System.out.println("Optimal action: "+recursion.getOptimalAction(initialState).toString());
+         logger.info(initialState.toString());
+         logger.info("Expected total cost: "+recursion.getExpectedCost(initialState));
+         logger.info("Optimal action: "+recursion.getOptimalAction(initialState).toString());
       }
    }
    
-   public static int[] getMachineLocationArray(int M, double[][] machineLocationMatrix){
+   private static int[] getMachineLocationArray(int M, double[][] machineLocationMatrix){
       int[] machineLocationArray = new int[M];
       for(int i = 0; i < machineLocationMatrix.length; i++){
          for(int j = 0; j < machineLocationMatrix[i].length; j++){

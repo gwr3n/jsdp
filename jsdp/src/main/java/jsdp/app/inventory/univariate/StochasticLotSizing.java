@@ -166,7 +166,7 @@ public class StochasticLotSizing {
       
       // Sampling scheme
       
-      SamplingScheme samplingScheme = SamplingScheme.SIMPLE_RANDOM_SAMPLING;
+      SamplingScheme samplingScheme = SamplingScheme.JENSENS_PARTITIONING;
       int maxSampleSize = 100;
       double reductionFactorPerStage = 1;
       
@@ -189,7 +189,7 @@ public class StochasticLotSizing {
                                                                   reductionFactorPerStage,
                                                                   stateSpaceLowerBound,
                                                                   loadFactor,
-                                                                  HashType.HASHTABLE);
+                                                                  HashType.THASHMAP);
 
       
       System.out.println("--------------Backward recursion--------------");
@@ -246,7 +246,7 @@ public class StochasticLotSizing {
                                                                       targetPeriod > 0 ? SamplingScheme.NONE : samplingScheme,
                                                                       maxSampleSize,
                                                                       reductionFactorPerStage,
-                                                                      HashType.HASHTABLE);
+                                                                      HashType.THASHMAP);
       plotOptimalPolicyCost(targetPeriod, recursionPlot);   //Plot optimal policy cost 
       System.out.println();
       

@@ -78,7 +78,7 @@ public class BRL_TransitionProbability extends TransitionProbability {
       double probability = 1;
       int[] machineLocations = ((BRL_State) finalState).getMachineLocation();
       for(int i = 0; i < machineLocations.length; i++){
-         probability *= this.machineLocationProbability[finalState.getPeriod()][i][machineLocations[i]];
+         probability *= this.machineLocationProbability[Math.min(finalState.getPeriod(), this.machineLocationProbability.length - 1)][i][machineLocations[i]];
       }
       return probability;
    }
@@ -98,7 +98,7 @@ public class BRL_TransitionProbability extends TransitionProbability {
       ArrayList<int[]> machineLocationsArray = new ArrayList<int[]>();
       
       int[] machineLocations = new int[((BRL_State) initialState).getMachineLocation().length];
-      generateLocations(machineLocations, 0, this.machineLocationProbability[initialState.getPeriod()+1], machineLocationsArray);
+      generateLocations(machineLocations, 0, this.machineLocationProbability[Math.min(initialState.getPeriod()+1, this.machineLocationProbability.length-1)], machineLocationsArray);
       
       ArrayList<State> finalStates = machineLocationsArray.parallelStream().map(array ->
                   this.stateSpace[initialState.getPeriod() + 1].getState(
