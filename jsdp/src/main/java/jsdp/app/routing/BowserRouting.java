@@ -430,7 +430,7 @@ public class BowserRouting {
    }
    
    public static void main(String args[]){
-      BowserRouting bowserRouting = new BowserRouting(InstanceType.LARGE);
+      BowserRouting bowserRouting = new BowserRouting(InstanceType.MEDIUM);
       bowserRouting.printPolicy();
    }
    

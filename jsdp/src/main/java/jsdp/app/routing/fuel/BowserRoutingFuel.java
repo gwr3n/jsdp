@@ -82,16 +82,98 @@ public class BowserRoutingFuel {
       TINY,
       SMALL,
       MEDIUM,
-      LARGE
+      LARGE,
+      CUSTOM
    }
    
    InstanceType type = null;
+   ProblemInstance instance = null;
    
    public BowserRoutingFuel(InstanceType type,
                             SamplingScheme samplingScheme,
                             int sampleSize,
                             double reductionFactorPerStage){
       this.type = type;
+      this.resetInstance();
+      
+      this.samplingScheme = samplingScheme;
+      this.sampleSize = sampleSize;
+      this.reductionFactorPerStage = reductionFactorPerStage;
+   }
+   
+   public BowserRoutingFuel(int T, int M, int N,
+                            int bowserInitialTankLevel,
+                            int maxBowserTankLevel,
+                            int minRefuelingQty,
+                            int[] tankCapacity,
+                            int[] initialTankLevel,
+                            DiscreteDistribution[][] fuelConsumptionProb,
+                            int[][] connectivity,
+                            double[][] distance,
+                            double[][][] machineLocation,
+                            int fuelStockOutPenaltyCost,
+                            SamplingScheme samplingScheme,
+                            int sampleSize,
+                            double reductionFactorPerStage){
+      this.type = InstanceType.CUSTOM;
+      this.instance = new ProblemInstance(T, M, N,
+                                          bowserInitialTankLevel,
+                                          maxBowserTankLevel,
+                                          minRefuelingQty,
+                                          tankCapacity,
+                                          initialTankLevel,
+                                          fuelConsumptionProb,
+                                          connectivity,
+                                          distance,
+                                          machineLocation,
+                                          fuelStockOutPenaltyCost);
+      this.resetInstance();
+      
+      this.samplingScheme = samplingScheme;
+      this.sampleSize = sampleSize;
+      this.reductionFactorPerStage = reductionFactorPerStage;
+   }
+   
+   class ProblemInstance{
+      int T, M, N;
+      int bowserInitialTankLevel;
+      int maxBowserTankLevel;
+      int minRefuelingQty;
+      int[] tankCapacity;
+      int[] initialTankLevel;
+      DiscreteDistribution[][] fuelConsumptionProb;
+      int[][] connectivity;
+      double[][] distance;
+      double[][][] machineLocation;
+      int fuelStockOutPenaltyCost;
+      
+      public ProblemInstance(int T, int M, int N,
+                             int bowserInitialTankLevel,
+                             int maxBowserTankLevel,
+                             int minRefuelingQty,
+                             int[] tankCapacity,
+                             int[] initialTankLevel,
+                             DiscreteDistribution[][] fuelConsumptionProb,
+                             int[][] connectivity,
+                             double[][] distance,
+                             double[][][] machineLocation,
+                             int fuelStockOutPenaltyCost){
+         this.T = T;
+         this.M = M;
+         this.N = N;
+         this.maxBowserTankLevel = maxBowserTankLevel;
+         this.minRefuelingQty = minRefuelingQty;
+         this.tankCapacity = tankCapacity.clone();
+         this.initialTankLevel = initialTankLevel.clone();
+         this.fuelConsumptionProb = fuelConsumptionProb.clone();
+         this.connectivity = connectivity.clone();
+         this.distance = distance.clone();
+         this.machineLocation = machineLocation.clone();
+         this.fuelStockOutPenaltyCost = fuelStockOutPenaltyCost;
+      }
+   }
+   
+   private void resetInstance(){
       switch(type){
       case TINY:
          this.tinyInstance();
@@ -105,44 +187,23 @@ public class BowserRoutingFuel {
       case LARGE:
          this.largeInstance();
          break;
+      case CUSTOM:
+         this.T = instance.T;
+         this.M = instance.M;
+         this.N = instance.N;
+         this.maxBowserTankLevel = instance.maxBowserTankLevel;
+         this.minRefuelingQty = instance.minRefuelingQty;
+         this.tankCapacity = instance.tankCapacity.clone();
+         this.initialTankLevel = instance.initialTankLevel.clone();
+         this.fuelConsumptionProb = instance.fuelConsumptionProb.clone();
+         this.connectivity = instance.connectivity.clone();
+         this.distance = instance.distance.clone();
+         this.machineLocation = instance.machineLocation.clone();
+         this.fuelStockOutPenaltyCost = instance.fuelStockOutPenaltyCost;
+         break;
       default:
          throw new NullPointerException("Instance type undefined");
       }
-      this.samplingScheme = samplingScheme;
-      this.sampleSize = sampleSize;
-      this.reductionFactorPerStage = reductionFactorPerStage;
-   }
-   
-   public BowserRoutingFuel(int T, int M, int N,
-                                int bowserInitialTankLevel,
-                                int maxBowserTankLevel,
-                                int minRefuelingQty,
-                                int[] tankCapacity,
-                                int[] initialTankLevel,
-                                DiscreteDistribution[][] fuelConsumptionProb,
-                                int[][] connectivity,
-                                double[][] distance,
-                                double[][][] machineLocation,
-                                int fuelStockOutPenaltyCost,
-                                SamplingScheme samplingScheme,
-                                int sampleSize,
-                                double reductionFactorPerStage){
-      this.T = T;
-      this.M = M;
-      this.N = N;
-      this.maxBowserTankLevel = maxBowserTankLevel;
-      this.minRefuelingQty = minRefuelingQty;
-      this.tankCapacity = tankCapacity.clone();
-      this.initialTankLevel = initialTankLevel.clone();
-      this.fuelConsumptionProb = fuelConsumptionProb.clone();
-      this.connectivity = connectivity.clone();
-      this.distance = distance.clone();
-      this.machineLocation = machineLocation.clone();
-      this.fuelStockOutPenaltyCost = fuelStockOutPenaltyCost;
-      
-      this.samplingScheme = samplingScheme;
-      this.sampleSize = sampleSize;
-      this.reductionFactorPerStage = reductionFactorPerStage;
    }
    
    private void tinyInstance(){
@@ -502,7 +563,7 @@ public class BowserRoutingFuel {
       int sampleSize = 50;                                     // This is the sample size used to determine a state value function
       double reductionFactorPerStage = 5;
       
-      BowserRoutingFuel bowserRoutingFuel = new BowserRoutingFuel(InstanceType.TINY,
+      BowserRoutingFuel bowserRoutingFuel = new BowserRoutingFuel(InstanceType.SMALL,
                                                                   samplingScheme,
                                                                   sampleSize,
                                                                   reductionFactorPerStage);
@@ -519,7 +580,9 @@ public class BowserRoutingFuel {
       double cost = 0;
       for(int i = 0; i < replications; i++)
          cost += runInstanceReplanning();
-      System.out.println("Expected cost: "+cost/replications);
+      logger.info("---");
+      logger.info("Simulated expected total cost: "+cost/replications);
+      logger.info("---");
    }
 
    public void runInstance(){      
@@ -591,7 +654,7 @@ public class BowserRoutingFuel {
    
    private double runInstanceReplanning(){
       
-      smallInstance(); // Create method to reset current instance
+      resetInstance(); 
       
       int period = 0;
       int bowserInitialLocation = 0;
