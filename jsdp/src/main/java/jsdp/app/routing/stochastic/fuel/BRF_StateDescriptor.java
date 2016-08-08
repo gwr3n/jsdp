@@ -24,13 +24,13 @@
  * SOFTWARE.
  */
 
-package jsdp.app.routing;
+package jsdp.app.routing.stochastic.fuel;
 
 import java.util.Arrays;
 
 import jsdp.sdp.StateDescriptor;
 
-public class BR_StateDescriptor extends StateDescriptor {
+public class BRF_StateDescriptor extends StateDescriptor {
 
    private static final long serialVersionUID = 1L;
    
@@ -40,7 +40,7 @@ public class BR_StateDescriptor extends StateDescriptor {
    private int machineTankLevel[];
    private int machineLocation[];
    
-   public BR_StateDescriptor(int period,
+   public BRF_StateDescriptor(int period,
                              int bowserTankLevel,
                              int bowserLocation,
                              int machineTankLevel[],
@@ -70,12 +70,12 @@ public class BR_StateDescriptor extends StateDescriptor {
    
    @Override
    public boolean equals(Object state) {
-      if(state instanceof BR_StateDescriptor)
-         return this.period == ((BR_StateDescriptor)state).period && 
-                this.bowserTankLevel == ((BR_StateDescriptor)state).bowserTankLevel &&
-                this.bowserLocation == ((BR_StateDescriptor)state).bowserLocation &&
-                Arrays.equals(this.machineTankLevel, ((BR_StateDescriptor)state).machineTankLevel) &&
-                Arrays.equals(this.machineLocation, ((BR_StateDescriptor)state).machineLocation);
+      if(state instanceof BRF_StateDescriptor)
+         return this.period == ((BRF_StateDescriptor)state).period && 
+                this.bowserTankLevel == ((BRF_StateDescriptor)state).bowserTankLevel &&
+                this.bowserLocation == ((BRF_StateDescriptor)state).bowserLocation &&
+                Arrays.equals(this.machineTankLevel, ((BRF_StateDescriptor)state).machineTankLevel) &&
+                Arrays.equals(this.machineLocation, ((BRF_StateDescriptor)state).machineLocation);
       else 
          return false;
    }

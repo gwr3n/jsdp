@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.app.routing.fuel;
+package jsdp.app.routing.stochastic.fuel;
 
 import java.util.ArrayList;
 import java.util.Arrays;

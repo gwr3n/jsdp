@@ -1,0 +1,24 @@
+======================
+THIRD PARTY COMPONENTS
+======================
+
+JSDP relies upon the following components, released under the licenses listed below.
+
+
+=== Apache License Version 2.0 - http://www.apache.org/licenses/ ===
+
+SSJ: Stochastic Simulation in Java		http://simul.iro.umontreal.ca/ssj/indexe.html	
+Apache Log4j							http://logging.apache.org/log4j/
+Apache Commons Lang						https://commons.apache.org/proper/commons-lang/
+Apache Maven Shade Plugin				https://maven.apache.org/plugins/maven-shade-plugin/
+MapDB									www.mapdb.org
+
+
+=== Eclipse Public License 1.0 - https://www.eclipse.org/legal/epl-v10.html ===
+
+JUnit									http://junit.org/junit4/
+
+
+=== Lesser GNU Public License (LGPL) - https://www.gnu.org/licenses/ ===
+
+Trove4j									http://trove4j.sourceforge.net/

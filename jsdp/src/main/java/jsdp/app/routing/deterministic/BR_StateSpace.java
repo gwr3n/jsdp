@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.app.routing;
+package jsdp.app.routing.deterministic;
 
 import java.util.ArrayList;
 import java.util.Iterator;

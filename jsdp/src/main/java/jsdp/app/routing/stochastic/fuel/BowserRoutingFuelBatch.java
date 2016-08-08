@@ -1,4 +1,4 @@
-package jsdp.app.routing.fuel;
+package jsdp.app.routing.stochastic.fuel;
 
 public class BowserRoutingFuelBatch {
 

@@ -1,4 +1,4 @@
-package jsdp.app.routing;
+package jsdp.app.routing.deterministic;
 
 public class BowserRoutingBatch {
    static int T=5, M=3, N=10  ;

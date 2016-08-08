@@ -24,53 +24,15 @@
  * SOFTWARE.
  */
 
-package jsdp.app.routing;
+package jsdp.app.routing.stochastic.location;
 
 import java.util.Arrays;
 
-import jsdp.sdp.State;
+import jsdp.sdp.StateDescriptor;
 
-public class BR_State extends State {
+public class BRL_StateDescriptor extends StateDescriptor {
 
    private static final long serialVersionUID = 1L;
-   
-   private static int minBowserTankLevel;
-   private static int maxBowserTankLevel;
-   private static int[] minMachineTankLevel;
-   private static int[] maxMachineTankLevel;
-   private static int networkSize;
-   
-   public static void setStateBoundaries(int minBowserTankLevel, 
-                                         int maxBowserTankLevel,
-                                         int[] minMachineTankLevel, 
-                                         int[] maxMachineTankLevel,
-                                         int networkSize){
-      BR_State.minBowserTankLevel = minBowserTankLevel;
-      BR_State.maxBowserTankLevel = maxBowserTankLevel;
-      BR_State.minMachineTankLevel = Arrays.copyOf(minMachineTankLevel, minMachineTankLevel.length);
-      BR_State.maxMachineTankLevel = Arrays.copyOf(maxMachineTankLevel, maxMachineTankLevel.length);
-      BR_State.networkSize = networkSize;
-   }
-   
-   public static int getMinBowserTankLevel(){
-      return minBowserTankLevel;
-   }
-   
-   public static int getMaxBowserTankLevel(){
-      return maxBowserTankLevel;
-   }
-   
-   public static int[] getMinMachineTankLevel(){
-      return minMachineTankLevel;
-   }
-   
-   public static int[] getMaxMachineTankLevel(){
-      return maxMachineTankLevel;
-   }
-   
-   public static int getNetworkSize(){
-      return networkSize;
-   }
    
    private int bowserTankLevel;
    private int bowserLocation;
@@ -78,12 +40,16 @@ public class BR_State extends State {
    private int machineTankLevel[];
    private int machineLocation[];
    
-   public BR_State(BR_StateDescriptor descriptor){
-      super(descriptor.getPeriod());
-      this.bowserTankLevel = descriptor.getBowserTankLevel();
-      this.bowserLocation = descriptor.getBowserLocation();
-      this.machineTankLevel = Arrays.copyOf(descriptor.getMachineTankLevel(), descriptor.getMachineTankLevel().length);
-      this.machineLocation = Arrays.copyOf(descriptor.getMachineLocation(), descriptor.getMachineLocation().length);
+   public BRL_StateDescriptor(int period,
+                             int bowserTankLevel,
+                             int bowserLocation,
+                             int machineTankLevel[],
+                             int machineLocation[]){
+      super(period);
+      this.bowserTankLevel = bowserTankLevel;
+      this.bowserLocation = bowserLocation;
+      this.machineTankLevel = Arrays.copyOf(machineTankLevel, machineTankLevel.length);
+      this.machineLocation = Arrays.copyOf(machineLocation, machineLocation.length);
    }
    
    public int getBowserTankLevel(){
@@ -104,19 +70,19 @@ public class BR_State extends State {
    
    @Override
    public boolean equals(Object state) {
-      if(state instanceof BR_State)
-         return this.period == ((BR_State)state).period && 
-                this.bowserTankLevel == ((BR_State)state).bowserTankLevel &&
-                this.bowserLocation == ((BR_State)state).bowserLocation &&
-                Arrays.equals(this.machineTankLevel, ((BR_State)state).machineTankLevel) &&
-                Arrays.equals(this.machineLocation, ((BR_State)state).machineLocation);
+      if(state instanceof BRL_StateDescriptor)
+         return this.period == ((BRL_StateDescriptor)state).period && 
+                this.bowserTankLevel == ((BRL_StateDescriptor)state).bowserTankLevel &&
+                this.bowserLocation == ((BRL_StateDescriptor)state).bowserLocation &&
+                Arrays.equals(this.machineTankLevel, ((BRL_StateDescriptor)state).machineTankLevel) &&
+                Arrays.equals(this.machineLocation, ((BRL_StateDescriptor)state).machineLocation);
       else 
          return false;
    }
 
    @Override
    public int hashCode() {
-      String hash = "S";
+      String hash = "SD";
       hash = (hash + period) + "_" + 
              this.bowserTankLevel + "_" +
              this.bowserLocation +

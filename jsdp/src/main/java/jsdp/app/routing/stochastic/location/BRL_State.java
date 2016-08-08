@@ -24,13 +24,13 @@
  * SOFTWARE.
  */
 
-package jsdp.app.routing.fuel;
+package jsdp.app.routing.stochastic.location;
 
 import java.util.Arrays;
 
 import jsdp.sdp.State;
 
-public class BRF_State extends State {
+public class BRL_State extends State {
 
    private static final long serialVersionUID = 1L;
    
@@ -45,11 +45,11 @@ public class BRF_State extends State {
                                          int[] minMachineTankLevel, 
                                          int[] maxMachineTankLevel,
                                          int networkSize){
-      BRF_State.minBowserTankLevel = minBowserTankLevel;
-      BRF_State.maxBowserTankLevel = maxBowserTankLevel;
-      BRF_State.minMachineTankLevel = Arrays.copyOf(minMachineTankLevel, minMachineTankLevel.length);
-      BRF_State.maxMachineTankLevel = Arrays.copyOf(maxMachineTankLevel, maxMachineTankLevel.length);
-      BRF_State.networkSize = networkSize;
+      BRL_State.minBowserTankLevel = minBowserTankLevel;
+      BRL_State.maxBowserTankLevel = maxBowserTankLevel;
+      BRL_State.minMachineTankLevel = Arrays.copyOf(minMachineTankLevel, minMachineTankLevel.length);
+      BRL_State.maxMachineTankLevel = Arrays.copyOf(maxMachineTankLevel, maxMachineTankLevel.length);
+      BRL_State.networkSize = networkSize;
    }
    
    public static int getMinBowserTankLevel(){
@@ -78,7 +78,7 @@ public class BRF_State extends State {
    private int machineTankLevel[];
    private int machineLocation[];
    
-   public BRF_State(BRF_StateDescriptor descriptor){
+   public BRL_State(BRL_StateDescriptor descriptor){
       super(descriptor.getPeriod());
       this.bowserTankLevel = descriptor.getBowserTankLevel();
       this.bowserLocation = descriptor.getBowserLocation();
@@ -104,12 +104,12 @@ public class BRF_State extends State {
    
    @Override
    public boolean equals(Object state) {
-      if(state instanceof BRF_State)
-         return this.period == ((BRF_State)state).period && 
-                this.bowserTankLevel == ((BRF_State)state).bowserTankLevel &&
-                this.bowserLocation == ((BRF_State)state).bowserLocation &&
-                Arrays.equals(this.machineTankLevel, ((BRF_State)state).machineTankLevel) &&
-                Arrays.equals(this.machineLocation, ((BRF_State)state).machineLocation);
+      if(state instanceof BRL_State)
+         return this.period == ((BRL_State)state).period && 
+                this.bowserTankLevel == ((BRL_State)state).bowserTankLevel &&
+                this.bowserLocation == ((BRL_State)state).bowserLocation &&
+                Arrays.equals(this.machineTankLevel, ((BRL_State)state).machineTankLevel) &&
+                Arrays.equals(this.machineLocation, ((BRL_State)state).machineLocation);
       else 
          return false;
    }

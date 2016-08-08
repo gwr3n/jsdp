@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.app.routing.location;
+package jsdp.app.routing.stochastic.location;
 
 import java.util.ArrayList;
 import java.util.function.Function;
