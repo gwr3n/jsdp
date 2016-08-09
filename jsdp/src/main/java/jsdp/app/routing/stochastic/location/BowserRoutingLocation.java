@@ -169,6 +169,22 @@ public class BowserRoutingLocation {
          this.distance = distance.clone();
          this.machineLocationProb = machineLocationProb.clone();
          this.fuelStockOutPenaltyCost = fuelStockOutPenaltyCost;
+         if(!this.probabilityCheck()) 
+            throw new NullPointerException("The matrix supplied is not a probability matrix");
+      }
+      
+      private boolean probabilityCheck(){
+         for(int t = 0; t < T; t++){
+            for(int m = 0; m < M; m++){
+               double probability = 0;
+               for(int n = 0; n < N; n++){
+                  probability += this.machineLocationProb[t][m][n];
+               }
+               if(Math.round(probability*100)/100 != 1) 
+                  return false;
+            }
+         }
+         return true;
       }
    }
    
@@ -205,7 +221,7 @@ public class BowserRoutingLocation {
       }
    }
    
-   void tinyInstance(){
+   private void tinyInstance(){
       /*******************************************************************
        * Problem parameters
        */
@@ -249,7 +265,7 @@ public class BowserRoutingLocation {
       fuelStockOutPenaltyCost = 100;
    }
    
-   void smallInstance(){
+   private void smallInstance(){
       /*******************************************************************
        * Problem parameters
        */
@@ -300,7 +316,7 @@ public class BowserRoutingLocation {
       fuelStockOutPenaltyCost = 20;
    }
    
-   void mediumInstance(){
+   private void mediumInstance(){
       /*******************************************************************
        * Problem parameters
        */
@@ -358,7 +374,7 @@ public class BowserRoutingLocation {
       fuelStockOutPenaltyCost = 20;
    }
    
-   void largeInstance(){
+   private void largeInstance(){
       /*******************************************************************
        * Problem parameters
        */
@@ -430,7 +446,7 @@ public class BowserRoutingLocation {
       fuelStockOutPenaltyCost = 20;
    }
    
-   public BRL_ForwardRecursion buildModel(){
+   private BRL_ForwardRecursion buildModel(){
       
       /*******************************************************************
        * Model definition
@@ -495,17 +511,17 @@ public class BowserRoutingLocation {
       float loadFactor = 0.8F;
       double discountFactor = 1.0;
       BRL_ForwardRecursion recursion = new BRL_ForwardRecursion(T, 
-                                                              machineLocationProb, 
-                                                              fuelConsumption, 
-                                                              immediateValueFunction, 
-                                                              buildActionList,
-                                                              discountFactor,
-                                                              HashType.HASHTABLE,
-                                                              stateSpaceSizeLowerBound,
-                                                              loadFactor,
-                                                              samplingScheme,
-                                                              sampleSize,
-                                                              reductionFactorPerStage);
+                                                                machineLocationProb, 
+                                                                fuelConsumption, 
+                                                                immediateValueFunction, 
+                                                                buildActionList,
+                                                                discountFactor,
+                                                                HashType.HASHTABLE,
+                                                                stateSpaceSizeLowerBound,
+                                                                loadFactor,
+                                                                samplingScheme,
+                                                                sampleSize,
+                                                                reductionFactorPerStage);
       
       return recursion;
    }
@@ -523,14 +539,14 @@ public class BowserRoutingLocation {
                                                                               sampleSize,
                                                                               reductionFactorPerStage);
       
-      //bowserRoutingLocation.runInstance();
-      //bowserRoutingLocation.printPolicy();
+      bowserRoutingLocation.runInstance();
+      bowserRoutingLocation.printPolicy();
       
-      int replications = 20;
-      bowserRoutingLocation.simulateInstanceReplanning(replications);
+      //int replications = 20;
+      //bowserRoutingLocation.simulateInstanceReplanning(replications);
    }
    
-   private void simulateInstanceReplanning(int replications) {
+   public void simulateInstanceReplanning(int replications) {
       rng.setSeed(new long[]{12345,12345,12345,12345,12345,12345});
       double cost = 0;
       for(int i = 0; i < replications; i++)
@@ -704,7 +720,7 @@ public class BowserRoutingLocation {
       return cost;
    }
    
-   public static int[] getMachineLocationArray(int M, double[][] machineLocationMatrix){
+   private static int[] getMachineLocationArray(int M, double[][] machineLocationMatrix){
       int[] machineLocationArray = new int[M];
       for(int i = 0; i < machineLocationMatrix.length; i++){
          for(int j = 0; j < machineLocationMatrix[i].length; j++){

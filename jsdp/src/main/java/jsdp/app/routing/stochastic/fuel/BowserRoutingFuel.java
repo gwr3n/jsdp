@@ -476,7 +476,7 @@ public class BowserRoutingFuel {
       fuelStockOutPenaltyCost = 20;
    }
    
-   public BRF_ForwardRecursion buildModel(){
+   private BRF_ForwardRecursion buildModel(){
       /*******************************************************************
        * Model definition
        */

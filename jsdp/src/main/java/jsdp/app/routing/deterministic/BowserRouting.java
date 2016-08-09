@@ -90,8 +90,6 @@ public class BowserRouting {
       default:
          throw new NullPointerException("Instance type undefined");
       }
-      
-      this.runInstance();
    }
    
    public BowserRouting(int T, int M, int N,
@@ -117,11 +115,9 @@ public class BowserRouting {
       this.distance = distance.clone();
       this.machineLocation = machineLocation.clone();
       this.fuelStockOutPenaltyCost = fuelStockOutPenaltyCost;
-      
-      this.runInstance();
    }
 
-   public void tinyInstance(){
+   private void tinyInstance(){
       /*******************************************************************
        * Problem parameters
        */
@@ -164,7 +160,7 @@ public class BowserRouting {
       fuelStockOutPenaltyCost = 100;
    }
    
-   public void smallInstance(){
+   private void smallInstance(){
       /*******************************************************************
        * Problem parameters
        */
@@ -215,7 +211,7 @@ public class BowserRouting {
       fuelStockOutPenaltyCost = 20;
    }
    
-   public void mediumInstance(){
+   private void mediumInstance(){
       /*******************************************************************
        * Problem parameters
        */
@@ -282,7 +278,7 @@ public class BowserRouting {
       fuelStockOutPenaltyCost = 100;
    }
    
-   public void largeInstance(){
+   private void largeInstance(){
       /*******************************************************************
        * Problem parameters
        */
@@ -354,7 +350,7 @@ public class BowserRouting {
       fuelStockOutPenaltyCost = 100;
    }
    
-   public BR_ForwardRecursion buildModel(){
+   private BR_ForwardRecursion buildModel(){
       /*******************************************************************
        * Model definition
        */
@@ -431,6 +427,7 @@ public class BowserRouting {
    
    public static void main(String args[]){
       BowserRouting bowserRouting = new BowserRouting(InstanceType.MEDIUM);
+      bowserRouting.runInstance();
       bowserRouting.printPolicy();
    }
    
