@@ -14,11 +14,11 @@ Apache Maven Shade Plugin            http://maven.apache.org/plugins/maven-shade
 MapDB                                http://www.mapdb.org
 
 
-=== Eclipse Public License 1.0 - https://www.eclipse.org/legal/epl-v10.html ===
+=== Eclipse Public License 1.0 - http://www.eclipse.org/legal/epl-v10.html ===
 
 JUnit                                http://junit.org/junit4/
 
 
-=== Lesser GNU Public License (LGPL) - https://www.gnu.org/licenses/ ===
+=== Lesser GNU Public License (LGPL) - http://www.gnu.org/licenses/ ===
 
 Trove4j                              http://trove4j.sourceforge.net/
