@@ -11,7 +11,7 @@ SSJ: Stochastic Simulation in Java   http://simul.iro.umontreal.ca/ssj/indexe.ht
 Apache Log4j                         http://logging.apache.org/log4j/
 Apache Commons Lang                  http://commons.apache.org/proper/commons-lang/
 Apache Maven Shade Plugin            http://maven.apache.org/plugins/maven-shade-plugin/
-MapDB									               http://www.mapdb.org
+MapDB                                http://www.mapdb.org
 
 
 === Eclipse Public License 1.0 - https://www.eclipse.org/legal/epl-v10.html ===
