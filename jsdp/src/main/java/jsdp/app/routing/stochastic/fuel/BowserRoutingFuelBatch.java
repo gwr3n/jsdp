@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
 
-import jsdp.app.routing.stochastic.location.BowserRoutingLocationBatch;
 import jsdp.app.routing.topologies.Location;
 import jsdp.app.routing.topologies.Topology;
 import jsdp.sdp.impl.univariate.SamplingScheme;
@@ -89,9 +88,9 @@ public class BowserRoutingFuelBatch {
       int[] fuelStockOutPenaltyCosts = {100,500};
       
       if(samplingScheme == SamplingScheme.NONE){
-         writeToFile("./"+BowserRoutingLocationBatch.class.getName() + "_results.csv", BowserRoutingFuel.getHeadersString());
+         writeToFile("./"+BowserRoutingFuelBatch.class.getName() + "_results.csv", BowserRoutingFuel.getHeadersString());
       }else{
-         writeToFile("./"+BowserRoutingLocationBatch.class.getName() + "_results_sim.csv", BowserRoutingFuel.getSimulationHeadersString());
+         writeToFile("./"+BowserRoutingFuelBatch.class.getName() + "_results_sim.csv", BowserRoutingFuel.getSimulationHeadersString());
       }
       
       for(int topology = 0; topology < topologies; topology++){
