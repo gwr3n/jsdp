@@ -119,10 +119,10 @@ public class BowserRoutingLocationBatch {
                   
                   if(samplingScheme == SamplingScheme.NONE){
                      bowserRoutingLocation.runInstance();                
-                     writeToFile("./"+BowserRoutingLocationBatch.class.getName() + "_results.csv", bowserRoutingLocation.toString());
+                     writeToFile("./"+BowserRoutingLocationBatch.class.getSimpleName() + "_results.csv", bowserRoutingLocation.toString());
                   }else{
                      bowserRoutingLocation.simulateInstanceReplanning(replications);
-                     writeToFile("./"+BowserRoutingLocationBatch.class.getName() + "_results_sim.csv", bowserRoutingLocation.toStringSimulation());
+                     writeToFile("./"+BowserRoutingLocationBatch.class.getSimpleName() + "_results_sim.csv", bowserRoutingLocation.toStringSimulation());
                   }
                }
             }

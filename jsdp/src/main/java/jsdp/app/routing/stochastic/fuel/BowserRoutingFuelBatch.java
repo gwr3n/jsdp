@@ -135,10 +135,10 @@ public class BowserRoutingFuelBatch {
                   
                   if(samplingScheme == SamplingScheme.NONE){
                      bowserRoutingFuel.runInstance();
-                     writeToFile("./"+BowserRoutingFuelBatch.class.getName() + "_results.csv", bowserRoutingFuel.toString());
+                     writeToFile("./"+BowserRoutingFuelBatch.class.getSimpleName() + "_results.csv", bowserRoutingFuel.toString());
                   }else{
                      bowserRoutingFuel.simulateInstanceReplanning(replications);
-                     writeToFile("./"+BowserRoutingFuelBatch.class.getName() + "_results_sim.csv", bowserRoutingFuel.toStringSimulation());
+                     writeToFile("./"+BowserRoutingFuelBatch.class.getSimpleName() + "_results_sim.csv", bowserRoutingFuel.toStringSimulation());
                   }
                }
             }
