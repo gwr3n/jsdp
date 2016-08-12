@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
 
+import jsdp.app.routing.stochastic.location.BowserRoutingLocationBatch;
 import jsdp.app.routing.topologies.Location;
 import jsdp.app.routing.topologies.Topology;
 import jsdp.sdp.impl.univariate.SamplingScheme;
@@ -32,7 +33,7 @@ public class BowserRoutingFuelBatch {
       try {
          FileOutputStream fos = new FileOutputStream(results, true);
          OutputStreamWriter osw = new OutputStreamWriter(fos);
-         osw.write(str);
+         osw.write(str+"\n");
          osw.close();
       } catch (FileNotFoundException e) {
          // TODO Auto-generated catch block
@@ -42,8 +43,16 @@ public class BowserRoutingFuelBatch {
          e.printStackTrace();
       }
    }
-   
+
    public static void main(String args[]){
+      /**
+       * Sampling scheme
+       */
+      SamplingScheme samplingScheme = SamplingScheme.NONE;
+      int sampleSize = 10;                                     // This is the sample size used to determine a state value function
+      double reductionFactorPerStage = 5;
+      int replications = 20;
+      
       /**
        * Fixed parameters
        */
@@ -57,13 +66,6 @@ public class BowserRoutingFuelBatch {
       
       final int minFuelConsumption = 0;
       final int maxFuelConsumption = 4;
-      
-      /**
-       * Sampling scheme
-       */
-      SamplingScheme samplingScheme = SamplingScheme.NONE;
-      int sampleSize = 10;                                     // This is the sample size used to determine a state value function
-      double reductionFactorPerStage = 5;
       
       /**
        * Variable parameters
@@ -85,6 +87,12 @@ public class BowserRoutingFuelBatch {
          }
       };
       int[] fuelStockOutPenaltyCosts = {100,500};
+      
+      if(samplingScheme == SamplingScheme.NONE){
+         writeToFile("./"+BowserRoutingLocationBatch.class.getName() + "_results.csv", BowserRoutingFuel.getHeadersString());
+      }else{
+         writeToFile("./"+BowserRoutingLocationBatch.class.getName() + "_results_sim.csv", BowserRoutingFuel.getSimulationHeadersString());
+      }
       
       for(int topology = 0; topology < topologies; topology++){
          for(int initialTankLevelIndex = 0; initialTankLevelIndex < initialTankLevelArray.length; initialTankLevelIndex++){
@@ -124,10 +132,14 @@ public class BowserRoutingFuelBatch {
                                                                               samplingScheme,
                                                                               sampleSize,
                                                                               reductionFactorPerStage);
-            
-                   bowserRoutingFuel.runInstance();
-                   
-                   writeToFile("./"+BowserRoutingFuelBatch.class.getName() + "_results.csv", bowserRoutingFuel.toString());
+                  
+                  if(samplingScheme == SamplingScheme.NONE){
+                     bowserRoutingFuel.runInstance();
+                     writeToFile("./"+BowserRoutingFuelBatch.class.getName() + "_results.csv", bowserRoutingFuel.toString());
+                  }else{
+                     bowserRoutingFuel.simulateInstanceReplanning(replications);
+                     writeToFile("./"+BowserRoutingFuelBatch.class.getName() + "_results_sim.csv", bowserRoutingFuel.toStringSimulation());
+                  }
                }
             }
          }

@@ -28,7 +28,7 @@ public class BowserRoutingLocationBatch {
       try {
          FileOutputStream fos = new FileOutputStream(results, true);
          OutputStreamWriter osw = new OutputStreamWriter(fos);
-         osw.write(str);
+         osw.write(str+"\n");
          osw.close();
       } catch (FileNotFoundException e) {
          // TODO Auto-generated catch block
@@ -40,6 +40,14 @@ public class BowserRoutingLocationBatch {
    }
    
    public static void main(String args[]){
+      /**
+       * Sampling scheme
+       */
+      SamplingScheme samplingScheme = SamplingScheme.NONE;
+      int sampleSize = 10;                                     // This is the sample size used to determine a state value function
+      double reductionFactorPerStage = 5;
+      int replications = 20;
+      
       /**
        * Fixed parameters
        */
@@ -72,6 +80,12 @@ public class BowserRoutingLocationBatch {
       };
       int[] fuelStockOutPenaltyCosts = {100,500};
       
+      if(samplingScheme == SamplingScheme.NONE){
+         writeToFile("./"+BowserRoutingLocationBatch.class.getName() + "_results.csv", BowserRoutingLocation.getHeadersString());
+      }else{
+         writeToFile("./"+BowserRoutingLocationBatch.class.getName() + "_results_sim.csv", BowserRoutingLocation.getSimulationHeadersString());
+      }
+      
       for(int topology = 0; topology < topologies; topology++){
          for(int initialTankLevelIndex = 0; initialTankLevelIndex < initialTankLevelArray.length; initialTankLevelIndex++){
             for(int fuelConsumptionIndex = 0; fuelConsumptionIndex < fuelConsumptionArray.length; fuelConsumptionIndex++){
@@ -88,13 +102,6 @@ public class BowserRoutingLocationBatch {
                   machineLocationProb = Location.getProbabilisticMachineLocation(topology).getMachineLocation().clone();
                   fuelStockOutPenaltyCost = fuelStockOutPenaltyCosts[fuelStockOutPenaltyCostIndex];
                   
-                  /**
-                   * Sampling scheme
-                   */
-                  SamplingScheme samplingScheme = SamplingScheme.NONE;
-                  int sampleSize = 10;                                     // This is the sample size used to determine a state value function
-                  double reductionFactorPerStage = 5;
-                  
                   BowserRoutingLocation bowserRoutingLocation = new BowserRoutingLocation(T, M, N, 
                                                                                           bowserInitialTankLevel,
                                                                                           maxBowserTankLevel,
@@ -110,10 +117,13 @@ public class BowserRoutingLocationBatch {
                                                                                           sampleSize,
                                                                                           reductionFactorPerStage);
                   
-                  bowserRoutingLocation.runInstance();
-                
-                  writeToFile("./"+BowserRoutingLocationBatch.class.getName() + "_results.csv", bowserRoutingLocation.toString());
-   
+                  if(samplingScheme == SamplingScheme.NONE){
+                     bowserRoutingLocation.runInstance();                
+                     writeToFile("./"+BowserRoutingLocationBatch.class.getName() + "_results.csv", bowserRoutingLocation.toString());
+                  }else{
+                     bowserRoutingLocation.simulateInstanceReplanning(replications);
+                     writeToFile("./"+BowserRoutingLocationBatch.class.getName() + "_results_sim.csv", bowserRoutingLocation.toStringSimulation());
+                  }
                }
             }
          }

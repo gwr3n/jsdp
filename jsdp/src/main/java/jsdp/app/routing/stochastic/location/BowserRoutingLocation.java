@@ -74,6 +74,8 @@ public class BowserRoutingLocation {
    SamplingScheme samplingScheme;
    int sampleSize;
    double reductionFactorPerStage;
+   BRL_ForwardRecursion simulatedRecursion;
+   double simulatedExpectedTotalCost;
    
    static MRG32k3a rng = new MRG32k3a();
    
@@ -545,7 +547,7 @@ public class BowserRoutingLocation {
       //int replications = 20;
       //bowserRoutingLocation.simulateInstanceReplanning(replications);
    }
-   
+
    public void simulateInstanceReplanning(int replications) {
       rng.setSeed(new long[]{12345,12345,12345,12345,12345,12345});
       double cost = 0;
@@ -554,6 +556,7 @@ public class BowserRoutingLocation {
       logger.info("---");
       logger.info("Simulated expected total cost: "+cost/replications);
       logger.info("---");
+      this.simulatedExpectedTotalCost = cost;
    }
    
    public void runInstance(){
@@ -586,7 +589,7 @@ public class BowserRoutingLocation {
    }
    
    public String toString(){
-      String stats ="";
+      String stats = "";
       
       if(recursion == null)
          return stats;
@@ -611,6 +614,42 @@ public class BowserRoutingLocation {
       long reusedStates = recursion.getMonitoringInterfaceForward().getReusedStates();
       
       return ETC + ", " + time + ", " + percent + ", " + processors + ", " + generatedStates + ", " + reusedStates; 
+   }
+   
+   public static String getHeadersString(){
+      return "ETC, Time, CPU, Cores, Generated States, Reused States\n";
+   }
+   
+   public String toStringSimulation(){
+      String stats = "";
+      
+      if(simulatedRecursion == null)
+         return stats;
+      
+      int period = 0;      
+      int bowserInitialLocation = 0;
+      int bowserInitialTankLevel = this.bowserInitialTankLevel;
+      int[] machinesInitialTankLevel = Arrays.copyOf(initialTankLevel, initialTankLevel.length);
+      int[] machinesInitialLocation = getMachineLocationArray(M, machineLocationProb[0]);
+      
+      BRL_StateDescriptor initialState = new BRL_StateDescriptor(period, 
+                                                                 bowserInitialTankLevel, 
+                                                                 bowserInitialLocation,
+                                                                 machinesInitialTankLevel,
+                                                                 machinesInitialLocation);
+      
+      double ETC = simulatedRecursion.getExpectedCost(initialState);
+      long time = simulatedRecursion.getMonitoringInterfaceForward().getTime();
+      long percent = simulatedRecursion.getMonitoringInterfaceForward().getPercentCPU();
+      long processors = Runtime.getRuntime().availableProcessors();
+      long generatedStates = simulatedRecursion.getMonitoringInterfaceForward().getGeneratedStates();
+      long reusedStates = simulatedRecursion.getMonitoringInterfaceForward().getReusedStates();
+      
+      return this.simulatedExpectedTotalCost + ", " + ETC + ", " + time + ", " + percent + ", " + processors + ", " + generatedStates + ", " + reusedStates; 
+   }
+   
+   public static String getSimulationHeadersString(){
+      return "Simulated ETC, ETC, Time, CPU, Cores, Generated States, Reused States\n";
    }
    
    public void printPolicy(){
@@ -708,6 +747,8 @@ public class BowserRoutingLocation {
          
          recursion = buildModel();
          recursion.runForwardRecursionMonitoring(((BRL_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
+         if(t == 0)
+            this.simulatedRecursion = recursion;
          
          double ETC = recursion.getExpectedCost(initialState);
          long percent = recursion.getMonitoringInterfaceForward().getPercentCPU();

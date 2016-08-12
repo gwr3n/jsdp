@@ -484,6 +484,10 @@ public class BowserRouting {
       return ETC + ", " + time + ", " + percent + ", " + processors + ", " + generatedStates + ", " + reusedStates; 
    }
    
+   public static String getHeadersString(){
+      return "ETC, Time, CPU, Cores, Generated States, Reused States\n";
+   }
+   
    public void printPolicy(){
       int period = 0;
       int bowserInitialLocation = 0;

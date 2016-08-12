@@ -27,7 +27,7 @@ public class BowserRoutingBatch {
       try {
          FileOutputStream fos = new FileOutputStream(results, true);
          OutputStreamWriter osw = new OutputStreamWriter(fos);
-         osw.write(str);
+         osw.write(str+"\n");
          osw.close();
       } catch (FileNotFoundException e) {
          // TODO Auto-generated catch block
@@ -73,6 +73,8 @@ public class BowserRoutingBatch {
          }
       };
       int[] fuelStockOutPenaltyCosts = {100,500};
+      
+      writeToFile("./"+BowserRoutingBatch.class.getName() + "_results.csv", BowserRouting.getHeadersString());
       
       for(int topology = 0; topology < topologies; topology++){
          for(int initialTankLevelIndex = 0; initialTankLevelIndex < initialTankLevelArray.length; initialTankLevelIndex++){
