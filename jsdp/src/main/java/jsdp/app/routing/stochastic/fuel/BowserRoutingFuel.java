@@ -646,7 +646,7 @@ public class BowserRoutingFuel {
    }
    
    public static String getHeadersString(){
-      return "ETC, Time, CPU, Cores, Generated States, Reused States\n";
+      return "ETC, Time, CPU, Cores, Generated States, Reused States";
    }
    
    public String toStringSimulation(){
