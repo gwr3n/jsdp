@@ -88,9 +88,9 @@ public class BowserRoutingFuelBatch {
       int[] fuelStockOutPenaltyCosts = {100,500};
       
       if(samplingScheme == SamplingScheme.NONE){
-         writeToFile("./"+BowserRoutingFuelBatch.class.getName() + "_results.csv", BowserRoutingFuel.getHeadersString());
+         writeToFile("./"+BowserRoutingFuelBatch.class.getSimpleName() + "_results.csv", BowserRoutingFuel.getHeadersString());
       }else{
-         writeToFile("./"+BowserRoutingFuelBatch.class.getName() + "_results_sim.csv", BowserRoutingFuel.getSimulationHeadersString());
+         writeToFile("./"+BowserRoutingFuelBatch.class.getSimpleName() + "_results_sim.csv", BowserRoutingFuel.getSimulationHeadersString());
       }
       
       for(int topology = 0; topology < topologies; topology++){

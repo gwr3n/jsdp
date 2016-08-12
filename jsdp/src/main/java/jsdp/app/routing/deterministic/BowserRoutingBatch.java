@@ -74,7 +74,7 @@ public class BowserRoutingBatch {
       };
       int[] fuelStockOutPenaltyCosts = {100,500};
       
-      writeToFile("./"+BowserRoutingBatch.class.getName() + "_results.csv", BowserRouting.getHeadersString());
+      writeToFile("./"+BowserRoutingBatch.class.getSimpleName() + "_results.csv", BowserRouting.getHeadersString());
       
       for(int topology = 0; topology < topologies; topology++){
          for(int initialTankLevelIndex = 0; initialTankLevelIndex < initialTankLevelArray.length; initialTankLevelIndex++){
