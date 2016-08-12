@@ -587,6 +587,8 @@ public class BowserRoutingFuel {
 
    public void runInstance(){      
       
+      resetInstance(); 
+      
       recursion = buildModel();
       
       int period = 0;

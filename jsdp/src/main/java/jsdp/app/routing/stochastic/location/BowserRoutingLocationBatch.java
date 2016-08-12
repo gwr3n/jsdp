@@ -40,14 +40,21 @@ public class BowserRoutingLocationBatch {
    }
    
    public static void main(String args[]){
-      T=5;
+      /**
+       * Fixed parameters
+       */
+      T = 5;   //time horizon
+      M = 3;   //machines
+      N = 5;   //nodes
       bowserInitialTankLevel = 0;
       maxBowserTankLevel = 20;
       minRefuelingQty = 1;
-      
-      M=3;
       tankCapacity = new int[]{10,10,10};
       
+      /**
+       * Variable parameters
+       */
+      int topologies = 6;
       int[][] initialTankLevelArray = new int[][]{{0,0,0},{10,0,5},{10,10,10}};
       int[][][] fuelConsumptionArray = new int[][][]{
          {{3,3,3,3,3},
@@ -63,45 +70,53 @@ public class BowserRoutingLocationBatch {
           {5,5,0,0,3},
          }
       };
-      int topologies = 5;
       int[] fuelStockOutPenaltyCosts = {100,500};
       
-      /**
-       * Instance
-       */
-      initialTankLevel = initialTankLevelArray[0];
-      fuelConsumption = fuelConsumptionArray[0];
-      N = Topology.getTopology(0).getN();
-      connectivity = Topology.getTopology(0).getConnectivity().clone();
-      distance = Topology.getTopology(0).getDistance().clone();
-      machineLocationProb = Location.getProbabilisticMachineLocation(0).getMachineLocation().clone();
-      fuelStockOutPenaltyCost = fuelStockOutPenaltyCosts[0];
+      for(int topology = 0; topology < topologies; topology++){
+         for(int initialTankLevelIndex = 0; initialTankLevelIndex < initialTankLevelArray.length; initialTankLevelIndex++){
+            for(int fuelConsumptionIndex = 0; fuelConsumptionIndex < fuelConsumptionArray.length; fuelConsumptionIndex++){
+               for(int fuelStockOutPenaltyCostIndex = 0; fuelStockOutPenaltyCostIndex < fuelStockOutPenaltyCosts.length; fuelStockOutPenaltyCostIndex++){
       
-      /**
-       * Sampling scheme
-       */
-      SamplingScheme samplingScheme = SamplingScheme.NONE;
-      int sampleSize = 10;                                     // This is the sample size used to determine a state value function
-      double reductionFactorPerStage = 5;
-      
-      BowserRoutingLocation bowserRoutingLocation = new BowserRoutingLocation(T, M, N, 
-                                                                              bowserInitialTankLevel,
-                                                                              maxBowserTankLevel,
-                                                                              minRefuelingQty,
-                                                                              tankCapacity,
-                                                                              initialTankLevel,
-                                                                              fuelConsumption,
-                                                                              connectivity,
-                                                                              distance,
-                                                                              machineLocationProb,
-                                                                              fuelStockOutPenaltyCost,
-                                                                              samplingScheme,
-                                                                              sampleSize,
-                                                                              reductionFactorPerStage);
-      
-    bowserRoutingLocation.runInstance();
-    
-    //int replications = 20;
-    //bowserRoutingLocation.simulateInstanceReplanning(replications);
+                  /**
+                   * Instance
+                   */
+                  initialTankLevel = initialTankLevelArray[initialTankLevelIndex];
+                  fuelConsumption = fuelConsumptionArray[fuelConsumptionIndex];
+                  N = Topology.getTopology(topology).getN();
+                  connectivity = Topology.getTopology(topology).getConnectivity().clone();
+                  distance = Topology.getTopology(topology).getDistance().clone();
+                  machineLocationProb = Location.getProbabilisticMachineLocation(topology).getMachineLocation().clone();
+                  fuelStockOutPenaltyCost = fuelStockOutPenaltyCosts[fuelStockOutPenaltyCostIndex];
+                  
+                  /**
+                   * Sampling scheme
+                   */
+                  SamplingScheme samplingScheme = SamplingScheme.NONE;
+                  int sampleSize = 10;                                     // This is the sample size used to determine a state value function
+                  double reductionFactorPerStage = 5;
+                  
+                  BowserRoutingLocation bowserRoutingLocation = new BowserRoutingLocation(T, M, N, 
+                                                                                          bowserInitialTankLevel,
+                                                                                          maxBowserTankLevel,
+                                                                                          minRefuelingQty,
+                                                                                          tankCapacity,
+                                                                                          initialTankLevel,
+                                                                                          fuelConsumption,
+                                                                                          connectivity,
+                                                                                          distance,
+                                                                                          machineLocationProb,
+                                                                                          fuelStockOutPenaltyCost,
+                                                                                          samplingScheme,
+                                                                                          sampleSize,
+                                                                                          reductionFactorPerStage);
+                  
+                  bowserRoutingLocation.runInstance();
+                
+                  writeToFile("./"+BowserRoutingLocationBatch.class.getName() + "_results.csv", bowserRoutingLocation.toString());
+   
+               }
+            }
+         }
+      }
    }
 }

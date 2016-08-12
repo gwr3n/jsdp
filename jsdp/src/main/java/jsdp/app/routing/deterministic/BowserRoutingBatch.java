@@ -101,7 +101,7 @@ public class BowserRoutingBatch {
                         machineLocation,
                         fuelStockOutPenaltyCost);
                   bowserRouting.runInstance();
-                  System.out.println(bowserRouting.toString());
+                  writeToFile("./"+BowserRoutingBatch.class.getName() + "_results.csv", bowserRouting.toString());
                }
             }
          }

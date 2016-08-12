@@ -558,6 +558,8 @@ public class BowserRoutingLocation {
    
    public void runInstance(){
       
+      resetInstance(); 
+      
       recursion = buildModel();
       
       int period = 0;      

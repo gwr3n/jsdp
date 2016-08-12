@@ -44,14 +44,31 @@ public class BowserRoutingFuelBatch {
    }
    
    public static void main(String args[]){
-      T=5;
+      /**
+       * Fixed parameters
+       */
+      T = 5;   //time horizon
+      M = 3;   //machines
+      N = 5;   //nodes
       bowserInitialTankLevel = 0;
       maxBowserTankLevel = 20;
       minRefuelingQty = 5;
-      
-      M=3;
       tankCapacity = new int[]{10,10,10};
       
+      final int minFuelConsumption = 0;
+      final int maxFuelConsumption = 4;
+      
+      /**
+       * Sampling scheme
+       */
+      SamplingScheme samplingScheme = SamplingScheme.NONE;
+      int sampleSize = 10;                                     // This is the sample size used to determine a state value function
+      double reductionFactorPerStage = 5;
+      
+      /**
+       * Variable parameters
+       */
+      int topologies = 6;
       int[][] initialTankLevelArray = new int[][]{{0,0,0},{10,0,5},{10,10,10}};
       int[][][] fuelConsumptionArray = new int[][][]{
          {{3,3,3,3,3},
@@ -67,57 +84,53 @@ public class BowserRoutingFuelBatch {
           {5,5,0,0,3},
          }
       };
-      int topologies = 5;
       int[] fuelStockOutPenaltyCosts = {100,500};
       
-      /**
-       * Instance
-       */
-      initialTankLevel = initialTankLevelArray[0];
+      for(int topology = 0; topology < topologies; topology++){
+         for(int initialTankLevelIndex = 0; initialTankLevelIndex < initialTankLevelArray.length; initialTankLevelIndex++){
+            for(int fuelConsumptionIndex = 0; fuelConsumptionIndex < fuelConsumptionArray.length; fuelConsumptionIndex++){
+               for(int fuelStockOutPenaltyCostIndex = 0; fuelStockOutPenaltyCostIndex < fuelStockOutPenaltyCosts.length; fuelStockOutPenaltyCostIndex++){
       
-      final int minFuelConsumption = 0;
-      final int maxFuelConsumption = 4;
-      int[][] fuelConsumption = fuelConsumptionArray[0];
-      fuelConsumptionProb = new DiscreteDistribution[fuelConsumption.length][fuelConsumption[0].length];
-      for(int i = 0; i < fuelConsumption.length; i++){
-         final int[] array = fuelConsumption[i];
-         fuelConsumptionProb[i] = Arrays.stream(array)
-                                        .mapToObj(k -> DiscreteDistributionFactory.getTruncatedDiscreteDistribution(
-                                                          new PoissonDist(k), minFuelConsumption, maxFuelConsumption, 1.0))
-                                        .toArray(DiscreteDistribution[]::new);
-      } 
-      
-      N = Topology.getTopology(0).getN();
-      connectivity = Topology.getTopology(0).getConnectivity().clone();
-      distance = Topology.getTopology(0).getDistance().clone();
-      machineLocation = Location.getMachineLocation(0).getMachineLocation().clone();
-      fuelStockOutPenaltyCost = fuelStockOutPenaltyCosts[0];
-      
-      /**
-       * Sampling scheme
-       */
-      SamplingScheme samplingScheme = SamplingScheme.NONE;
-      int sampleSize = 10;                                     // This is the sample size used to determine a state value function
-      double reductionFactorPerStage = 5;
-      
-      BowserRoutingFuel bowserRoutingFuel = new BowserRoutingFuel(T, M, N, 
-                                                                  bowserInitialTankLevel,
-                                                                  maxBowserTankLevel,
-                                                                  minRefuelingQty,
-                                                                  tankCapacity,
-                                                                  initialTankLevel,
-                                                                  fuelConsumptionProb,
-                                                                  connectivity,
-                                                                  distance,
-                                                                  machineLocation,
-                                                                  fuelStockOutPenaltyCost,
-                                                                  samplingScheme,
-                                                                  sampleSize,
-                                                                  reductionFactorPerStage);
-
-      bowserRoutingFuel.runInstance();
-
-      //int replications = 20;
-      //bowserRoutingFuel.simulateInstanceReplanning(replications);
+                  /**
+                   * Instance
+                   */
+                  initialTankLevel = initialTankLevelArray[initialTankLevelIndex];
+                  int[][] fuelConsumption = fuelConsumptionArray[fuelConsumptionIndex];
+                  fuelConsumptionProb = new DiscreteDistribution[fuelConsumption.length][fuelConsumption[fuelConsumptionIndex].length];
+                  for(int i = 0; i < fuelConsumption.length; i++){
+                     final int[] array = fuelConsumption[i];
+                     fuelConsumptionProb[i] = Arrays.stream(array)
+                                                    .mapToObj(k -> DiscreteDistributionFactory.getTruncatedDiscreteDistribution(
+                                                                      new PoissonDist(k), minFuelConsumption, maxFuelConsumption, 1.0))
+                                                    .toArray(DiscreteDistribution[]::new);
+                  } 
+                  N = Topology.getTopology(topology).getN();
+                  connectivity = Topology.getTopology(topology).getConnectivity().clone();
+                  distance = Topology.getTopology(topology).getDistance().clone();
+                  machineLocation = Location.getMachineLocation(topology).getMachineLocation().clone();
+                  fuelStockOutPenaltyCost = fuelStockOutPenaltyCosts[fuelStockOutPenaltyCostIndex];
+                  
+                  BowserRoutingFuel bowserRoutingFuel = new BowserRoutingFuel(T, M, N, 
+                                                                              bowserInitialTankLevel,
+                                                                              maxBowserTankLevel,
+                                                                              minRefuelingQty,
+                                                                              tankCapacity,
+                                                                              initialTankLevel,
+                                                                              fuelConsumptionProb,
+                                                                              connectivity,
+                                                                              distance,
+                                                                              machineLocation,
+                                                                              fuelStockOutPenaltyCost,
+                                                                              samplingScheme,
+                                                                              sampleSize,
+                                                                              reductionFactorPerStage);
+            
+                   bowserRoutingFuel.runInstance();
+                   
+                   writeToFile("./"+BowserRoutingFuelBatch.class.getName() + "_results.csv", bowserRoutingFuel.toString());
+               }
+            }
+         }
+      }
    }
 }
