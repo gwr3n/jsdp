@@ -1,5 +1,11 @@
 package jsdp.app.routing.stochastic.location;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+
 import jsdp.app.routing.topologies.Location;
 import jsdp.app.routing.topologies.Topology;
 import jsdp.sdp.impl.univariate.SamplingScheme;
@@ -16,6 +22,22 @@ public class BowserRoutingLocationBatch {
    static double[][] distance;
    static double[][][] machineLocationProb;
    static int fuelStockOutPenaltyCost;
+   
+   public static void writeToFile(String fileName, String str){
+      File results = new File(fileName);
+      try {
+         FileOutputStream fos = new FileOutputStream(results, true);
+         OutputStreamWriter osw = new OutputStreamWriter(fos);
+         osw.write(str);
+         osw.close();
+      } catch (FileNotFoundException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      } catch (IOException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+   }
    
    public static void main(String args[]){
       T=5;

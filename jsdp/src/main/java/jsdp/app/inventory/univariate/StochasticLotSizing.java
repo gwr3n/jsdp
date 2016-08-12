@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory; 
 
 import jsdp.sdp.Action;
-import jsdp.sdp.ActionIterator;
 import jsdp.sdp.HashType;
 import jsdp.sdp.ImmediateValueFunction;
 import jsdp.sdp.RandomOutcomeFunction;

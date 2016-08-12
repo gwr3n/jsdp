@@ -1,5 +1,11 @@
 package jsdp.app.routing.deterministic;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+
 import jsdp.app.routing.topologies.Location;
 import jsdp.app.routing.topologies.Topology;
 
@@ -16,16 +22,42 @@ public class BowserRoutingBatch {
    static double[][][] machineLocation;
    static int fuelStockOutPenaltyCost;
    
+   public static void writeToFile(String fileName, String str){
+      File results = new File(fileName);
+      try {
+         FileOutputStream fos = new FileOutputStream(results, true);
+         OutputStreamWriter osw = new OutputStreamWriter(fos);
+         osw.write(str);
+         osw.close();
+      } catch (FileNotFoundException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      } catch (IOException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+   }
+   
    public static void main(String args[]){
-      T=5;
+      /**
+       * Fixed parameters
+       */
+      T = 5;   //time horizon
+      M = 3;   //machines
+      N = 5;   //nodes
       bowserInitialTankLevel = 0;
       maxBowserTankLevel = 20;
       minRefuelingQty = 1;
-      
-      M=3;
       tankCapacity = new int[]{10,10,10};
       
-      int[][] initialTankLevelArray = new int[][]{{0,0,0},{10,0,5},{10,10,10}};
+      /**
+       * Variable parameters
+       */
+      int topologies = 6;
+      int[][] initialTankLevelArray = new int[][]{
+         {0,0,0},
+         {10,0,5},
+         {10,10,10}};
       int[][][] fuelConsumptionArray = new int[][][]{
          {{3,3,3,3,3},
           {3,3,3,3,3},
@@ -40,32 +72,39 @@ public class BowserRoutingBatch {
           {5,5,0,0,3},
          }
       };
-      int topologies = 5;
       int[] fuelStockOutPenaltyCosts = {100,500};
       
-      /**
-       * Instance
-       */
-      initialTankLevel = initialTankLevelArray[0];
-      fuelConsumption = fuelConsumptionArray[0];
-      N = Topology.getTopology(0).getN();
-      connectivity = Topology.getTopology(0).getConnectivity().clone();
-      distance = Topology.getTopology(0).getDistance().clone();
-      machineLocation = Location.getMachineLocation(0).getMachineLocation().clone();
-      fuelStockOutPenaltyCost = fuelStockOutPenaltyCosts[0];
-      
-      BowserRouting bowserRouting = new BowserRouting(T, M, N, 
-                                                      bowserInitialTankLevel,
-                                                      maxBowserTankLevel,
-                                                      minRefuelingQty,
-                                                      tankCapacity,
-                                                      initialTankLevel,
-                                                      fuelConsumption,
-                                                      connectivity,
-                                                      distance,
-                                                      machineLocation,
-                                                      fuelStockOutPenaltyCost);
-      bowserRouting.runInstance();
-      bowserRouting.printPolicy();
+      for(int topology = 0; topology < topologies; topology++){
+         for(int initialTankLevelIndex = 0; initialTankLevelIndex < initialTankLevelArray.length; initialTankLevelIndex++){
+            for(int fuelConsumptionIndex = 0; fuelConsumptionIndex < fuelConsumptionArray.length; fuelConsumptionIndex++){
+               for(int fuelStockOutPenaltyCostIndex = 0; fuelStockOutPenaltyCostIndex < fuelStockOutPenaltyCosts.length; fuelStockOutPenaltyCostIndex++){
+                  /**
+                   * Instance
+                   */
+                  initialTankLevel = initialTankLevelArray[initialTankLevelIndex];
+                  fuelConsumption = fuelConsumptionArray[fuelConsumptionIndex];
+                  N = Topology.getTopology(topology).getN();
+                  connectivity = Topology.getTopology(topology).getConnectivity().clone();
+                  distance = Topology.getTopology(topology).getDistance().clone();
+                  machineLocation = Location.getMachineLocation(topology).getMachineLocation().clone();
+                  fuelStockOutPenaltyCost = fuelStockOutPenaltyCosts[fuelStockOutPenaltyCostIndex];
+                  
+                  BowserRouting bowserRouting = new BowserRouting(T, M, N, 
+                        bowserInitialTankLevel,
+                        maxBowserTankLevel,
+                        minRefuelingQty,
+                        tankCapacity,
+                        initialTankLevel,
+                        fuelConsumption,
+                        connectivity,
+                        distance,
+                        machineLocation,
+                        fuelStockOutPenaltyCost);
+                  bowserRouting.runInstance();
+                  System.out.println(bowserRouting.toString());
+               }
+            }
+         }
+      }
    }
 }

@@ -1,6 +1,5 @@
 package jsdp.utilities.monitoring;
 
-import java.awt.GraphicsConfiguration;
 import java.awt.HeadlessException;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;

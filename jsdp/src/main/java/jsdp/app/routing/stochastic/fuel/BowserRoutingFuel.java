@@ -591,6 +591,7 @@ public class BowserRoutingFuel {
       
       int period = 0;
       int bowserInitialLocation = 0;
+      int bowserInitialTankLevel = this.bowserInitialTankLevel;
       int[] machinesInitialTankLevel = Arrays.copyOf(initialTankLevel, initialTankLevel.length);
       int[] machinesInitialLocation = getMachineLocationArray(M, machineLocation[0]);
       
@@ -602,8 +603,6 @@ public class BowserRoutingFuel {
 
       recursion.runForwardRecursionMonitoring(((BRF_StateSpace)recursion.getStateSpace()[initialState.getPeriod()]).getState(initialState));
       long percent = recursion.getMonitoringInterfaceForward().getPercentCPU();
-      
-      System.out.println();
       double ETC = recursion.getExpectedCost(initialState);
       logger.info("---");
       logger.info("Expected total cost: "+ETC);
@@ -613,9 +612,38 @@ public class BowserRoutingFuel {
       logger.info("---");
    }
    
+   public String toString(){
+      String stats ="";
+      
+      if(recursion == null)
+         return stats;
+      
+      int period = 0;
+      int bowserInitialLocation = 0;
+      int bowserInitialTankLevel = this.bowserInitialTankLevel;
+      int[] machinesInitialTankLevel = Arrays.copyOf(initialTankLevel, initialTankLevel.length);
+      int[] machinesInitialLocation = getMachineLocationArray(M, machineLocation[0]);
+      
+      BRF_StateDescriptor initialState = new BRF_StateDescriptor(period, 
+                                                                 bowserInitialTankLevel, 
+                                                                 bowserInitialLocation,
+                                                                 machinesInitialTankLevel,
+                                                                 machinesInitialLocation);
+      
+      double ETC = recursion.getExpectedCost(initialState);
+      long time = recursion.getMonitoringInterfaceForward().getTime();
+      long percent = recursion.getMonitoringInterfaceForward().getPercentCPU();
+      long processors = Runtime.getRuntime().availableProcessors();
+      long generatedStates = recursion.getMonitoringInterfaceForward().getGeneratedStates();
+      long reusedStates = recursion.getMonitoringInterfaceForward().getReusedStates();
+      
+      return ETC + ", " + time + ", " + percent + ", " + processors + ", " + generatedStates + ", " + reusedStates; 
+   }
+   
    public void printPolicy(){
       int period = 0;
       int bowserInitialLocation = 0;
+      int bowserInitialTankLevel = this.bowserInitialTankLevel;
       int[] machinesInitialTankLevel = Arrays.copyOf(initialTankLevel, initialTankLevel.length);
       int[] machinesInitialLocation = getMachineLocationArray(M, machineLocation[0]);
       
@@ -658,6 +686,7 @@ public class BowserRoutingFuel {
       
       int period = 0;
       int bowserInitialLocation = 0;
+      int bowserInitialTankLevel = this.bowserInitialTankLevel;
       int[] machinesInitialTankLevel = Arrays.copyOf(initialTankLevel, initialTankLevel.length);
       int[] machinesInitialLocation = getMachineLocationArray(M, machineLocation[0]);
    
