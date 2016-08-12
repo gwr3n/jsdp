@@ -44,6 +44,7 @@ import jsdp.utilities.probdist.DiscreteDistributionFactory;
 import umontreal.ssj.probdist.DiscreteDistribution;
 import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.rng.MRG32k3a;
+import umontreal.ssj.stat.Tally;
 
 /**
  * Stochastic Dynamic Bowser Routing Problem under Asset Fuel Consumption Uncertainty
@@ -76,7 +77,7 @@ public class BowserRoutingFuel {
    int sampleSize;                                     
    double reductionFactorPerStage;
    BRF_ForwardRecursion simulatedRecursion;
-   double simulatedExpectedTotalCost;
+   Tally simulatedExpectedTotalCost;
    
    BRF_ForwardRecursion recursion;
    
@@ -578,14 +579,14 @@ public class BowserRoutingFuel {
    }
    
    public void simulateInstanceReplanning(int replications) {
+      Tally tally = new Tally();
       rng.setSeed(new long[]{12345,12345,12345,12345,12345,12345});
-      double cost = 0;
       for(int i = 0; i < replications; i++)
-         cost += runInstanceReplanning();
+         tally.add(runInstanceReplanning());
       logger.info("---");
-      logger.info("Simulated expected total cost: "+cost/replications);
+      logger.info("Simulated expected total cost: "+tally.formatCIStudent(0.95));
       logger.info("---");
-      this.simulatedExpectedTotalCost = cost;
+      this.simulatedExpectedTotalCost = tally;
    }
 
    public void runInstance(){      
@@ -674,11 +675,13 @@ public class BowserRoutingFuel {
       long generatedStates = simulatedRecursion.getMonitoringInterfaceForward().getGeneratedStates();
       long reusedStates = simulatedRecursion.getMonitoringInterfaceForward().getReusedStates();
       
-      return this.simulatedExpectedTotalCost + ", " + ETC + ", " + time + ", " + percent + ", " + processors + ", " + generatedStates + ", " + reusedStates; 
+      double[] centerAndRadius = new double[2];
+      this.simulatedExpectedTotalCost.confidenceIntervalStudent(0.95, centerAndRadius);
+      return centerAndRadius[0] + ", " + centerAndRadius[1] + ", " + ETC + ", " + time + ", " + percent + ", " + processors + ", " + generatedStates + ", " + reusedStates; 
    }
    
    public static String getSimulationHeadersString(){
-      return "Simulated ETC, ETC, Time, CPU, Cores, Generated States, Reused States\n";
+      return "Simulated ETC mean, Simulated ETC Confidence Interval radius, ETC, Time, CPU, Cores, Generated States, Reused States\n";
    }
    
    public void printPolicy(){

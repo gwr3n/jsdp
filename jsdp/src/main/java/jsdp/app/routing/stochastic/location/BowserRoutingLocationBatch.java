@@ -44,9 +44,9 @@ public class BowserRoutingLocationBatch {
        * Sampling scheme
        */
       SamplingScheme samplingScheme = SamplingScheme.NONE;
-      int sampleSize = 10;                                     // This is the sample size used to determine a state value function
+      int sampleSize = 100;                                     // This is the sample size used to determine a state value function
       double reductionFactorPerStage = 5;
-      int replications = 20;
+      int replications = 500;
       
       /**
        * Fixed parameters
@@ -56,7 +56,7 @@ public class BowserRoutingLocationBatch {
       N = 5;   //nodes
       bowserInitialTankLevel = 0;
       maxBowserTankLevel = 20;
-      minRefuelingQty = 1;
+      minRefuelingQty = 5;
       tankCapacity = new int[]{10,10,10};
       
       /**
