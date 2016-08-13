@@ -54,10 +54,7 @@ public class BowserRoutingBatch {
        * Variable parameters
        */
       int topologies = 6;
-      int[][] initialTankLevelArray = new int[][]{
-         {0,0,0},
-         {10,0,5},
-         {10,10,10}};
+      int[][] initialTankLevelArray = {{0,0,0},{3,0,5},{5,5,5}};
       int[][][] fuelConsumptionArray = new int[][][]{
          {{3,3,3,3,3},
           {3,3,3,3,3},
