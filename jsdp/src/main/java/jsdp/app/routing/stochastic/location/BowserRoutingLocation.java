@@ -552,8 +552,12 @@ public class BowserRoutingLocation {
    public void simulateInstanceReplanning(int replications) {
       Tally tally = new Tally();
       rng.setSeed(new long[]{12345,12345,12345,12345,12345,12345});
-      for(int i = 0; i < replications; i++)
+      for(int i = 0; i < replications; i++){
+         logger.info("---");
+         logger.info("Replication "+i+" ETC:"+(tally.numberObs() > 1 ? tally.average() + " " + tally.formatCIStudent(0.95) : Double.NaN));
+         logger.info("---");
          tally.add(runInstanceReplanning());
+      }
       logger.info("---");
       logger.info("Simulated expected total cost: "+tally.formatCIStudent(0.95));
       logger.info("---");
@@ -622,6 +626,9 @@ public class BowserRoutingLocation {
    }
    
    public String toStringSimulation(){
+      
+      resetInstance();
+      
       String stats = "";
       
       if(simulatedRecursion == null)

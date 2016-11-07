@@ -113,12 +113,14 @@ public class BRL_TransitionProbability extends TransitionProbability {
       
       if(this.samplingScheme == SamplingScheme.NONE)
          return finalStates;
-      else{
+      else if(this.samplingScheme == SamplingScheme.SIMPLE_RANDOM_SAMPLING){
          Random rnd = new Random(12345);
          Collections.shuffle(finalStates, rnd);
          //return new ArrayList<State>(finalStates.subList(0, this.sampleSize));
          int reductionFactor = (int) Math.pow(reductionFactorPerStage, initialState.getPeriod());
          return new ArrayList<State>(finalStates.subList(0, this.sampleSize/reductionFactor < 1 ? 1 : Math.min(this.sampleSize/reductionFactor, finalStates.size())));
+      }else{
+         throw new NullPointerException("Method not implemented");
       }
    }
    

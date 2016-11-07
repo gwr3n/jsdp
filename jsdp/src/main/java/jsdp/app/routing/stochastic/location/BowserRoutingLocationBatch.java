@@ -43,8 +43,8 @@ public class BowserRoutingLocationBatch {
       /**
        * Sampling scheme
        */
-      SamplingScheme samplingScheme = SamplingScheme.NONE;
-      int sampleSize = 100;                                     // This is the sample size used to determine a state value function
+      SamplingScheme samplingScheme = SamplingScheme.SIMPLE_RANDOM_SAMPLING;
+      int sampleSize = 30;                                     // This is the sample size used to determine a state value function
       double reductionFactorPerStage = 5;
       int replications = 500;
       

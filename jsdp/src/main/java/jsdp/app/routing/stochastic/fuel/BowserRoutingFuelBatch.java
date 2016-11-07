@@ -47,8 +47,8 @@ public class BowserRoutingFuelBatch {
       /**
        * Sampling scheme
        */
-      SamplingScheme samplingScheme = SamplingScheme.NONE;
-      int sampleSize = 100;                                     // This is the sample size used to determine a state value function
+      SamplingScheme samplingScheme = SamplingScheme.SIMPLE_RANDOM_SAMPLING;
+      int sampleSize = 30;                                     // This is the sample size used to determine a state value function
       double reductionFactorPerStage = 5;
       int replications = 500;
       
@@ -64,7 +64,7 @@ public class BowserRoutingFuelBatch {
       tankCapacity = new int[]{10,10,10};
       
       final int minFuelConsumption = 0;
-      final int maxFuelConsumption = 9;
+      final int maxFuelConsumption = 7;
       
       /**
        * Variable parameters
