@@ -58,6 +58,8 @@ public class sS_SequentialBackwardRecursion extends sS_BackwardRecursion {
     * Creates an instance of a backward recursion algorithm that exploits K-convexity to quickly process states.
     * 
     * @param demand the distribution of random demand in each period, an array of {@code Distribution}.
+    * @param minDemand the support lower bound
+    * @param maxDemand the support upper bound
     * @param fixedOrderingCost the fixed ordering cost.
     * @param proportionalOrderingCost the proportional (per unit) ordering cost.
     * @param holdingCost the proportional (per unit) holding cost; this is paid for each item brought from one period to the next.

@@ -33,7 +33,7 @@ import umontreal.ssj.probdist.DiscreteDistribution;
  * If a machine is in state 0 at the beginning of a period, no action should be taken;
  * costs associated with the production of faulty items over the coming period
  * when a machine is in state 0 are negligible. However, if the machine is in state
- * 1 < i < 2, it is possible to take no action or to repair the machine for $500; once
+ * {@literal 1 < i < 2}, it is possible to take no action or to repair the machine for $500; once
  * the machine has been repaired, it returns to state 0 at the beginning of the next
  * period. If no action is taken in state 1, there will be a cost of $1000 associated
  * with the production of faulty items over the coming period. If the machine is

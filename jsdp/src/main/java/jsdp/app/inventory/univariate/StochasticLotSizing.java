@@ -85,13 +85,13 @@ public class StochasticLotSizing {
       /*******************************************************************
        * Problem parameters
        */
-      double fixedOrderingCost = 20; 
+      double fixedOrderingCost = 300; 
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
-      double penaltyCost = 8;
+      double penaltyCost = 10;
       
-      double[] meanDemand = {15, 16, 15, 14, 11, 7, 6, 3};
-      double coefficientOfVariation = 0.1;
+      double[] meanDemand = {20,40,10,20,5,10};
+      double coefficientOfVariation = 0.2;
       double truncationQuantile = 0.99;
       
       // Random variables
@@ -119,8 +119,8 @@ public class StochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      double minState = -200;
-      double maxState = 200;
+      double minState = -50;
+      double maxState = 150;
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
       // Actions
@@ -165,7 +165,7 @@ public class StochasticLotSizing {
       
       // Sampling scheme
       
-      SamplingScheme samplingScheme = SamplingScheme.JENSENS_PARTITIONING;
+      SamplingScheme samplingScheme = SamplingScheme.NONE;
       int maxSampleSize = 100;
       double reductionFactorPerStage = 1;
       

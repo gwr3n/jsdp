@@ -52,21 +52,21 @@ import jsdp.sdp.impl.univariate.StateImpl;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.NormalDist;
 
+/**
+ *  We formulate the Constrained Linear Quadratic Gaussian (CLQG) 
+ *  Control Problem as a stochastic dynamic programming problem. 
+ *  
+ *  https://en.wikipedia.org/wiki/Linear-quadratic-Gaussian_control
+ *  
+ *  We use backward recursion and sampling to find optimal policies.
+ *  
+ *  Run with VM arguments -d64 -Xms512m -Xmx4g
+ *  
+ * @author Roberto Rossi
+ *
+ */
+
 public class CLQG {
-   
-   /**
-    *  We formulate the Constrained Linear Quadratic Gaussian (CLQG) 
-    *  Control Problem as a stochastic dynamic programming problem. 
-    *  
-    *  https://en.wikipedia.org/wiki/Linear-quadratic-Gaussian_control
-    *  
-    *  We use backward recursion and sampling to find optimal policies.
-    *  
-    *  Run with VM arguments -d64 -Xms512m -Xmx4g
-    *  
-    * @author Roberto Rossi
-    *
-    */
    
    public static void main(String args[]){
       

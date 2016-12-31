@@ -50,6 +50,7 @@ public class BackwardRecursionImpl extends BackwardRecursion{
    /**
     * Creates an instance of the problem and initializes state space, transition probability and value repository.
     * 
+    * @param optimisationDirection specifies if this is a mininimisation or a maximisation problem 
     * @param demand the state-independent distribution of random demand in each period, an array of {@code Distribution}.
     * @param supportLB the lower bounds for the state dependent distribution of random demand in each period.
     * @param supportUB the upper bounds for the state dependent distribution of random demand in each period.
@@ -57,8 +58,10 @@ public class BackwardRecursionImpl extends BackwardRecursion{
     * @param randomOutcomeFunction the random outcome function.
     * @param buildActionList the action list builder.
     * @param idempotentAction the idempotent action; i.e. an action that leaves the system in the same state from period {@code t} to period {@code t+1}.
+    * @param discountFactor the discount factor in the functional equation        
     * @param samplingScheme the sampling scheme adopted.
     * @param maxSampleSize the maximum sample size.
+    * @param reductionFactorPerStage the sample waning exponential state reduction factor
     * @param hash the type of hash used to store the state space
     */
    public BackwardRecursionImpl(OptimisationDirection optimisationDirection,
@@ -88,6 +91,7 @@ public class BackwardRecursionImpl extends BackwardRecursion{
    /**
     * Creates an instance of the problem and initializes state space, transition probability and value repository.
     * 
+    * @param optimisationDirection specifies if this is a mininimisation or a maximisation problem 
     * @param demand the state-independent distribution of random demand in each period, an array of {@code Distribution}.
     * @param supportLB the lower bounds for the state dependent distribution of random demand in each period.
     * @param supportUB the upper bounds for the state dependent distribution of random demand in each period.
@@ -95,10 +99,12 @@ public class BackwardRecursionImpl extends BackwardRecursion{
     * @param randomOutcomeFunction the random outcome function.
     * @param buildActionList the action list builder.
     * @param idempotentAction the idempotent action; i.e. an action that leaves the system in the same state from period {@code t} to period {@code t+1}.
+    * @param discountFactor the discount factor in the functional equation    
     * @param samplingScheme the sampling scheme adopted.
     * @param maxSampleSize the maximum sample size.
+    * @param reductionFactorPerStage the sample waning exponential state reduction factor
     * @param stateSpaceSizeLowerBound the maximum size of hashtables used to store the state space
-    * @param hashtable load factor (typically 0.8)
+    * @param loadFactor hashtable load factor (typically 0.8)
     * @param hash the type of hash used to store the state space
     */
    
@@ -131,6 +137,7 @@ public class BackwardRecursionImpl extends BackwardRecursion{
    /**
     * Creates an instance of the problem and initializes state space, transition probability and value repository.
     * 
+    * @param optimisationDirection specifies if this is a mininimisation or a maximisation problem 
     * @param demand the state dependent distribution of random demand in each period, a two-dimensional array of {@code Distribution}, first index is the time period, second index is the state index.
     * @param supportLB the lower bounds for the state dependent distribution of random demand in each period.
     * @param supportUB the upper bounds for the state dependent distribution of random demand in each period.
@@ -138,8 +145,11 @@ public class BackwardRecursionImpl extends BackwardRecursion{
     * @param randomOutcomeFunction the random outcome function.
     * @param buildActionList the action list builder.
     * @param idempotentAction the idempotent action; i.e. an action that leaves the system in the same state from period {@code t} to period {@code t+1}.
+    * @param discountFactor the discount factor in the functional equation
     * @param samplingScheme the sampling scheme adopted.
     * @param maxSampleSize the maximum sample size.
+    * @param reductionFactorPerStage the sample waning exponential state reduction factor
+    * @param hash the type of hashtable used
     */
    public BackwardRecursionImpl(OptimisationDirection optimisationDirection,
                                 Distribution[][] demand,
@@ -151,7 +161,9 @@ public class BackwardRecursionImpl extends BackwardRecursion{
                                 Function<State, Action> idempotentAction,
                                 double discountFactor,
                                 SamplingScheme samplingScheme,
-                                int maxSampleSize){
+                                int maxSampleSize,
+                                double reductionFactorPerStage,
+                                HashType hash){
       super(optimisationDirection);
       throw new NullPointerException("Method not implemented!");
    }
@@ -159,13 +171,19 @@ public class BackwardRecursionImpl extends BackwardRecursion{
    /**
     * Creates an instance of the problem and initializes state space, transition probability and value repository.
     * 
+    * @param optimisationDirection specifies if this is a mininimisation or a maximisation problem 
     * @param demand the state and action dependent distribution of random demand in each period, a three-dimensional array of {@code Distribution}, first index is the time period, second index is the action index, third index is the state index.
+    * @param supportLB the lower bound of demand support
+    * @param supportUB the upper bound of demand support
     * @param immediateValueFunction the immediate value function.
     * @param randomOutcomeFunction the random outcome function.
     * @param buildActionList the action list builder.
     * @param idempotentAction the idempotent action; i.e. an action that leaves the system in the same state from period {@code t} to period {@code t+1}.
+    * @param discountFactor the discount factor in the functional equation
     * @param samplingScheme the sampling scheme adopted.
     * @param maxSampleSize the maximum sample size.
+    * @param reductionFactorPerStage the sample waning exponential state reduction factor
+    * @param hash the type of hashtable used
     */
    public BackwardRecursionImpl(OptimisationDirection optimisationDirection,
                                 Distribution[][][] demand,

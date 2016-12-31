@@ -48,6 +48,8 @@ public class sS_BackwardRecursion extends BackwardRecursion{
 	 * Creates an instance of the problem and initialises state space, transition probability and value repository.
 	 * 
 	 * @param demand the distribution of random demand in each period, an array of {@code Distribution}.
+	 * @param minDemand the support lower bound
+	 * @param maxDemand the support upper bound
 	 * @param fixedOrderingCost the fixed ordering cost.
 	 * @param proportionalOrderingCost the proportional (per unit) ordering cost.
 	 * @param holdingCost the proportional (per unit) holding cost; this is paid for each item brought from one period to the next.
