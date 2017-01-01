@@ -148,7 +148,7 @@ public class BackwardRecursionImpl extends BackwardRecursion{
       try{
          return getExpectedValue(state);
       }catch(NullPointerException e){
-         recurse(0);
+         recurse(state.getPeriod());
          return getExpectedValue(state);
       }
    }
@@ -158,7 +158,7 @@ public class BackwardRecursionImpl extends BackwardRecursion{
       try{
          getExpectedValue(state);
       }catch(NullPointerException e){
-         recurse(0);
+         recurse(state.getPeriod());
       }
       return (ActionImpl) this.getValueRepository().getOptimalAction(state);
    }

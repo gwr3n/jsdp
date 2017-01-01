@@ -1,7 +1,5 @@
 package jsdp.app.inventory.univariate.simulation;
 
-import java.util.Iterator;
-
 import jsdp.sdp.Action;
 import jsdp.sdp.State;
 import jsdp.sdp.impl.univariate.ActionImpl;
@@ -27,12 +25,12 @@ public class sS_Policy {
       for(int i = 0; i < this.horizonLength; i++){
          if(i == 0) {
             StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(0, initialInventory);
-            s[i] = StateImpl.intStateToState(this.find_s(i).getInitialIntState());
+            s[i] = ((StateImpl) this.find_s(i)).getInitialState();
             S[i] = recursion.getOptimalAction(stateDescriptor).getAction()+initialInventory;
          }
          else{
-            s[i] = StateImpl.intStateToState(this.find_s(i).getInitialIntState());
-            S[i] = StateImpl.intStateToState(this.find_S(i).getInitialIntState());
+            s[i] = ((StateImpl) this.find_s(i)).getInitialState();
+            S[i] = ((StateImpl) this.find_S(i)).getInitialState();
          }
       }
       optimalPolicy[0] = s;
@@ -40,26 +38,24 @@ public class sS_Policy {
       return optimalPolicy;
    }
    
-   public StateImpl find_S(int period){
-      StateImpl s = this.find_s(period);
+   public State find_S(int period){
+      StateImpl s = (StateImpl) this.find_s(period);
       double i = ((ActionImpl)recursion.getValueRepository().getOptimalAction(s)).getAction()+s.getInitialState();
       StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(period, i);
-      StateImpl state = (StateImpl) ((StateSpaceImpl)recursion.getStateSpace()[period]).getState(stateDescriptor);
-      return state;
+      return ((StateSpaceImpl)recursion.getStateSpace()[period]).getState(stateDescriptor);
    }
    
-   public StateImpl find_s(int period){
-      Iterator<State> iterator = recursion.getStateSpace()[period].iterator();
-      StateImpl state = null;
-      do{
-         state = (StateImpl) iterator.next();
-         Action action = recursion.getValueRepository().getOptimalAction(state);
+   public State find_s(int period){
+      for(double i = StateImpl.getMaxState(); i >= StateImpl.getMinState(); i -= StateImpl.getStepSize()){
+         StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(period, i);
+         Action action = recursion.getOptimalAction(stateDescriptor);
          if(action == null)
             continue;
          if(((ActionImpl)action).getAction() > 0){
-            return state;
+            return ((StateSpaceImpl)recursion.getStateSpace(period)).getState(stateDescriptor);
          }
-      }while(iterator.hasNext());
-      return state;
+      }
+      StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(period, StateImpl.getMinState());
+      return ((StateSpaceImpl)recursion.getStateSpace(period)).getState(stateDescriptor);
    }
 }

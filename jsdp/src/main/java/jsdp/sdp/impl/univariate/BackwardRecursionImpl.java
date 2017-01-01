@@ -221,11 +221,21 @@ public class BackwardRecursionImpl extends BackwardRecursion{
    
    public double getExpectedCost(StateDescriptorImpl stateDescriptor){
       State state = ((StateSpaceImpl)this.getStateSpace(stateDescriptor.getPeriod())).getState(stateDescriptor);
-      return getExpectedValue(state);
+      try{
+         return getExpectedValue(state);
+      }catch(NullPointerException e){
+         recurse(state.getPeriod());
+         return getExpectedValue(state);
+      }
    }
    
    public ActionImpl getOptimalAction(StateDescriptorImpl stateDescriptor){
       State state = ((StateSpaceImpl)this.getStateSpace(stateDescriptor.getPeriod())).getState(stateDescriptor);
+      try{
+         getExpectedValue(state);
+      }catch(NullPointerException e){
+         recurse(state.getPeriod());
+      }
       return (ActionImpl) this.getValueRepository().getOptimalAction(state);
    }
 }

@@ -96,11 +96,11 @@ public class StochasticLotSizing {
                                               .toArray(Distribution[]::new);
       double[] supportLB = IntStream.iterate(0, i -> i + 1)
                                     .limit(meanDemand.length)
-                                    .mapToDouble(i -> NormalDist.inverseF(meanDemand[i],meanDemand[i]*coefficientOfVariation, 1-truncationQuantile))
+                                    .mapToDouble(i -> distributions[i].inverseF(1-truncationQuantile))
                                     .toArray();
       double[] supportUB = IntStream.iterate(0, i -> i + 1)
                                     .limit(meanDemand.length)
-                                    .mapToDouble(i -> NormalDist.inverseF(meanDemand[i],meanDemand[i]*coefficientOfVariation, truncationQuantile))
+                                    .mapToDouble(i -> distributions[i].inverseF(truncationQuantile))
                                     .toArray();
       
       double initialInventory = 0;
@@ -112,8 +112,8 @@ public class StochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      double minState = -50;
-      double maxState = 150;
+      double minState = -50;     //Inventory level lower bound in each period
+      double maxState = 150;     //Inventory level upper bound in each period
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
       // Actions
@@ -223,7 +223,7 @@ public class StochasticLotSizing {
        * Simulation
        */
       System.out.println("--------------Simulation--------------");
-      double confidence = 0.95;           //Simulation confidence level 
+      double confidence = 0.95;            //Simulation confidence level 
       double errorTolerance = 0.0001;      //Simulation error threshold
       
       if(simulate && samplingScheme == SamplingScheme.NONE) 
@@ -259,13 +259,10 @@ public class StochasticLotSizing {
    
    static void plotOptimalPolicyAction(int targetPeriod, BackwardRecursionImpl recursion){
       XYSeries series = new XYSeries("Optimal policy");
-      recursion.getStateSpace()[targetPeriod].entrySet()
-                                  .forEach(s ->{
-                                     double state = ((StateImpl)s.getValue()).getInitialState();
-                                     StateDescriptorImpl descriptor = new StateDescriptorImpl(targetPeriod, state);
-                                     double optimalAction = recursion.getOptimalAction(descriptor).getAction();
-                                     series.add(state, optimalAction);
-                                  });
+      for(double i = StateImpl.getMinState(); i <= StateImpl.getMaxState(); i += StateImpl.getStepSize()){
+         StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(targetPeriod, i);
+         series.add(i,recursion.getOptimalAction(stateDescriptor).getAction());
+      }
       
       XYDataset xyDataset = new XYSeriesCollection(series);
       JFreeChart chart = ChartFactory.createXYLineChart("Optimal policy - period "+targetPeriod+" order quantity", "Opening inventory level", "Order quantity",
