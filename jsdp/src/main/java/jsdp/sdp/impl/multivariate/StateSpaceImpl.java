@@ -124,7 +124,11 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
    }
 
    public Iterator<State> iterator() {
-      if(this.period == 0)
+      /**
+       * This implementation is correct because the optimal cost will be generated on 
+       * demand for period 0, see BackwardRecursionImpl.getExpectedCost
+       */
+      if(this.period == 0) 
          return null;
       else if(this.samplingScheme == SamplingScheme.NONE)
          return new StateSpaceIteratorImpl(this);

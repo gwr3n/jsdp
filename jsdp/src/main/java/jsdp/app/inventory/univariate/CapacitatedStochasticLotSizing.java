@@ -33,7 +33,6 @@ import java.util.Locale;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
-import org.apache.commons.lang3.time.StopWatch;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.JFreeChart;
@@ -211,7 +210,7 @@ public class CapacitatedStochasticLotSizing {
        */
       System.out.println("--------------Simulation--------------");
       double confidence = 0.95;           //Simulation confidence level 
-      double errorTolerance = 0.01;      //Simulation error threshold
+      double errorTolerance = 0.0001;      //Simulation error threshold
       
       if(simulate && samplingScheme == SamplingScheme.NONE) 
          simulate(distributions, 

@@ -26,16 +26,10 @@
 
 package jsdp.app.inventory.multivariate;
 
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Function;
 import java.util.stream.IntStream;
-
-import org.apache.commons.lang3.time.StopWatch;
-
-import com.sun.management.OperatingSystemMXBean;
 
 import jsdp.sdp.Action;
 import jsdp.sdp.ActionIterator;
@@ -190,37 +184,16 @@ public class MultiItemStochasticLotSizing {
                                                                   HashType.CONCURRENT_HASHMAP);
 
       System.out.println("--------------Backward recursion--------------");
-      StopWatch timer = new StopWatch();
-      OperatingSystemMXBean osMBean;
-      try {
-         osMBean = ManagementFactory.newPlatformMXBeanProxy(
-               ManagementFactory.getPlatformMBeanServer(), ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME, OperatingSystemMXBean.class);
-         long nanoBefore = System.nanoTime();
-         long cpuBefore = osMBean.getProcessCpuTime();
-         timer.start();
-         recursion.runBackwardRecursion();
-         timer.stop();
-         long cpuAfter = osMBean.getProcessCpuTime();
-         long nanoAfter = System.nanoTime();
-      
-         long percent;
-         if (nanoAfter > nanoBefore)
-            percent = ((cpuAfter-cpuBefore)*100L)/(nanoAfter-nanoBefore);
-         else percent = 0;
-
-         System.out.println("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)");
-      } catch (IOException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      }
+      recursion.runBackwardRecursionMonitoring();
       System.out.println();
       double ETC = recursion.getExpectedCost(initialInventory);
       StateDescriptorImpl initialState = new StateDescriptorImpl(0, initialInventory);
-      double[] action = StateImpl.intStateToState(recursion.getOptimalAction(initialState).getIntAction());
+      int[] action = recursion.getOptimalAction(initialState).getIntAction();
+      long percent = recursion.getMonitoringInterfaceBackward().getPercentCPU();
       System.out.println("Expected total cost (assuming an initial inventory level "+Arrays.toString(initialInventory)+"): "+ETC);
       System.out.println("Optimal initial action: "+Arrays.toString(action));
-      System.out.println("Time elapsed: "+timer);
+      System.out.println("Time elapsed: "+recursion.getMonitoringInterfaceBackward().getTime());
+      System.out.println("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)");
       System.out.println();
-      
    }
 }

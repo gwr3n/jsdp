@@ -155,6 +155,11 @@ public class BackwardRecursionImpl extends BackwardRecursion{
    
    public ActionImpl getOptimalAction(StateDescriptorImpl stateDescriptor){
       State state = ((StateSpaceImpl)this.getStateSpace(stateDescriptor.getPeriod())).getState(stateDescriptor);
+      try{
+         getExpectedValue(state);
+      }catch(NullPointerException e){
+         recurse(0);
+      }
       return (ActionImpl) this.getValueRepository().getOptimalAction(state);
    }
 }

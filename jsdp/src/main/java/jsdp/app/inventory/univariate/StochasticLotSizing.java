@@ -33,8 +33,6 @@ import java.util.Locale;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
-import org.apache.commons.lang3.time.StopWatch;
-
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.JFreeChart;
@@ -42,11 +40,6 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-
-import com.sun.management.OperatingSystemMXBean;
-
-import java.io.IOException;
-import java.lang.management.ManagementFactory; 
 
 import jsdp.sdp.Action;
 import jsdp.sdp.HashType;
@@ -90,16 +83,16 @@ public class StochasticLotSizing {
       double holdingCost = 1;
       double penaltyCost = 10;
       
-      double[] meanDemand = {20,40,10,20,5,10};
+      double[] meanDemand = {10,20,15,20,15,10};
       double coefficientOfVariation = 0.2;
-      double truncationQuantile = 0.99;
+      double truncationQuantile = 0.999;
       
       // Random variables
 
       Distribution[] distributions = IntStream.iterate(0, i -> i + 1)
                                               .limit(meanDemand.length)
-                                              .mapToObj(i -> new NormalDist(meanDemand[i],meanDemand[i]*coefficientOfVariation))
-                                              //.mapToObj(i -> new PoissonDist(meanDemand[i]))
+                                              //.mapToObj(i -> new NormalDist(meanDemand[i],meanDemand[i]*coefficientOfVariation))
+                                              .mapToObj(i -> new PoissonDist(meanDemand[i]))
                                               .toArray(Distribution[]::new);
       double[] supportLB = IntStream.iterate(0, i -> i + 1)
                                     .limit(meanDemand.length)
@@ -231,9 +224,9 @@ public class StochasticLotSizing {
        */
       System.out.println("--------------Simulation--------------");
       double confidence = 0.95;           //Simulation confidence level 
-      double errorTolerance = 0.001;      //Simulation error threshold
+      double errorTolerance = 0.0001;      //Simulation error threshold
       
-      if(simulate) 
+      if(simulate && samplingScheme == SamplingScheme.NONE) 
          simulate(distributions, 
                fixedOrderingCost, 
                holdingCost, 
@@ -243,6 +236,10 @@ public class StochasticLotSizing {
                recursion, 
                confidence, 
                errorTolerance);
+      else{
+         if(!simulate) System.out.println("Simulation disabled.");
+         if(samplingScheme != SamplingScheme.NONE) System.out.println("Cannot simulate a sampled solution, please disable sampling: set samplingScheme == SamplingScheme.NONE.");
+      }
    }
    
    static void plotOptimalPolicyCost(int targetPeriod, BackwardRecursionImpl recursion){
