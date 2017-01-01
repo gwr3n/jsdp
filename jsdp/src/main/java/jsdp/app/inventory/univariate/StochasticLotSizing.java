@@ -192,39 +192,16 @@ public class StochasticLotSizing {
 
       
       System.out.println("--------------Backward recursion--------------");
-      StopWatch timer = new StopWatch();
-      OperatingSystemMXBean osMBean;
-      try {
-         osMBean = ManagementFactory.newPlatformMXBeanProxy(
-               ManagementFactory.getPlatformMBeanServer(), ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME, OperatingSystemMXBean.class);
-         long nanoBefore = System.nanoTime();
-         long cpuBefore = osMBean.getProcessCpuTime();
-         
-         timer.start();
-         recursion.runBackwardRecursionMonitoring();
-         timer.stop();
-         
-         long cpuAfter = osMBean.getProcessCpuTime();
-         long nanoAfter = System.nanoTime();
-         
-         long percent;
-         if (nanoAfter > nanoBefore)
-          percent = ((cpuAfter-cpuBefore)*100L)/
-            (nanoAfter-nanoBefore);
-         else percent = 0;
-
-         System.out.println("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)");
-      } catch (IOException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      }
+      recursion.runBackwardRecursionMonitoring();
       System.out.println();
       double ETC = recursion.getExpectedCost(initialInventory);
       StateDescriptorImpl initialState = new StateDescriptorImpl(0, initialInventory);
       double action = recursion.getOptimalAction(initialState).getAction();
+      long percent = recursion.getMonitoringInterfaceBackward().getPercentCPU();
       System.out.println("Expected total cost (assuming an initial inventory level "+initialInventory+"): "+ETC);
       System.out.println("Optimal initial action: "+action);
-      System.out.println("Time elapsed: "+timer);
+      System.out.println("Time elapsed: "+recursion.getMonitoringInterfaceBackward().getTime());
+      System.out.println("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)");
       System.out.println();
       
       /*******************************************************************

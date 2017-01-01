@@ -77,7 +77,7 @@ public class CapacitatedStochasticLotSizing {
       double maxOrderQuantity = 50;
       
       double[] meanDemand = {20,50,20,10,20,50};
-      double coefficientOfVariation = 0.4;
+      double coefficientOfVariation = 0.2;
       double truncationQuantile = 0.99;
       
       // Random variables
@@ -172,17 +172,16 @@ public class CapacitatedStochasticLotSizing {
                                                                   HashType.HASHTABLE);
 
       System.out.println("--------------Backward recursion--------------");
-      StopWatch timer = new StopWatch();
-      timer.start();
-      recursion.runBackwardRecursion();
-      timer.stop();
+      recursion.runBackwardRecursionMonitoring();
       System.out.println();
       double ETC = recursion.getExpectedCost(initialInventory);
       StateDescriptorImpl initialState = new StateDescriptorImpl(0, initialInventory);
       double action = recursion.getOptimalAction(initialState).getAction();
+      long percent = recursion.getMonitoringInterfaceBackward().getPercentCPU();
       System.out.println("Expected total cost (assuming an initial inventory level "+initialInventory+"): "+ETC);
       System.out.println("Optimal initial action: "+action);
-      System.out.println("Time elapsed: "+timer);
+      System.out.println("Time elapsed: "+recursion.getMonitoringInterfaceBackward().getTime());
+      System.out.println("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)");
       System.out.println();
       
       /*******************************************************************
@@ -212,7 +211,7 @@ public class CapacitatedStochasticLotSizing {
        */
       System.out.println("--------------Simulation--------------");
       double confidence = 0.95;           //Simulation confidence level 
-      double errorTolerance = 0.001;      //Simulation error threshold
+      double errorTolerance = 0.01;      //Simulation error threshold
       
       if(simulate && samplingScheme == SamplingScheme.NONE) 
          simulate(distributions, 
@@ -224,6 +223,10 @@ public class CapacitatedStochasticLotSizing {
                recursion, 
                confidence, 
                errorTolerance);
+      else{
+         if(!simulate) System.out.println("Simulation disabled.");
+         if(samplingScheme != SamplingScheme.NONE) System.out.println("Cannot simulate a sampled solution, please disable sampling: set samplingScheme == SamplingScheme.NONE.");
+      }
    }
    
    static void plotOptimalPolicyCost(int targetPeriod, BackwardRecursionImpl recursion){
