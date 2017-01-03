@@ -66,6 +66,11 @@ import jsdp.app.lotsizing.simulation.SimulatePolicies;
  *  
  *  We plot the optimal expected total cost function as a function of a period opening inventory level.
  *  
+ *  This example demonstrates how to develop an SDP model from scratch by defining concrete implementations
+ *  of the abstract classes in package jsdp.sdp. This is a cumbersome solution that should be adopted for
+ *  complex problems. In most cases, it is sufficient to rely upon general purpose concrete implementations 
+ *  in package jsdp.sdp.impl.  
+ *  
  * @author Roberto Rossi
  *
  */
