@@ -31,7 +31,11 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ NormalSampleTest.class, PoissonSampleTest.class })
+@SuiteClasses({ 
+   NormalSampleTest.class, 
+   PoissonSampleTest.class 
+   })
+
 public class AllTests {
 
 }

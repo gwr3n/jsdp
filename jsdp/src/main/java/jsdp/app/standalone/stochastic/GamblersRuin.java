@@ -24,7 +24,7 @@
  * SOFTWARE.
  */
 
-package jsdp.app.standalone;
+package jsdp.app.standalone.stochastic;
 
 import java.util.Arrays;
 import java.util.HashMap;
