@@ -40,7 +40,7 @@ import jsdp.sdp.ValueRepository;
 import umontreal.ssj.probdist.Distribution;
 
 /**
- * A concrete implementation of a backward recursion procedure to compute (s,S) policy parameters.
+ * A concrete implementation of {@code BackwardRecursion}.
  * 
  * @author Roberto Rossi
  *

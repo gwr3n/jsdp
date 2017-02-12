@@ -42,7 +42,7 @@ import jsdp.utilities.probdist.MultiINIDistribution;
 import umontreal.ssj.probdistmulti.DiscreteDistributionIntMulti;
 
 /**
- * A concrete implementation of a backward recursion procedure to compute (s,S) policy parameters.
+ * A concrete implementation of {@code BackwardRecursion}.
  * 
  * @author Roberto Rossi
  *

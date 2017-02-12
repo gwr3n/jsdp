@@ -38,6 +38,13 @@ import jsdp.utilities.probdist.DiscreteDistributionFactory;
 import umontreal.ssj.probdist.DiscreteDistribution;
 import umontreal.ssj.probdist.Distribution;
 
+/**
+ * A concrete implementation of {@code TransitionProbability}.
+ * 
+ * @author Roberto Rossi
+ *
+ */
+
 public class TransitionProbabilityImpl extends TransitionProbability {
    DiscreteDistribution[] stateIndependentDistributions;
    DiscreteDistribution[][] stateDependentDistributions;

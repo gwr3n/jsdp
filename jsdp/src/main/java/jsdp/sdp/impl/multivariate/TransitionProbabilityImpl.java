@@ -37,6 +37,13 @@ import jsdp.utilities.probdist.MultiINIDistribution;
 
 import umontreal.ssj.probdistmulti.DiscreteDistributionIntMulti;
 
+/**
+ * A concrete implementation of {@code TransitionProbability}.
+ * 
+ * @author Roberto Rossi
+ *
+ */
+
 public class TransitionProbabilityImpl extends TransitionProbability {
    DiscreteDistributionIntMulti[] multiVariateDistributions;
    StateSpaceImpl[] stateSpace;
