@@ -12,7 +12,7 @@ maintenance, stochastic optimal control, and
 stochastic lot sizing; including the computation 
 of optimal nonstationary (s,S) policy parameters, 
 as discussed by Herbert Scarf in his seminal work 
-the optimality of (s s) policies in the dynamic 
+the optimality of (s,S) policies in the dynamic 
 inventory problem.
 
 To learn more please take a tour of our Wiki.
