@@ -73,7 +73,7 @@ public class CapacitatedStochasticLotSizing {
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
       double penaltyCost = 2;
-      double maxOrderQuantity = 50;
+      double maxOrderQuantity = 40;
       
       double[] meanDemand = {20,50,20,10,20,50};
       double coefficientOfVariation = 0.2;
