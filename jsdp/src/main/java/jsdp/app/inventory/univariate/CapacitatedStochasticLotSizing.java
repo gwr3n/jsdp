@@ -69,22 +69,24 @@ public class CapacitatedStochasticLotSizing {
       /*******************************************************************
        * Problem parameters
        */
-      double fixedOrderingCost = 40; 
+      double fixedOrderingCost = 200; 
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
-      double penaltyCost = 2;
-      double maxOrderQuantity = 40;
+      double penaltyCost = 10;
+      double maxOrderQuantity = 180;
       
-      double[] meanDemand = {20,50,20,10,20,50};
-      double coefficientOfVariation = 0.2;
+      double[] meanDemand = {20,40,60,40};
+      //double coefficientOfVariation = 0.2;
+      //double[] stdDemand = {1,1,1,1,1,1,1,1};
       double truncationQuantile = 0.99;
       
       // Random variables
 
       Distribution[] distributions = IntStream.iterate(0, i -> i + 1)
                                               .limit(meanDemand.length)
-                                              .mapToObj(i -> new NormalDist(meanDemand[i],meanDemand[i]*coefficientOfVariation))
-                                              //.mapToObj(i -> new PoissonDist(meanDemand[i]))
+                                              //.mapToObj(i -> new NormalDist(meanDemand[i],stdDemand[i]))
+                                              //.mapToObj(i -> new NormalDist(meanDemand[i],meanDemand[i]*coefficientOfVariation))
+                                              .mapToObj(i -> new PoissonDist(meanDemand[i]))
                                               .toArray(Distribution[]::new);
       double[] supportLB = IntStream.iterate(0, i -> i + 1)
                                     .limit(meanDemand.length)
@@ -103,8 +105,8 @@ public class CapacitatedStochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      double minState = -250;
-      double maxState = 250;
+      double minState = -150;
+      double maxState = 300;
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
       // Actions

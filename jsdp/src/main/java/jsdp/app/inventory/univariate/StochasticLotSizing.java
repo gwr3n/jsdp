@@ -78,12 +78,12 @@ public class StochasticLotSizing {
       /*******************************************************************
        * Problem parameters
        */
-      double fixedOrderingCost = 300; 
+      double fixedOrderingCost = 150; 
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
       double penaltyCost = 10;
       
-      double[] meanDemand = {10,20,15,20,15,10};
+      double[] meanDemand = {20,40,60,40};
       double coefficientOfVariation = 0.2;
       double truncationQuantile = 0.999;
       
