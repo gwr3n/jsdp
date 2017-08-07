@@ -50,7 +50,6 @@ import org.jfree.data.xy.XYSeriesCollection;
 import umontreal.ssj.charts.XYLineChart;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
-import umontreal.ssj.probdist.NormalDist;
 import jsdp.app.lotsizing.simulation.SimulatePolicies;
 
 /**

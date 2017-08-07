@@ -39,13 +39,11 @@ import jsdp.sdp.RandomOutcomeFunction;
 import jsdp.sdp.Recursion.OptimisationDirection;
 import jsdp.sdp.State;
 import jsdp.sdp.impl.multivariate.*;
-import jsdp.utilities.probdist.SafeMultinomialDist;
 import jsdp.utilities.probdist.MultiINIDistribution;
+
 import umontreal.ssj.probdistmulti.DiscreteDistributionIntMulti;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.BinomialDist;
-import umontreal.ssj.probdist.PoissonDist;
-import umontreal.ssj.probdist.NormalDist;
 
 /**
  *  We formulate a multi-item stochastic lot sizing problem under multinomial demand  

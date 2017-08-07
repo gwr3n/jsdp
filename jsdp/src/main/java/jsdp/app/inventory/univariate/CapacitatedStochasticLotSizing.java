@@ -52,7 +52,6 @@ import jsdp.app.inventory.univariate.simulation.SimulatePolicies;
 
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
-import umontreal.ssj.probdist.NormalDist;
 
 /**
  *  We formulate the capacitated stochastic lot sizing problem as a stochastic dynamic programming problem. 

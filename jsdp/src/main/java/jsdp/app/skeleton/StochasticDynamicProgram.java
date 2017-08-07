@@ -60,7 +60,9 @@ public class StochasticDynamicProgram {
       
       // Problem parameters
       
+      @SuppressWarnings("unused")
       double param_1;
+      @SuppressWarnings("unused")
       double param_2;
       
       double initialStateParameter = 0; // Replace 0 with the initial state of the system
@@ -115,7 +117,9 @@ public class StochasticDynamicProgram {
       // Immediate Value Function
       
       ImmediateValueFunction<State, Action, Double> immediateValueFunction = (initialState, action, finalState) -> {
+         @SuppressWarnings("unused")
          ActionImpl a = (ActionImpl)action;
+         @SuppressWarnings("unused")
          StateImpl fs = (StateImpl)finalState;
          return 0.0 /* replace 0.0 with immediate cost computation */;
       };

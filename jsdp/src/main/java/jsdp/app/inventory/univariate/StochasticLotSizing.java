@@ -53,7 +53,6 @@ import jsdp.app.inventory.univariate.simulation.sS_Policy;
 
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
-import umontreal.ssj.probdist.NormalDist;
 
 /**
  *  We formulate the stochastic lot sizing problem as defined in  
@@ -84,6 +83,7 @@ public class StochasticLotSizing {
       double penaltyCost = 10;
       
       double[] meanDemand = {20,40,60,40};
+      @SuppressWarnings("unused")
       double coefficientOfVariation = 0.2;
       double truncationQuantile = 0.999;
       
