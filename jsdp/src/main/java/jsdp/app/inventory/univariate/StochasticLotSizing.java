@@ -53,6 +53,7 @@ import jsdp.app.inventory.univariate.simulation.sS_Policy;
 
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
+import umontreal.ssj.probdist.NormalDist;
 
 /**
  *  We formulate the stochastic lot sizing problem as defined in  
@@ -77,22 +78,22 @@ public class StochasticLotSizing {
       /*******************************************************************
        * Problem parameters
        */
-      double fixedOrderingCost = 150; 
-      double proportionalOrderingCost = 0; 
+      double fixedOrderingCost = 100; 
+      double proportionalOrderingCost = 1; 
       double holdingCost = 1;
       double penaltyCost = 10;
       
       double[] meanDemand = {20,40,60,40};
-      @SuppressWarnings("unused")
-      double coefficientOfVariation = 0.2;
+      //@SuppressWarnings("unused")
+      double coefficientOfVariation = 0.25;
       double truncationQuantile = 0.999;
       
       // Random variables
 
       Distribution[] distributions = IntStream.iterate(0, i -> i + 1)
                                               .limit(meanDemand.length)
-                                              //.mapToObj(i -> new NormalDist(meanDemand[i],meanDemand[i]*coefficientOfVariation))
-                                              .mapToObj(i -> new PoissonDist(meanDemand[i]))
+                                              .mapToObj(i -> new NormalDist(meanDemand[i],meanDemand[i]*coefficientOfVariation))
+                                              //.mapToObj(i -> new PoissonDist(meanDemand[i]))
                                               .toArray(Distribution[]::new);
       double[] supportLB = IntStream.iterate(0, i -> i + 1)
                                     .limit(meanDemand.length)
