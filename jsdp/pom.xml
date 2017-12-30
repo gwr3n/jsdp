@@ -176,6 +176,20 @@
 		        <storepass>${java-key-store-password}</storepass>
 		        <keypass>${java-key-password}</keypass>
 		    </configuration>
+		</plugin> 
+		<plugin>
+	        <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-gpg-plugin</artifactId>
+		    <version>1.6</version>
+		    <executions>
+		        <execution>
+		            <id>sign-artifacts</id>
+		            <phase>verify</phase>
+		            <goals>
+		                <goal>sign</goal>
+		            </goals>
+		        </execution>
+		    </executions>
 		</plugin>
   		<plugin>
   			<groupId>org.apache.maven.plugins</groupId>
@@ -187,6 +201,16 @@
       			<enableAssertions>false</enableAssertions>
     			</configuration>
   		</plugin>
+  		<plugin>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-release-plugin</artifactId>
+		    <version>2.5.3</version>
+		    <configuration>
+		    <mavenExecutorId>forked-path</mavenExecutorId>
+		    <useReleaseProfile>false</useReleaseProfile>
+		    <arguments>-Psonatype-oss-release</arguments>
+		    </configuration>
+	    </plugin>
   	</plugins>
   </build>
   
@@ -199,4 +223,15 @@
       </plugin>
     </plugins>
   </reporting>  
+  
+  <distributionManagement>
+	<snapshotRepository>
+	  <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+	</snapshotRepository>
+	<repository>
+	  <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+	</repository>
+  </distributionManagement>
 </project>
