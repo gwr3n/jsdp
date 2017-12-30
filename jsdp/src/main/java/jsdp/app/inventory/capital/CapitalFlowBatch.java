@@ -10,7 +10,8 @@ public class CapitalFlowBatch {
    
    /**
     * zip -d jsdp-0.0.1-SNAPSHOT.jar 'META-INF/*.SF' 'META-INF/*.RSA' 'META-INF/*SF'
-    * @param args
+    * 
+    * @param args input arguments
     */
    
    public static void main(String args[]){

@@ -66,7 +66,7 @@ public abstract class StateSpace<SD> implements Iterable<State>{
 	 * Do not use {@code ConcurrentHashMap} in conjunction with forward recursion.
 	 * 
 	 * @param period the period associated with this container.
-	 * @param the type of hash used to store the state space
+	 * @param hash the type of hash used to store the state space
 	 */
 	public StateSpace(int period, HashType hash){
 		this.period = period;

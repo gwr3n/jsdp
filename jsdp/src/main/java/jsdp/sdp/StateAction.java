@@ -42,7 +42,7 @@ public class StateAction implements Serializable{
    Action action;
    
    /**
-    * Creates an instance of {@code StateAction} from state {@initialState} and action {@code action}. 
+    * Creates an instance of {@code StateAction} from state {@code initialState} and action {@code action}. 
     * 
     * @param initialState the target state.
     * @param action the target action.

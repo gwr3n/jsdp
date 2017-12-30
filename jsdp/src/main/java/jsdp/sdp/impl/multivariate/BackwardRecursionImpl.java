@@ -53,13 +53,15 @@ public class BackwardRecursionImpl extends BackwardRecursion{
     * Creates an instance of the problem and initialises state space, transition probability and value repository.
     * 
     * @param optimisationDirection the direction of optimisation; either {@code OptimisationDirection.MIN} or {@code OptimisationDirection.MAX}
-    * @param demand the distribution of random demand in each period, an array of {@code DiscreteDistributionIntMulti}.
-    * @param immediateValueFunction the immediate value function.
-    * @param randomOutcomeFunction the random outcome function.
-    * @param buildActionList the action list builder.
-    * @param idempotentAction the idempotent action; i.e. an action that leaves the system in the same state from period {@code t} to period {@code t+1}.
-    * @param samplingScheme the sampling scheme adopted.
-    * @param maxSampleSize the maximum sample size.
+    * @param demand the distribution of random demand in each period, an array of {@code DiscreteDistributionIntMulti}
+    * @param immediateValueFunction the immediate value function
+    * @param randomOutcomeFunction the random outcome function
+    * @param buildActionList the action list builder
+    * @param idempotentAction the idempotent action; i.e. an action that leaves the system in the same state from period {@code t} to period {@code t+1}
+    * @param discountFactor the DP stage discount factor
+    * @param samplingScheme the sampling scheme adopted
+    * @param maxSampleSize the maximum sample size
+    * @param reductionFactorPerStage the sample reduction factor
     * @param hash the type of hash used to store the state space
     */
    public BackwardRecursionImpl(OptimisationDirection optimisationDirection,
@@ -93,15 +95,17 @@ public class BackwardRecursionImpl extends BackwardRecursion{
     * Creates an instance of the problem and initialises state space, transition probability and value repository.
     * 
     * @param optimisationDirection the direction of optimisation; either {@code OptimisationDirection.MIN} or {@code OptimisationDirection.MAX}
-    * @param demand the distribution of random demand in each period, an array of {@code DiscreteDistributionIntMulti}.
-    * @param immediateValueFunction the immediate value function.
-    * @param randomOutcomeFunction the random outcome function.
-    * @param buildActionList the action list builder.
-    * @param idempotentAction the idempotent action; i.e. an action that leaves the system in the same state from period {@code t} to period {@code t+1}.
-    * @param samplingScheme the sampling scheme adopted.
-    * @param maxSampleSize the maximum sample size.
+    * @param demand the distribution of random demand in each period, an array of {@code DiscreteDistributionIntMulti}
+    * @param immediateValueFunction the immediate value function
+    * @param randomOutcomeFunction the random outcome function
+    * @param buildActionList the action list builder
+    * @param idempotentAction the idempotent action; i.e. an action that leaves the system in the same state from period {@code t} to period {@code t+1}
+    * @param discountFactor the DP stage discount factor
+    * @param samplingScheme the sampling scheme adopted
+    * @param maxSampleSize the maximum sample size
+    * @param reductionFactorPerStage the sample reduction factor
     * @param stateSpaceSizeLowerBound the maximum size of hashtables used to store the state space
-    * @param hashtable load factor (typically 0.8)
+    * @param loadFactor hashtable load factor (typically 0.8)
     * @param hash the type of hash used to store the state space
     */
    public BackwardRecursionImpl(OptimisationDirection optimisationDirection,
