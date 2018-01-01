@@ -10,6 +10,12 @@ import javax.swing.JTextArea;
 
 import com.sun.management.OperatingSystemMXBean;
 
+/**
+ * Abstract class capturing a graphical interface to monitor computation
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public abstract class MonitoringInterface extends JFrame implements Runnable{
 
    private static final long serialVersionUID = 1L;

@@ -5,7 +5,7 @@ import jsdp.sdp.Recursion;
 /**
  * Monitoring interface for forward recursion
  * 
- * @author gwren
+ * @author Roberto Rossi
  *
  */
 public class MonitoringInterfaceForward extends MonitoringInterface{
