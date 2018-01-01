@@ -44,7 +44,7 @@ public abstract class MonitoringInterface extends JFrame implements Runnable{
    /**
     * Set monitoring window text
     * 
-    * @param the text to be displayed
+    * @param text the text to be displayed
     */
    protected void setText(String text) {
       this.text.setText(text);
