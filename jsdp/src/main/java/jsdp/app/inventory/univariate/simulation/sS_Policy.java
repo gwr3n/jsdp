@@ -8,6 +8,12 @@ import jsdp.sdp.impl.univariate.StateDescriptorImpl;
 import jsdp.sdp.impl.univariate.StateImpl;
 import jsdp.sdp.impl.univariate.StateSpaceImpl;
 
+/**
+ * This class extracts an (s,S) policy from a {@code BackwardRecursionImpl} object
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public class sS_Policy {
    
    BackwardRecursionImpl recursion;
@@ -18,6 +24,12 @@ public class sS_Policy {
       this.horizonLength = horizonLength;
    }
    
+   /**
+    * Extracts the optimal policy for a given initial inventory level
+    * 
+    * @param initialInventory the initial inventory level
+    * @return the optimal policy array
+    */
    public double[][] getOptimalPolicy(double initialInventory){
       double[][] optimalPolicy = new double[2][];
       double[] S = new double[this.horizonLength];
@@ -38,14 +50,14 @@ public class sS_Policy {
       return optimalPolicy;
    }
    
-   public State find_S(int period){
+   private State find_S(int period){
       StateImpl s = (StateImpl) this.find_s(period);
       double i = ((ActionImpl)recursion.getValueRepository().getOptimalAction(s)).getAction()+s.getInitialState();
       StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(period, i);
       return ((StateSpaceImpl)recursion.getStateSpace()[period]).getState(stateDescriptor);
    }
    
-   public State find_s(int period){
+   private State find_s(int period){
       for(double i = StateImpl.getMaxState(); i >= StateImpl.getMinState(); i -= StateImpl.getStepSize()){
          StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(period, i);
          Action action = recursion.getOptimalAction(stateDescriptor);

@@ -6,6 +6,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
+/**
+ * Implementation of the model discussed in 
+ * 
+ * Z. Chen, R. Rossi, R. Zhang, "Single item stochastic lot sizing problem 
+ * considering capital flow and business overdraft," arxiv:1706.05663
+ * 
+ * Batch implementing the testbad discussed in the paper.
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public class CapitalFlowBatch {
    
    /**

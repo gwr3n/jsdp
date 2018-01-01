@@ -40,7 +40,7 @@ import org.mapdb.*;
  * http://www.mapdb.org/doc/quick-start/
  * http://www.mapdb.org/doc/htreemap/
  * 
- * @author gwren
+ * @author Roberto Rossi
  *
  * @param <K> the hash table key type
  * @param <V> the hash table value type

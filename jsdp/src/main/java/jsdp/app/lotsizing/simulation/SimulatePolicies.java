@@ -40,6 +40,13 @@ import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.NormalDist;
 import umontreal.ssj.stat.Tally;
 
+/**
+ * Simulation of stochastic inventory control policies
+ * 
+ * @author Roberto Rossi
+ *
+ */
+
 public class SimulatePolicies {
 	
 	public static void main(String args[]){
@@ -73,6 +80,21 @@ public class SimulatePolicies {
 		System.out.println("Simulated cost: "+df.format(results[0])+" Confidence interval=("+df.format(results[0]-results[1])+","+df.format(results[0]+results[1])+")@"+df.format(confidence*100)+"% confidence");
 	}
 	
+	/**
+	 * Simulation of an (s,S) policy
+	 * 
+    * @param demand the random demand
+    * @param orderCost the fixed ordering cost
+    * @param holdingCost the proportional holding cost
+    * @param penaltyCost the proportional penalty cost
+    * @param unitCost per proportional ordering cost
+    * @param initialStock the initial cost
+    * @param S the S (order-up-to-level) values
+    * @param s the s (reorder point) values
+    * @param confidence the confidence level for the estimation of the policy expected total cost
+    * @param error the tolerated error
+	 * @return expected total cost value and confidence interval radius
+	 */
 	public static double[] simulate_sS(
 			Distribution[] demand, 
 			double orderCost, 
@@ -123,6 +145,20 @@ public class SimulatePolicies {
 		return centerAndRadius;
 	}
 	
+	/**
+	 * Simulation of a tabulated optimal policy obtained via forward recursion 
+	 * 
+    * @param demand the random demand
+    * @param orderCost the fixed ordering cost
+    * @param holdingCost the proportional holding cost
+    * @param penaltyCost the proportional penalty cost
+    * @param unitCost per proportional ordering cost
+    * @param initialStock the initial cost
+	 * @param recursion the {@code sS_ForwardRecursion} object containing the tabulated optimal policy
+    * @param confidence the confidence level for the estimation of the policy expected total cost
+    * @param error the tolerated error
+    * @return expected total cost value and confidence interval radius
+	 */
 	public static double[] simulate_sS(
 			Distribution[] demand, 
 			double orderCost, 

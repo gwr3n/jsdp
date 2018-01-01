@@ -16,6 +16,15 @@ import jsdp.sdp.impl.univariate.SamplingScheme;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
 
+/**
+ * Implementation of the model discussed in 
+ * 
+ * Z. Chen, R. Rossi, R. Zhang, "Single item stochastic lot sizing problem 
+ * considering capital flow and business overdraft," arxiv:1706.05663
+ * 
+ * @author Roberto Rossi
+ *
+ */
 public class CapitalFlow {
    
    static final Logger logger = LogManager.getLogger(CapitalFlow.class.getName());

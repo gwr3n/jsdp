@@ -2,6 +2,12 @@ package jsdp.utilities.monitoring;
 
 import jsdp.sdp.Recursion;
 
+/**
+ * Monitoring interface for backward recursion
+ *  
+ * @author gwren
+ *
+ */
 public class MonitoringInterfaceBackward extends MonitoringInterface{
    
    private static final long serialVersionUID = 1L;
@@ -18,6 +24,13 @@ public class MonitoringInterfaceBackward extends MonitoringInterface{
       this.setVisible(true);
    }
    
+   /**
+    * Set states status
+    * 
+    * @param generatedStates number of generated states
+    * @param processedStates number of processed states
+    * @param currentStage current stage
+    */
    public void setStates(long generatedStates, long processedStates, int currentStage) {
       this.generatedStates = generatedStates;
       this.processedStates = processedStates;
@@ -48,14 +61,21 @@ public class MonitoringInterfaceBackward extends MonitoringInterface{
       }
    }
    
+   /**
+    * Get the number of processed states
+    * 
+    * @return the number of processed states
+    */
    public long getProcessedStates(){
       return this.processedStates;
    }
    
+   @Override
    public double getProcessedStatesPerSecond(){
       return (int) Math.ceil((this.processedStates)/((this.nanoAfter-this.nanoBefore)*Math.pow(10, -9)));
    }
    
+   @Override
    public String toString(){
       return "Time: " + getTime() +"\n"
             + "CPU: " +this.getPercentCPU()+ "%" +" ("+Runtime.getRuntime().availableProcessors()+" cores)\n"

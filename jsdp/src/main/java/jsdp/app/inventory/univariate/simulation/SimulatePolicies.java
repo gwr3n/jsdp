@@ -32,8 +32,30 @@ import jsdp.utilities.sampling.SampleFactory;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.stat.Tally;
 
+/**
+ * Simulation of stochastic inventory control policies
+ * 
+ * @author Roberto Rossi
+ *
+ */
+
 public class SimulatePolicies {
    
+   /**
+    * Simulation of an (s,S) policy
+    * 
+    * @param demand the random demand
+    * @param orderCost the fixed ordering cost
+    * @param holdingCost the proportional holding cost
+    * @param penaltyCost the proportional penalty cost
+    * @param unitCost per proportional ordering cost
+    * @param initialStock the initial cost
+    * @param S the S (order-up-to-level) values
+    * @param s the s (reorder point) values
+    * @param confidence the confidence level for the estimation of the policy expected total cost
+    * @param error the tolerated error
+    * @return expected total cost value and confidence interval radius
+    */
    public static double[] simulate_sS(
          Distribution[] demand, 
          double orderCost, 
@@ -84,6 +106,20 @@ public class SimulatePolicies {
       return centerAndRadius;
    }
    
+   /**
+    * Simulation of a tabulated optimal policy obtained via backward recursion 
+    * 
+    * @param demand the random demand
+    * @param orderCost the fixed ordering cost
+    * @param holdingCost the proportional holding cost
+    * @param penaltyCost the proportional penalty cost
+    * @param unitCost per proportional ordering cost
+    * @param initialStock the initial cost
+    * @param recursion the {@code BackwardRecursionImpl} object containing the tabulated optimal policy
+    * @param confidence the confidence level for the estimation of the policy expected total cost
+    * @param error the tolerated error
+    * @return expected total cost value and confidence interval radius
+    */
    public static double[] simulateStochaticLotSizing(
          Distribution[] demand, 
          double orderCost, 
