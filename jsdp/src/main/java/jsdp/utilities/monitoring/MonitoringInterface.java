@@ -41,10 +41,18 @@ public abstract class MonitoringInterface extends JFrame implements Runnable{
      });
    }
 
+   /**
+    * Set monitoring window text
+    * 
+    * @param the text to be displayed
+    */
    protected void setText(String text) {
       this.text.setText(text);
    }
 
+   /**
+    * Starts monitoring the resolution process
+    */
    public void startMonitoring() {
       try {
          osMBean = ManagementFactory.newPlatformMXBeanProxy(
@@ -60,14 +68,27 @@ public abstract class MonitoringInterface extends JFrame implements Runnable{
       runner.start();
    }
 
+   /**
+    * Terminates monitoring
+    */
    public void terminate() {
       this.terminate = true;
    }
    
+   /**
+    * Get the current resolution time (in seconds)
+    * 
+    * @return the current resolution time (in seconds)
+    */
    public int getTime(){
       return (int) Math.ceil(((this.nanoAfter-this.nanoBefore)*Math.pow(10, -9)));
    }
    
+   /**
+    * Get the % usage for the available cores
+    * 
+    * @return the % usage for the available cores
+    */
    public long getPercentCPU(){
       long percent;
       if (this.nanoAfter > this.nanoBefore)
@@ -76,9 +97,19 @@ public abstract class MonitoringInterface extends JFrame implements Runnable{
       return percent;
    }
    
+   /**
+    * Get the number of generated states
+    * 
+    * @return the number of generated states
+    */
    public long getGeneratedStates(){
       return this.generatedStates;
    }
    
+   /**
+    * Get the number of processed states per second
+    * 
+    * @return the number of processed states per second
+    */
    public abstract double getProcessedStatesPerSecond();
 }
