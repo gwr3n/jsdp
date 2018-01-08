@@ -54,5 +54,6 @@ public abstract class Action implements Serializable{
 	}
 	
 	public abstract boolean equals(Object action);
+	
 	public abstract int hashCode();
 }
