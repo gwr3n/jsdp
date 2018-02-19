@@ -272,9 +272,9 @@ public class BowserRoutingFuel {
       T = 5;   //time horizon
       M = 3;   //machines
       N = 5;   //nodes
-      bowserInitialTankLevel = 0;
+      bowserInitialTankLevel = 10;
       maxBowserTankLevel = 10;
-      minRefuelingQty = 5;
+      minRefuelingQty = 1;
       tankCapacity = new int[]{10, 10, 10};
       initialTankLevel = new int[]{0, 0, 0};
       
@@ -325,7 +325,7 @@ public class BowserRoutingFuel {
       {0, 0, 0, 1, 0},
       {0, 0, 1, 0, 0}}};
       
-      fuelStockOutPenaltyCost = 100;
+      fuelStockOutPenaltyCost = 20;
    }
    
    private void mediumInstance(){

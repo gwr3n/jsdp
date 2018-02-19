@@ -108,9 +108,9 @@ public class BRF_Action extends Action {
    
    public String toString(){
       String out = "";
-      out += "Period: " + state.getPeriod()  + "\t";
-      out += "Bowser new location: " + bowserNewLocation + "\t";
-      out += "Bowser refuel: " + bowserRefuelQty + "\t";
+      out += "Period: " + state.getPeriod()  + " \t";
+      out += "Bowser new location: " + bowserNewLocation + " \t";
+      out += "Bowser refuel: " + bowserRefuelQty + " \t";
       out += "Machines refuel: " + Arrays.toString(machineRefuelQty);
       return out;
    }

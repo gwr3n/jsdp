@@ -124,7 +124,7 @@ public class BowserRouting {
       T = 3;   //time horizon
       M = 3;   //machines
       N = 5;   //nodes
-      bowserInitialTankLevel = 10;
+      bowserInitialTankLevel = 0;
       maxBowserTankLevel = 10;
       minRefuelingQty = 1;
       tankCapacity = new int[]{10, 10, 10};
@@ -157,7 +157,7 @@ public class BowserRouting {
       {0, 0, 0, 1, 0},
       {0, 0, 1, 0, 0}}};
       
-      fuelStockOutPenaltyCost = 100;
+      fuelStockOutPenaltyCost = 20;
    }
    
    private void smallInstance(){
@@ -220,7 +220,7 @@ public class BowserRouting {
       N = 10;   //nodes
       bowserInitialTankLevel = 0;
       maxBowserTankLevel = 20;
-      minRefuelingQty = 5;
+      minRefuelingQty = 1;
       tankCapacity = new int[]{10, 10, 10};
       initialTankLevel = new int[]{10, 10, 10};
       fuelConsumption = new int[][]{{4, 4, 2, 1, 3, 1, 4, 4},
@@ -426,7 +426,7 @@ public class BowserRouting {
    }
    
    public static void main(String args[]){
-      BowserRouting bowserRouting = new BowserRouting(InstanceType.MEDIUM);
+      BowserRouting bowserRouting = new BowserRouting(InstanceType.SMALL);
       bowserRouting.runInstance();
       bowserRouting.printPolicy();
    }
