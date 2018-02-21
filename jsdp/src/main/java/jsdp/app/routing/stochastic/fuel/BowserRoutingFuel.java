@@ -86,7 +86,8 @@ public class BowserRoutingFuel {
       SMALL,
       MEDIUM,
       LARGE,
-      CUSTOM
+      CUSTOM,
+      INSTANCE_2
    }
    
    InstanceType type = null;
@@ -178,6 +179,9 @@ public class BowserRoutingFuel {
    
    private void resetInstance(){
       switch(type){
+      case INSTANCE_2:
+         this.instance_2();
+         break;
       case TINY:
          this.tinyInstance();
          break;
@@ -207,6 +211,76 @@ public class BowserRoutingFuel {
       default:
          throw new NullPointerException("Instance type undefined");
       }
+   }
+   
+   private void instance_2(){
+      /*******************************************************************
+       * Problem parameters
+       */
+      T = 5;   //time horizon
+      M = 3;   //machines
+      N = 5;   //nodes
+      bowserInitialTankLevel = 0;
+      maxBowserTankLevel = 20;
+      minRefuelingQty = 5;
+      tankCapacity = new int[]{10, 10, 10};
+      initialTankLevel = new int[]{0, 0, 0};
+      
+      final int minFuelConsumption = 0;
+      final int maxFuelConsumption = 7;
+      int[][] fuelConsumption = new int[][]{
+         {3,3,3,3,3},
+         {3,3,3,3,3},
+         {3,3,3,3,3}};
+                                         
+      fuelConsumptionProb = new DiscreteDistribution[fuelConsumption.length][fuelConsumption[0].length];
+      for(int i = 0; i < fuelConsumption.length; i++){
+         final int[] array = fuelConsumption[i];
+         fuelConsumptionProb[i] = Arrays.stream(array)
+                                        .mapToObj(k -> DiscreteDistributionFactory.getTruncatedDiscreteDistribution(
+                                                          new PoissonDist(k), minFuelConsumption, maxFuelConsumption, 1.0))
+                                        .toArray(DiscreteDistribution[]::new);
+      }    
+                                    
+      connectivity = new int[][]{
+         {1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+         {1, 0, 1, 1, 0, 0, 0, 0, 0, 0},
+         {0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
+         {0, 0, 0, 0, 0, 0, 1, 0, 0, 0},
+         {0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+         {0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+         {0, 0, 0, 0, 0, 0, 0, 1, 0, 0},
+         {0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
+         {0, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+         {0, 0, 0, 0, 0, 1, 0, 0, 0, 0}};
+      distance = new double[][]{
+         {0, 92.1443, 0, 0, 0, 0, 0, 0, 0, 0},
+         {95.8048, 0, 123.294, 122.041, 0, 0, 0, 0, 0, 0},
+         {0, 0, 0, 0, 62.0565, 0, 0, 0, 0, 0},
+         {0, 0, 0, 0, 0, 0, 120.095, 0, 0, 0},
+         {0, 0, 0, 0, 0, 0, 0, 0, 120.648, 0},
+         {0, 77.2222, 0, 0, 0, 0, 0, 0, 0, 0},
+         {0, 0, 0, 0, 0, 0, 0, 139.407, 0, 0},
+         {0, 0, 0, 0, 0, 103.207, 0, 0, 0, 0},
+         {0, 149.863, 0, 0, 0, 0, 0, 0, 0, 93.1061},
+         {0, 0, 0, 0, 0, 92.7064, 0, 0, 0, 0}};
+      machineLocation = new double[][][]{{{0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+         {0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
+         {0, 0, 0, 0, 0, 1, 0, 0, 0, 0}},
+         {{0, 0, 1, 0, 0, 0, 0, 0, 0, 0},
+         {0, 0, 0, 0, 0, 0, 0, 1, 0, 0},
+         {0, 1, 0, 0, 0, 0, 0, 0, 0, 0}},
+         {{0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+         {0, 0, 1, 0, 0, 0, 0, 0, 0, 0},
+         {0, 0, 1, 0, 0, 0, 0, 0, 0, 0}},
+         {{0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+         {0, 0, 1, 0, 0, 0, 0, 0, 0, 0},
+         {0, 0, 0, 0, 0, 0, 0, 0, 0, 1}},
+         {{0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
+         {1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+         {0, 0, 0, 0, 0, 0, 1, 0, 0, 0}}};
+      
+      fuelStockOutPenaltyCost = 500;
    }
    
    private void tinyInstance(){
@@ -548,7 +622,7 @@ public class BowserRoutingFuel {
                                                               immediateValueFunction, 
                                                               buildActionList,
                                                               discountFactor,
-                                                              HashType.HASHTABLE,
+                                                              HashType.THASHMAP,
                                                               stateSpaceSizeLowerBound,
                                                               loadFactor,
                                                               samplingScheme,
@@ -562,11 +636,11 @@ public class BowserRoutingFuel {
       /**
        * Sampling scheme
        */
-      SamplingScheme samplingScheme = SamplingScheme.SIMPLE_RANDOM_SAMPLING;
+      SamplingScheme samplingScheme = SamplingScheme.NONE;
       int sampleSize = 50;                                     // This is the sample size used to determine a state value function
       double reductionFactorPerStage = 5;
       
-      BowserRoutingFuel bowserRoutingFuel = new BowserRoutingFuel(InstanceType.SMALL,
+      BowserRoutingFuel bowserRoutingFuel = new BowserRoutingFuel(InstanceType.TINY,
                                                                   samplingScheme,
                                                                   sampleSize,
                                                                   reductionFactorPerStage);

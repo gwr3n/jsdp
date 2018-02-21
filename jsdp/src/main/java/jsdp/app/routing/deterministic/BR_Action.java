@@ -85,14 +85,14 @@ public class BR_Action extends Action {
    private static void refuelMachine(int[] currentPlan, int machine, BR_State state, int availableFuel, ArrayList<int[]> qtys, int minRefuelingQty){
       if(machine == state.getMachineTankLevel().length - 1){
          qtys.add(Arrays.copyOf(currentPlan, currentPlan.length));
-         for(int i = 1; i <= Math.min(availableFuel, BR_State.getMaxMachineTankLevel()[machine] - Math.max(state.getMachineTankLevel()[machine], 0)) &&
+         for(int i = minRefuelingQty; i <= Math.min(availableFuel, BR_State.getMaxMachineTankLevel()[machine] - Math.max(state.getMachineTankLevel()[machine], 0)) &&
                         state.getMachineLocation()[machine] == state.getBowserLocation(); i+= minRefuelingQty){ 
             currentPlan[machine] = i;
             qtys.add(Arrays.copyOf(currentPlan, currentPlan.length));
          }
       }else{
          refuelMachine(Arrays.copyOf(currentPlan, currentPlan.length), machine + 1, state, availableFuel, qtys, minRefuelingQty);
-         for(int i = 1; i <= Math.min(availableFuel, BR_State.getMaxMachineTankLevel()[machine] - Math.max(state.getMachineTankLevel()[machine], 0)) &&
+         for(int i = minRefuelingQty; i <= Math.min(availableFuel, BR_State.getMaxMachineTankLevel()[machine] - Math.max(state.getMachineTankLevel()[machine], 0)) &&
                         state.getMachineLocation()[machine] == state.getBowserLocation(); i+= minRefuelingQty){
             currentPlan[machine] = i;
             refuelMachine(Arrays.copyOf(currentPlan, currentPlan.length), machine + 1, state, availableFuel - i, qtys, minRefuelingQty);
