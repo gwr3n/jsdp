@@ -85,7 +85,7 @@ public class BowserRoutingFuelBatch {
           {3,3,1,1,2}
          }
       };
-      int[] fuelStockOutPenaltyCosts = {100,500};
+      int[] fuelStockOutPenaltyCosts = {10,50};
       
       if(samplingScheme == SamplingScheme.NONE){
          writeToFile("./"+BowserRoutingFuelBatch.class.getSimpleName() + "_results.csv", BowserRoutingFuel.getHeadersString());
