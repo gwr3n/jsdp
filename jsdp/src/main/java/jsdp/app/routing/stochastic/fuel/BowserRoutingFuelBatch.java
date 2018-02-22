@@ -60,7 +60,7 @@ public class BowserRoutingFuelBatch {
       N = 5;   //nodes
       bowserInitialTankLevel = 0;
       maxBowserTankLevel = 20;
-      minRefuelingQty = 1;
+      minRefuelingQty = 5;
       tankCapacity = new int[]{10,10,10};
       
       final int minFuelConsumption = 0;
@@ -74,15 +74,15 @@ public class BowserRoutingFuelBatch {
       int[][][] fuelConsumptionArray = new int[][][]{
          {{3,3,3,3,3},
           {3,3,3,3,3},
-          {3,3,3,3,3},
+          {3,3,3,3,3}
          },
          {{2,2,2,2,2},
           {1,1,1,1,1},
-          {3,3,3,3,3},
+          {3,3,3,3,3}
          },
-         {{0,1,2,3,4},
-          {4,3,2,1,0},
-          {3,3,0,0,2},
+         {{1,2,3,4,5},
+          {5,4,3,2,1},
+          {3,3,1,1,2}
          }
       };
       int[] fuelStockOutPenaltyCosts = {100,500};
