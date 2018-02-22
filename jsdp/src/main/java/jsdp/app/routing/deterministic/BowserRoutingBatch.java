@@ -69,7 +69,7 @@ public class BowserRoutingBatch {
           {3,3,1,1,2}
           }
       };
-      int[] fuelStockOutPenaltyCosts = {10,50};
+      int[] fuelStockOutPenaltyCosts = {50,100};
       
       writeToFile("./"+BowserRoutingBatch.class.getSimpleName() + "_results.csv", BowserRouting.getHeadersString());
       
