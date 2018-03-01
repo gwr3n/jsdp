@@ -60,7 +60,7 @@ public class BowserRoutingFuelBatch {
       N = 5;   //nodes
       bowserInitialTankLevel = 0;
       maxBowserTankLevel = 20;
-      minRefuelingQty = 5;
+      minRefuelingQty = 1;
       tankCapacity = new int[]{10,10,10};
       
       final int minFuelConsumption = 0;
