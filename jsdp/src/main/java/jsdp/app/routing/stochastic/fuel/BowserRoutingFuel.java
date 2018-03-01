@@ -587,13 +587,20 @@ public class BowserRoutingFuel {
             if(connectivity[state.getBowserLocation()][i] == 1){
                final int bowserNewLocation = i;
                if(state.getBowserLocation() == 0){
-                  for(int j = 0; j <= BRF_State.getMaxBowserTankLevel() - state.getBowserTankLevel(); j+= minRefuelingQty){
+                  // If Bowser is at node 0 replenishment is forced
+                  final int bowserRefuelQty = BRF_State.getMaxBowserTankLevel() - state.getBowserTankLevel();
+                  feasibleActions.addAll(
+                        BRF_Action.computeMachineRefuelQtys(state, bowserRefuelQty, minRefuelingQty).parallelStream().map(action -> 
+                           new BRF_Action(state, bowserNewLocation, bowserRefuelQty, action)).collect(Collectors.toList())
+                        );
+                  
+                  /*for(int j = 0; j <= BRF_State.getMaxBowserTankLevel() - state.getBowserTankLevel(); j+= minRefuelingQty){
                      final int bowserRefuelQty = j;
                      feasibleActions.addAll(
-                           BRF_Action.computeMachineRefuelQtys(state, j, minRefuelingQty).parallelStream().map(action -> 
+                           BRF_Action.computeMachineRefuelQtys(state, bowserRefuelQty, minRefuelingQty).parallelStream().map(action -> 
                               new BRF_Action(state, bowserNewLocation, bowserRefuelQty, action)).collect(Collectors.toList())
                            );
-                  }
+                  }*/
                }else{
                   final int bowserRefuelQty = 0;
                   feasibleActions.addAll(
