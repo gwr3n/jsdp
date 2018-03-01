@@ -339,6 +339,14 @@ public class BowserRoutingFuel {
       fuelStockOutPenaltyCost = 100;
    }
    
+   /**
+    * 22:51:32.601 [main] INFO  jsdp.app.routing.stochastic.fuel.BowserRoutingFuel - ---
+    * 22:51:32.602 [main] INFO  jsdp.app.routing.stochastic.fuel.BowserRoutingFuel - Expected total cost: 1970.1999098161216
+    * 22:51:32.603 [main] INFO  jsdp.app.routing.stochastic.fuel.BowserRoutingFuel - Optimal initial action: Period: 0  Bowser new location: 1  Bowser refuel: 20    Machines refuel: [0, 0, 0]
+    * 22:51:32.603 [main] INFO  jsdp.app.routing.stochastic.fuel.BowserRoutingFuel - Time elapsed: 6230
+    * 22:51:32.603 [main] INFO  jsdp.app.routing.stochastic.fuel.BowserRoutingFuel - Cpu usage: 159% (8 cores)
+    * 22:51:32.603 [main] INFO  jsdp.app.routing.stochastic.fuel.BowserRoutingFuel - ---
+    */
    private void smallInstance(){
       /*******************************************************************
        * Problem parameters
@@ -347,8 +355,8 @@ public class BowserRoutingFuel {
       M = 3;   //machines
       N = 5;   //nodes
       bowserInitialTankLevel = 10;
-      maxBowserTankLevel = 10;
-      minRefuelingQty = 1;
+      maxBowserTankLevel = 30;
+      minRefuelingQty = 5;
       tankCapacity = new int[]{10, 10, 10};
       initialTankLevel = new int[]{0, 0, 0};
       
@@ -399,7 +407,7 @@ public class BowserRoutingFuel {
       {0, 0, 0, 1, 0},
       {0, 0, 1, 0, 0}}};
       
-      fuelStockOutPenaltyCost = 20;
+      fuelStockOutPenaltyCost = 100;
    }
    
    private void mediumInstance(){
@@ -622,7 +630,7 @@ public class BowserRoutingFuel {
                                                               immediateValueFunction, 
                                                               buildActionList,
                                                               discountFactor,
-                                                              HashType.THASHMAP,
+                                                              HashType.HASHTABLE,
                                                               stateSpaceSizeLowerBound,
                                                               loadFactor,
                                                               samplingScheme,
@@ -640,7 +648,7 @@ public class BowserRoutingFuel {
       int sampleSize = 50;                                     // This is the sample size used to determine a state value function
       double reductionFactorPerStage = 5;
       
-      BowserRoutingFuel bowserRoutingFuel = new BowserRoutingFuel(InstanceType.TINY,
+      BowserRoutingFuel bowserRoutingFuel = new BowserRoutingFuel(InstanceType.SMALL,
                                                                   samplingScheme,
                                                                   sampleSize,
                                                                   reductionFactorPerStage);
