@@ -121,9 +121,18 @@ public abstract class StateSpace<SD> implements Iterable<State>{
          case THASHMAP:
             states = Collections.synchronizedMap(new THashMap<SD,State>(stateSpaceSizeLowerBound,loadFactor));
             break;
+         case MAPDB_HEAP:
+            this.states = new MapDBHashTable<SD,State>("states", Storage.HEAP);
+            break; 
+         case MAPDB_HEAP_SHARDED:
+            this.states = new MapDBHashTable<SD,State>("states", Storage.HEAP_SHARDED);
+            break; 
          case MAPDB_MEMORY:
             this.states = new MapDBHashTable<SD,State>("states", Storage.MEMORY);
-            break;   
+            break; 
+         case MAPDB_MEMORY_SHARDED:
+            this.states = new MapDBHashTable<SD,State>("states", Storage.MEMORY_SHARDED);
+            break;
          case MAPDB_DISK:
             this.states = new MapDBHashTable<SD,State>("states", Storage.DISK);
             break;    
