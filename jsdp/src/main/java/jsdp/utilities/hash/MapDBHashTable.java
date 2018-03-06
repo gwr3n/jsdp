@@ -50,17 +50,33 @@ public class MapDBHashTable<K,V> implements Map<K,V>{
    protected DB db;
    protected HTreeMap<K,V> table;
    
+   private static int shardConcurrency = 10;
+   
    public enum Storage {
+      HEAP,
+      HEAP_SHARDED,
       MEMORY,
+      MEMORY_SHARDED,
       DISK
    };
    
    @SuppressWarnings("unchecked")
    public MapDBHashTable(String name, Storage hashTableStorage){
       switch(hashTableStorage){
+      case HEAP:
+         db = DBMaker.heapDB().make();
+         this.table = (HTreeMap<K,V>)db.hashMap(name).create();
+         break;
+      case HEAP_SHARDED:
+         this.table =  (HTreeMap<K,V>)DBMaker.heapShardedHashMap(shardConcurrency).create();
+         break;
       case MEMORY:
          db = DBMaker.memoryDB().make();
          //db = DBMaker.memoryDirectDB().make();
+         this.table = (HTreeMap<K,V>)db.hashMap(name).create();
+         break;
+      case MEMORY_SHARDED:
+         this.table =  (HTreeMap<K,V>)DBMaker.memoryShardedHashMap(shardConcurrency).create();
          break;
       case DISK:
          File f = new File("tables");
@@ -68,12 +84,13 @@ public class MapDBHashTable<K,V> implements Map<K,V>{
             f.mkdir();
          }
          String uuid = UUID.randomUUID().toString();
-         db = DBMaker.fileDB("tables/"+name+uuid+".db")
+         db = DBMaker.fileDB("tables/"+name+uuid+".db").fileMmapEnableIfSupported()
                .allocateStartSize(50 * 1024*1024)  // 50MB
                .make();
+         this.table = (HTreeMap<K,V>)db.hashMap(name).create();
          break;
       }
-      this.table = (HTreeMap<K,V>)db.hashMap(name).create();
+      
    }
    
    @Override

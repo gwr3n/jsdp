@@ -743,7 +743,7 @@ public class BowserRoutingFuel {
                                                               immediateValueFunction, 
                                                               buildActionList,
                                                               discountFactor,
-                                                              HashType.HASHTABLE,
+                                                              HashType.MAPDB_HEAP_SHARDED,
                                                               stateSpaceSizeLowerBound,
                                                               loadFactor,
                                                               samplingScheme,
