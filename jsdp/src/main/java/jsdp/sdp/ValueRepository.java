@@ -77,10 +77,25 @@ public class ValueRepository {
             this.optimalValueHashTable = Collections.synchronizedMap(new THashMap<State,Double>());
             this.optimalActionHashTable = Collections.synchronizedMap(new THashMap<State,Action>());
             break;
+         case MAPDB_HEAP:
+            this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable", Storage.HEAP);
+            this.optimalValueHashTable = new MapDBHashTable<State,Double>("optimalValueHashTable", Storage.HEAP);
+            this.optimalActionHashTable = new MapDBHashTable<State,Action>("optimalActionHashTable", Storage.HEAP);
+            break;
+         case MAPDB_HEAP_SHARDED:
+            this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable", Storage.HEAP_SHARDED);
+            this.optimalValueHashTable = new MapDBHashTable<State,Double>("optimalValueHashTable", Storage.HEAP_SHARDED);
+            this.optimalActionHashTable = new MapDBHashTable<State,Action>("optimalActionHashTable", Storage.HEAP_SHARDED);
+            break;
          case MAPDB_MEMORY:
             this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable", Storage.MEMORY);
             this.optimalValueHashTable = new MapDBHashTable<State,Double>("optimalValueHashTable", Storage.MEMORY);
             this.optimalActionHashTable = new MapDBHashTable<State,Action>("optimalActionHashTable", Storage.MEMORY);
+            break;
+         case MAPDB_MEMORY_SHARDED:
+            this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable", Storage.MEMORY_SHARDED);
+            this.optimalValueHashTable = new MapDBHashTable<State,Double>("optimalValueHashTable", Storage.MEMORY_SHARDED);
+            this.optimalActionHashTable = new MapDBHashTable<State,Action>("optimalActionHashTable", Storage.MEMORY_SHARDED);
             break;
          case MAPDB_DISK:
             this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable", Storage.DISK);
@@ -121,10 +136,25 @@ public class ValueRepository {
             this.optimalValueHashTable = Collections.synchronizedMap(new THashMap<State,Double>(stateSpaceSizeLowerBound,loadFactor));
             this.optimalActionHashTable = Collections.synchronizedMap(new THashMap<State,Action>(stateSpaceSizeLowerBound,loadFactor));
             break;
+         case MAPDB_HEAP:
+            this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable", Storage.HEAP);
+            this.optimalValueHashTable = new MapDBHashTable<State,Double>("optimalValueHashTable", Storage.HEAP);
+            this.optimalActionHashTable = new MapDBHashTable<State,Action>("optimalActionHashTable", Storage.HEAP);
+            break;
+         case MAPDB_HEAP_SHARDED:
+            this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable", Storage.HEAP_SHARDED);
+            this.optimalValueHashTable = new MapDBHashTable<State,Double>("optimalValueHashTable", Storage.HEAP_SHARDED);
+            this.optimalActionHashTable = new MapDBHashTable<State,Action>("optimalActionHashTable", Storage.HEAP_SHARDED);
+            break;
          case MAPDB_MEMORY:
             this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable", Storage.MEMORY);
             this.optimalValueHashTable = new MapDBHashTable<State,Double>("optimalValueHashTable", Storage.MEMORY);
             this.optimalActionHashTable = new MapDBHashTable<State,Action>("optimalActionHashTable", Storage.MEMORY);
+            break;
+         case MAPDB_MEMORY_SHARDED:
+            this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable", Storage.MEMORY_SHARDED);
+            this.optimalValueHashTable = new MapDBHashTable<State,Double>("optimalValueHashTable", Storage.MEMORY_SHARDED);
+            this.optimalActionHashTable = new MapDBHashTable<State,Action>("optimalActionHashTable", Storage.MEMORY_SHARDED);
             break;
          case MAPDB_DISK:
             this.valueHashTable = new MapDBHashTable<StateAction,Double>("valueHashTable", Storage.DISK);
