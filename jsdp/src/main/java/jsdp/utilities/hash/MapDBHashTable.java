@@ -50,7 +50,7 @@ public class MapDBHashTable<K,V> implements Map<K,V>{
    protected DB db;
    protected HTreeMap<K,V> table;
    
-   private static int shardConcurrency = 10;
+   private static int shardConcurrency = 16;
    
    public enum Storage {
       HEAP,
