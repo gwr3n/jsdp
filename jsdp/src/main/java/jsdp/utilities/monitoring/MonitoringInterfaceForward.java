@@ -1,5 +1,7 @@
 package jsdp.utilities.monitoring;
 
+import java.util.Arrays;
+
 import jsdp.sdp.Recursion;
 
 /**
@@ -16,6 +18,7 @@ public class MonitoringInterfaceForward extends MonitoringInterface{
    protected long reusedStates;
    protected long actionCounter;
    protected long totalActions;
+   protected long[] actionFrequencies;
    
    public MonitoringInterfaceForward(Recursion recursion){
       recursion.setStateMonitoring(true);
@@ -32,11 +35,12 @@ public class MonitoringInterfaceForward extends MonitoringInterface{
     * @param generatedStates number of generated states
     * @param reusedStates number of reused 
     */
-   public void setStates(long generatedStates, long reusedStates, long actionCounter, long totalActions) {
+   public void setStates(long generatedStates, long reusedStates, long actionCounter, long totalActions, long[] actionFrequencies) {
       this.generatedStates = generatedStates;
       this.reusedStates = reusedStates;
       this.actionCounter = actionCounter;
       this.totalActions = totalActions;
+      this.actionFrequencies = actionFrequencies;
    }
    
    @Override
@@ -59,7 +63,8 @@ public class MonitoringInterfaceForward extends MonitoringInterface{
                + "States processed per second: "+ getProcessedStatesPerSecond() +"\n"
                + "Generated states: " + this.getGeneratedStates() +"\n"
                + "Reused states: " + this.getReusedStates() +"\n"
-               + "Percent completed: "+ (int) Math.floor(actionCounter*100.0/totalActions) +"%");
+               + "Percent completed: "+ (int) Math.floor(actionCounter*100.0/totalActions) +"%\n"
+               + Arrays.toString(actionFrequencies));
       }
    }
    
