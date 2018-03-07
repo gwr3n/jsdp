@@ -51,6 +51,16 @@ public abstract class ForwardRecursion extends Recursion{
    private long generatedStates = 0;
 	
    /**
+    * First period action counter
+    */
+   long actionCounter = 0;
+   
+   /**
+    * First period total actions
+    */
+   long totalActions = 0;
+   
+   /**
     * Monitor
     */
    private  MonitoringInterfaceForward monitor;
@@ -78,7 +88,7 @@ public abstract class ForwardRecursion extends Recursion{
          reusedStates++;
       else
          generatedStates++;
-      monitor.setStates(generatedStates, reusedStates);
+      monitor.setStates(generatedStates, reusedStates, actionCounter, totalActions);
 	}
 	
 	public double runForwardRecursionMonitoring(State state){
@@ -88,6 +98,13 @@ public abstract class ForwardRecursion extends Recursion{
 	   this.monitor.terminate();
 	   this.monitor.dispose();
 	   return expectedValue;
+	}
+	
+	/**
+	 * Count an action
+	 */
+	private void countAction() {
+	   actionCounter++;
 	}
 	
 	/**
@@ -103,6 +120,13 @@ public abstract class ForwardRecursion extends Recursion{
 	   
 		return this.valueRepository.optimalValueHashTable.computeIfAbsent(state, y -> {
 		   BestActionRepository repository = new BestActionRepository(direction);
+		   
+		   if(state.getPeriod() == 0) {
+		      totalActions = y.getFeasibleActions()
+                            .parallelStream()
+                            .count();
+		   }
+		   
 		   y.getFeasibleActions().stream().forEach(action -> {
 		         double normalisationFactor = this.getTransitionProbability()
 		                                          .generateFinalStates(y, action)
@@ -122,8 +146,9 @@ public abstract class ForwardRecursion extends Recursion{
 					if(normalisationFactor != 0)
                   currentCost /= normalisationFactor;
 					
-					
 					repository.update(action, currentCost);
+					
+					if(state.period == 0) this.countAction();
 				});
 				this.getValueRepository().setOptimalExpectedValue(y, repository.getBestValue());
 				this.getValueRepository().setOptimalAction(y, repository.getBestAction());

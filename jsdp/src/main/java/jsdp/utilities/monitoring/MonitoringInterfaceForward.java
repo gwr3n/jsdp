@@ -14,6 +14,8 @@ public class MonitoringInterfaceForward extends MonitoringInterface{
    private static final long serialVersionUID = 1L;
    
    protected long reusedStates;
+   protected long actionCounter;
+   protected long totalActions;
    
    public MonitoringInterfaceForward(Recursion recursion){
       recursion.setStateMonitoring(true);
@@ -30,9 +32,11 @@ public class MonitoringInterfaceForward extends MonitoringInterface{
     * @param generatedStates number of generated states
     * @param reusedStates number of reused 
     */
-   public void setStates(long generatedStates, long reusedStates) {
+   public void setStates(long generatedStates, long reusedStates, long actionCounter, long totalActions) {
       this.generatedStates = generatedStates;
       this.reusedStates = reusedStates;
+      this.actionCounter = actionCounter;
+      this.totalActions = totalActions;
    }
    
    @Override
@@ -54,7 +58,8 @@ public class MonitoringInterfaceForward extends MonitoringInterface{
                + "CPU: "  + this.getPercentCPU() +"%" +" ("+Runtime.getRuntime().availableProcessors()+" cores)\n"
                + "States processed per second: "+ getProcessedStatesPerSecond() +"\n"
                + "Generated states: " + this.getGeneratedStates() +"\n"
-               + "Reused states: " + this.getReusedStates());
+               + "Reused states: " + this.getReusedStates() +"\n"
+               + "Percent completed: "+ (int) Math.floor(actionCounter*100.0/totalActions) +"%");
       }
    }
    

@@ -814,6 +814,8 @@ public class BowserRoutingFuel {
       logger.info("Optimal initial action: "+recursion.getOptimalAction(initialState).toString());
       logger.info("Time elapsed: "+recursion.getMonitoringInterfaceForward().getTime());
       logger.info("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)");
+      logger.info("States generated: "+recursion.getMonitoringInterfaceForward().getGeneratedStates());
+      logger.info("States reused: "+recursion.getMonitoringInterfaceForward().getReusedStates());
       logger.info("---");
    }
    
