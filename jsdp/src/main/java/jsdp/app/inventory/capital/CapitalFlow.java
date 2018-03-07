@@ -143,7 +143,7 @@ public class CapitalFlow {
                                                               immediateValueFunctionRandomOutcome,
                                                               buildActionList,
                                                               discountFactor,
-                                                              HashType.HASHTABLE,
+                                                              HashType.MAPDB_MEMORY_SHARDED,
                                                               stateSpaceSizeLowerBound,
                                                               loadFactor,
                                                               samplingScheme,
