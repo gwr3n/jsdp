@@ -157,13 +157,13 @@ public abstract class ForwardRecursion extends Recursion{
 		         double normalisationFactor = this.getTransitionProbability()
 		                                          .generateFinalStates(y, action)
 		                                          .parallelStream()
-		                                          //.filter(c -> this.getTransitionProbability().getTransitionProbability(y, action, c) > 0)
+		                                          .filter(c -> this.getTransitionProbability().getTransitionProbability(y, action, c) > 0)
 		                                          .mapToDouble(finalState -> transitionProbability.getTransitionProbability(y, action, finalState))
 		                                          .sum();
 				   double currentCost = this.getTransitionProbability()
 				                            .generateFinalStates(y, action)
 				                            .stream()
-				                            //.filter(c -> this.getTransitionProbability().getTransitionProbability(y, action, c) > 0)
+				                            .filter(c -> this.getTransitionProbability().getTransitionProbability(y, action, c) > 0)
 				                            .mapToDouble(c -> ( this.getValueRepository().getImmediateValue(y, action, c)+
 						 				                              (y.getPeriod() < horizonLength - 1 ? runForwardRecursion(c) : 0) )*
 				                                                this.getValueRepository().getDiscountFactor()*
