@@ -22,7 +22,7 @@ public class MonitoringInterfaceForward extends MonitoringInterface{
       this.setTitle("jsdp statistics");
       this.text.setEditable(false);
       this.getContentPane().add(text);
-      this.setSize(300, 120);
+      this.setSize(300, 150);
       this.setVisible(true);
    }
    
