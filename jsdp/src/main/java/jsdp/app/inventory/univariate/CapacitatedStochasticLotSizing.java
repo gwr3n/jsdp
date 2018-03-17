@@ -185,6 +185,17 @@ public class CapacitatedStochasticLotSizing {
       System.out.println();
       
       /*******************************************************************
+       * KConvexity
+       */
+      
+      if(testKConvexity(0, recursion, StateImpl.getMinState(), StateImpl.getMaxState()))
+         System.out.println("The function is K convex");
+      else
+         System.out.println("The function is not K convex");
+      
+      System.out.println();
+      
+      /*******************************************************************
        * Charting
        */   
       System.out.println("--------------Charting--------------");
@@ -227,6 +238,34 @@ public class CapacitatedStochasticLotSizing {
          if(!simulate) System.out.println("Simulation disabled.");
          if(samplingScheme != SamplingScheme.NONE) System.out.println("Cannot simulate a sampled solution, please disable sampling: set samplingScheme == SamplingScheme.NONE.");
       }
+   }
+   
+   static boolean testKConvexity(int targetPeriod, BackwardRecursionImpl recursion, double minState, double maxState) {
+      //recursion.runBackwardRecursion(targetPeriod);
+      
+      for(int k = 0; k < 1000; k++) {
+         double x = minState;
+         while(x <= Math.random()*(maxState-minState)+minState) x+=StateImpl.getStepSize();
+         
+         double a = minState;
+         while(a <= Math.min(Math.random()*(maxState-minState)+x,maxState)) a+=StateImpl.getStepSize();
+         
+         StateDescriptorImpl stateDescriptorx = new StateDescriptorImpl(targetPeriod, x);
+         double gx = recursion.getExpectedCost(stateDescriptorx);
+         
+         StateDescriptorImpl stateDescriptorxa = new StateDescriptorImpl(targetPeriod, x+a);
+         double gxa = recursion.getExpectedCost(stateDescriptorxa);
+         
+         StateDescriptorImpl stateDescriptorxd = new StateDescriptorImpl(targetPeriod, x+StateImpl.getStepSize());
+         double gxd = recursion.getExpectedCost(stateDescriptorxd);
+         
+         double fixedOrderingCost = 200; 
+         
+         if(!(fixedOrderingCost + gxa - gx - a*gxd >= 0))
+            return false;
+      }
+      
+      return true;
    }
    
    static void plotOptimalPolicyCost(int targetPeriod, BackwardRecursionImpl recursion, double minState, double maxState){
