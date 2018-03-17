@@ -718,6 +718,10 @@ public class BowserRoutingFuel {
                }
             }
          }
+         return feasibleActions;
+         /*
+          * Action sampling
+          * 
          if(this.samplingScheme == SamplingScheme.NONE) {
             return feasibleActions;
          }else if(this.samplingScheme == SamplingScheme.SIMPLE_RANDOM_SAMPLING){
@@ -727,7 +731,7 @@ public class BowserRoutingFuel {
             return new ArrayList<Action>(feasibleActions.subList(0, this.sampleSize/reductionFactor < 1 ? 1 : Math.min(this.sampleSize/reductionFactor, feasibleActions.size())));
          }else{
             throw new NullPointerException("Method not implemented");
-         }
+         }*/
       };
       
       // Immediate Value Function
