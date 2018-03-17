@@ -28,6 +28,8 @@ package jsdp.app.routing.stochastic.fuel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -716,7 +718,16 @@ public class BowserRoutingFuel {
                }
             }
          }
-         return feasibleActions;
+         if(this.samplingScheme == SamplingScheme.NONE) {
+            return feasibleActions;
+         }else if(this.samplingScheme == SamplingScheme.SIMPLE_RANDOM_SAMPLING){
+            Random rnd = new Random(12345);
+            Collections.shuffle(feasibleActions, rnd);
+            int reductionFactor = (int) Math.pow(reductionFactorPerStage, state.getPeriod());
+            return new ArrayList<Action>(feasibleActions.subList(0, this.sampleSize/reductionFactor < 1 ? 1 : Math.min(this.sampleSize/reductionFactor, feasibleActions.size())));
+         }else{
+            throw new NullPointerException("Method not implemented");
+         }
       };
       
       // Immediate Value Function
