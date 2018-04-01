@@ -228,7 +228,7 @@ public class BowserRoutingFuel {
       N = 10;   //nodes
       bowserInitialTankLevel = 10;
       maxBowserTankLevel = 300;
-      minRefuelingQty = 1;
+      minRefuelingQty = 5;
       tankCapacity = new int[]{20, 20, 20};
       initialTankLevel = new int[]{10, 10, 10};
       
@@ -720,7 +720,7 @@ public class BowserRoutingFuel {
          }
          return feasibleActions;
          /*
-          * Action sampling
+          * Action sampling (a coarser discretization of the action space is more effective than sampling)
           * 
          if(this.samplingScheme == SamplingScheme.NONE) {
             return feasibleActions;
@@ -772,8 +772,8 @@ public class BowserRoutingFuel {
       /**
        * Sampling scheme
        */
-      SamplingScheme samplingScheme = SamplingScheme.NONE;
-      int sampleSize = 50;                                     // This is the sample size used to determine a state value function
+      SamplingScheme samplingScheme = SamplingScheme.SIMPLE_RANDOM_SAMPLING;
+      int sampleSize = 100;                                     // This is the sample size used to determine a state value function
       double reductionFactorPerStage = 5;
       
       BowserRoutingFuel bowserRoutingFuel = new BowserRoutingFuel(InstanceType.EXAMPLE_1,

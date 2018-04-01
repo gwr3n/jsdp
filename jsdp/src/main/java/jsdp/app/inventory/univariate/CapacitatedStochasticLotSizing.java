@@ -49,7 +49,7 @@ import jsdp.sdp.State;
 import jsdp.sdp.Recursion.OptimisationDirection;
 import jsdp.sdp.impl.univariate.*;
 import jsdp.app.inventory.univariate.simulation.SimulatePolicies;
-
+import jsdp.app.inventory.univariate.simulation.skSk_Policy;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
 
@@ -68,11 +68,11 @@ public class CapacitatedStochasticLotSizing {
       /*******************************************************************
        * Problem parameters
        */
-      double fixedOrderingCost = 200; 
+      double fixedOrderingCost = 100; 
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
       double penaltyCost = 10;
-      double maxOrderQuantity = 75;
+      double maxOrderQuantity = 71;
       
       double[] meanDemand = {20,40,60,40};
       //double coefficientOfVariation = 0.2;
@@ -105,7 +105,7 @@ public class CapacitatedStochasticLotSizing {
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
       double minState = -150;
-      double maxState = 300;
+      double maxState = 200;
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
       // Actions
@@ -220,20 +220,49 @@ public class CapacitatedStochasticLotSizing {
       /*******************************************************************
        * Simulation
        */
-      System.out.println("--------------Simulation--------------");
+      System.out.println("--------------Simulate SDP policy--------------");
       double confidence = 0.95;            //Simulation confidence level 
       double errorTolerance = 0.0001;      //Simulation error threshold
       
       if(simulate && samplingScheme == SamplingScheme.NONE) 
          simulate(distributions, 
-               fixedOrderingCost, 
-               holdingCost, 
-               penaltyCost, 
-               proportionalOrderingCost, 
-               initialInventory, 
-               recursion, 
-               confidence, 
-               errorTolerance);
+                  fixedOrderingCost, 
+                  holdingCost, 
+                  penaltyCost, 
+                  proportionalOrderingCost, 
+                  maxOrderQuantity,
+                  initialInventory, 
+                  recursion, 
+                  confidence, 
+                  errorTolerance);
+      else{
+         if(!simulate) System.out.println("Simulation disabled.");
+         if(samplingScheme != SamplingScheme.NONE) System.out.println("Cannot simulate a sampled solution, please disable sampling: set samplingScheme == SamplingScheme.NONE.");
+      }
+      
+      /*******************************************************************
+       * Simulate (sk,Sk) policy
+       */
+      System.out.println("--------------Simulate (sk,Sk) policy--------------");
+      System.out.println("S[t][k], where t is the time period and k is the (sk,Sk) index.");
+      System.out.println();
+      confidence = 0.95;            //Simulation confidence level 
+      errorTolerance = 0.0001;      //Simulation error threshold
+      
+      int thresholdNumberLimit = Integer.MAX_VALUE;
+      
+      if(simulate && samplingScheme == SamplingScheme.NONE) 
+         simulateskSk(distributions, 
+                      fixedOrderingCost, 
+                      holdingCost, 
+                      penaltyCost, 
+                      proportionalOrderingCost, 
+                      maxOrderQuantity,
+                      initialInventory, 
+                      recursion, 
+                      confidence, 
+                      errorTolerance,
+                      thresholdNumberLimit);
       else{
          if(!simulate) System.out.println("Simulation disabled.");
          if(samplingScheme != SamplingScheme.NONE) System.out.println("Cannot simulate a sampled solution, please disable sampling: set samplingScheme == SamplingScheme.NONE.");
@@ -242,9 +271,10 @@ public class CapacitatedStochasticLotSizing {
    
    static boolean testKConvexity(int targetPeriod, BackwardRecursionImpl recursion, double minState, double maxState) {
       //recursion.runBackwardRecursion(targetPeriod);
-      
+
       for(int k = 0; k < 1000; k++) {
          double x = minState;
+         
          while(x <= Math.random()*(maxState-minState)+minState) x+=StateImpl.getStepSize();
          
          double a = minState;
@@ -261,8 +291,11 @@ public class CapacitatedStochasticLotSizing {
          
          double fixedOrderingCost = 200; 
          
-         if(!(fixedOrderingCost + gxa - gx - a*gxd >= 0))
+         if(!(fixedOrderingCost + gxa - gx - a*gxd >= 0)) {
+            System.out.println("x: "+x);
+            System.out.println("a: "+a);
             return false;
+         }
       }
       
       return true;
@@ -274,6 +307,7 @@ public class CapacitatedStochasticLotSizing {
       for(double i = minState; i <= maxState; i += StateImpl.getStepSize()){
          StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(targetPeriod, i);
          series.add(i,recursion.getExpectedCost(stateDescriptor));
+         //System.out.println("("+i+","+(recursion.getExpectedCost(stateDescriptor)-250)+")");
       }
       XYDataset xyDataset = new XYSeriesCollection(series);
       JFreeChart chart = ChartFactory.createXYLineChart("Optimal policy policy - period "+targetPeriod+" expected total cost", "Opening inventory level", "Expected total cost",
@@ -288,6 +322,7 @@ public class CapacitatedStochasticLotSizing {
       for(double i = minState; i <= maxState; i += StateImpl.getStepSize()){
          StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(targetPeriod, i);
          series.add(i,recursion.getOptimalAction(stateDescriptor).getAction());
+         //System.out.println("("+i+","+recursion.getOptimalAction(stateDescriptor).getAction()+")");
       }
       
       XYDataset xyDataset = new XYSeriesCollection(series);
@@ -303,7 +338,8 @@ public class CapacitatedStochasticLotSizing {
                         double holdingCost,
                         double penaltyCost,
                         double proportionalOrderingCost,
-                        double initialInventory,
+                        double maxOrderQuantity,                        
+                        double initialInventory,                        
                         BackwardRecursionImpl recursion,
                         double confidence,
                         double errorTolerance){
@@ -313,19 +349,65 @@ public class CapacitatedStochasticLotSizing {
       DecimalFormat df = new DecimalFormat("#.00",otherSymbols);
       
       double[] results = SimulatePolicies.simulateStochaticLotSizing(distributions, 
-                                                      fixedOrderingCost, 
-                                                      holdingCost, 
-                                                      penaltyCost, 
-                                                      proportionalOrderingCost, 
-                                                      initialInventory, 
-                                                      recursion, 
-                                                      confidence, 
-                                                      errorTolerance);
+                                                                     fixedOrderingCost, 
+                                                                     holdingCost, 
+                                                                     penaltyCost, 
+                                                                     proportionalOrderingCost, 
+                                                                     initialInventory, 
+                                                                     recursion, 
+                                                                     confidence, 
+                                                                     errorTolerance);
       System.out.println();
       System.out.println("Simulated cost: "+ df.format(results[0])+
                          " Confidence interval=("+df.format(results[0]-results[1])+","+
                          df.format(results[0]+results[1])+")@"+
                          df.format(confidence*100)+"% confidence");
+      System.out.println();
+   }
+   
+   static void simulateskSk(Distribution[] distributions,
+         double fixedOrderingCost,
+         double holdingCost,
+         double penaltyCost,
+         double proportionalOrderingCost,
+         double maxOrderQuantity,                        
+         double initialInventory,                        
+         BackwardRecursionImpl recursion,
+         double confidence,
+         double errorTolerance,
+         int thresholdNumberLimit){
+
+
+      DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.ENGLISH);
+      DecimalFormat df = new DecimalFormat("#.00",otherSymbols);
+
+      skSk_Policy policy = new skSk_Policy(recursion, distributions.length);
+      double[][][] optimalPolicy = policy.getOptimalPolicy(initialInventory, thresholdNumberLimit);
+      double[][] s = optimalPolicy[0];
+      double[][] S = optimalPolicy[1];
+      for(int i = 0; i < distributions.length; i++){
+         for(int k = 0; k < s[i].length; k++){
+            System.out.println("S["+(i+1)+"]["+(k+1)+"]:"+df.format(S[i][k])+"\ts["+(i+1)+"]["+(k+1)+"]:"+df.format(s[i][k]));
+         }
+         System.out.println();
+      }
+
+      double[] results = SimulatePolicies.simulate_skSk(distributions, 
+            fixedOrderingCost, 
+            holdingCost, 
+            penaltyCost, 
+            proportionalOrderingCost,
+            maxOrderQuantity,
+            initialInventory, 
+            S,
+            s,
+            confidence, 
+            errorTolerance);
+      System.out.println();
+      System.out.println("Simulated cost: "+ df.format(results[0])+
+            " Confidence interval=("+df.format(results[0]-results[1])+","+
+            df.format(results[0]+results[1])+")@"+
+            df.format(confidence*100)+"% confidence");
       System.out.println();
    }
 }

@@ -78,12 +78,12 @@ public class StochasticLotSizing {
       /*******************************************************************
        * Problem parameters
        */
-      double fixedOrderingCost = 50; 
+      double fixedOrderingCost = 100; 
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
-      double penaltyCost = 4;
+      double penaltyCost = 10;
       
-      double[] meanDemand = {20,30,20,40};
+      double[] meanDemand = {20,40,60,40};
       //@SuppressWarnings("unused")
       double coefficientOfVariation = 0.25;
       double truncationQuantile = 0.999;
@@ -113,8 +113,8 @@ public class StochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      double minState = -50;     //Inventory level lower bound in each period
-      double maxState = 150;     //Inventory level upper bound in each period
+      double minState = -20;       //Inventory level lower bound in each period
+      double maxState = 200;     //Inventory level upper bound in each period
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
       // Actions
