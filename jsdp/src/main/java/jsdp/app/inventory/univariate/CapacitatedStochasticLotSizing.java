@@ -72,7 +72,7 @@ public class CapacitatedStochasticLotSizing {
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
       double penaltyCost = 10;
-      double maxOrderQuantity = 71;
+      double maxOrderQuantity = 65;
       
       double[] meanDemand = {20,40,60,40};
       //double coefficientOfVariation = 0.2;
@@ -224,8 +224,10 @@ public class CapacitatedStochasticLotSizing {
       double confidence = 0.95;            //Simulation confidence level 
       double errorTolerance = 0.0001;      //Simulation error threshold
       
+      double simulatedETC = Double.NaN; 
+      
       if(simulate && samplingScheme == SamplingScheme.NONE) 
-         simulate(distributions, 
+         simulatedETC = simulate(distributions, 
                   fixedOrderingCost, 
                   holdingCost, 
                   penaltyCost, 
@@ -249,7 +251,7 @@ public class CapacitatedStochasticLotSizing {
       confidence = 0.95;            //Simulation confidence level 
       errorTolerance = 0.0001;      //Simulation error threshold
       
-      int thresholdNumberLimit = Integer.MAX_VALUE;
+      int thresholdNumberLimit = Integer.MAX_VALUE; //Number of thresholds used by the (sk,Sk) policy in each period
       
       if(simulate && samplingScheme == SamplingScheme.NONE) 
          simulateskSk(distributions, 
@@ -262,7 +264,8 @@ public class CapacitatedStochasticLotSizing {
                       recursion, 
                       confidence, 
                       errorTolerance,
-                      thresholdNumberLimit);
+                      thresholdNumberLimit,
+                      simulatedETC);
       else{
          if(!simulate) System.out.println("Simulation disabled.");
          if(samplingScheme != SamplingScheme.NONE) System.out.println("Cannot simulate a sampled solution, please disable sampling: set samplingScheme == SamplingScheme.NONE.");
@@ -333,7 +336,7 @@ public class CapacitatedStochasticLotSizing {
       frame.setSize(500,400);
    }
    
-   static void simulate(Distribution[] distributions,
+   static double simulate(Distribution[] distributions,
                         double fixedOrderingCost,
                         double holdingCost,
                         double penaltyCost,
@@ -363,9 +366,11 @@ public class CapacitatedStochasticLotSizing {
                          df.format(results[0]+results[1])+")@"+
                          df.format(confidence*100)+"% confidence");
       System.out.println();
+      
+      return results[0];
    }
    
-   static void simulateskSk(Distribution[] distributions,
+   static double simulateskSk(Distribution[] distributions,
          double fixedOrderingCost,
          double holdingCost,
          double penaltyCost,
@@ -375,7 +380,8 @@ public class CapacitatedStochasticLotSizing {
          BackwardRecursionImpl recursion,
          double confidence,
          double errorTolerance,
-         int thresholdNumberLimit){
+         int thresholdNumberLimit,
+         double optimalPolicyCost){
 
 
       DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.ENGLISH);
@@ -408,6 +414,10 @@ public class CapacitatedStochasticLotSizing {
             " Confidence interval=("+df.format(results[0]-results[1])+","+
             df.format(results[0]+results[1])+")@"+
             df.format(confidence*100)+"% confidence");
+      DecimalFormat df3 = new DecimalFormat("#.000",otherSymbols);
+      System.out.println("Optimality gap: "+df3.format(100*(results[0]-optimalPolicyCost)/optimalPolicyCost)+"%");
       System.out.println();
+      
+      return results[0];
    }
 }
