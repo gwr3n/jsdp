@@ -39,8 +39,8 @@ public class skSk_Policy {
       double[][] s = new double[this.horizonLength][];
       for(int i = 0; i < this.horizonLength; i++){
          State[][] policy = find_skSk(i);
-         s[i] = Arrays.stream(policy[0]).mapToDouble(a -> ((StateImpl)a).getInitialState()).limit(thresholdNumberLimit).toArray();
-         S[i] = Arrays.stream(policy[1]).mapToDouble(a -> ((StateImpl)a).getInitialState()).limit(thresholdNumberLimit).toArray();
+         s[i] = Arrays.stream(policy[0], Math.max(0, policy[0].length-thresholdNumberLimit), policy[0].length).mapToDouble(a -> ((StateImpl)a).getInitialState()).toArray();
+         S[i] = Arrays.stream(policy[1], Math.max(0, policy[1].length-thresholdNumberLimit), policy[1].length).mapToDouble(a -> ((StateImpl)a).getInitialState()).toArray();
       }
       optimalPolicy[0] = s;
       optimalPolicy[1] = S;
