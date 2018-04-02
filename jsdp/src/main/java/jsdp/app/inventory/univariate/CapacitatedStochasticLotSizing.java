@@ -62,6 +62,10 @@ import umontreal.ssj.probdist.PoissonDist;
 public class CapacitatedStochasticLotSizing {
    
    public static void main(String args[]){
+      sampleInstance();
+   }
+   
+   public static void sampleInstance(){
       
       boolean simulate = true;
       

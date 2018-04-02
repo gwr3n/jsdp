@@ -68,6 +68,8 @@ public class skSk_Policy {
          }
          nextAction = ((ActionImpl)action).getAction();
       }
+      if(s.size() == 0 || S.size() == 0)
+         throw new NullPointerException("State space boundaries probably too narrow.");
       State[][] policy = new State[2][];
       policy[0] = s.stream().toArray(State[]::new);
       policy[1] = S.stream().toArray(State[]::new);
