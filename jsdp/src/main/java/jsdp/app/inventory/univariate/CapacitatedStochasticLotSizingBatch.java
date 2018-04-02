@@ -120,7 +120,7 @@ public class CapacitatedStochasticLotSizingBatch {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      double minState = -150;
+      double minState = -300;
       double maxState = 500;
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
