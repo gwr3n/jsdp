@@ -72,12 +72,12 @@ public class CapacitatedStochasticLotSizing {
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
       double penaltyCost = 10;
-      double maxOrderQuantity = 65;
+      double maxOrderQuantity = 71;
       
       double[] meanDemand = {20,40,60,40};
       //double coefficientOfVariation = 0.2;
       //double[] stdDemand = {1,1,1,1,1,1,1,1};
-      double truncationQuantile = 0.99;
+      double truncationQuantile = 0.9999;
       
       // Random variables
 
@@ -249,7 +249,7 @@ public class CapacitatedStochasticLotSizing {
       confidence = 0.95;            //Simulation confidence level 
       errorTolerance = 0.0001;      //Simulation error threshold
       
-      int thresholdNumberLimit = 1;
+      int thresholdNumberLimit = Integer.MAX_VALUE;
       
       if(simulate && samplingScheme == SamplingScheme.NONE) 
          simulateskSk(distributions, 
