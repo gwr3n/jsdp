@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
+import jsdp.app.inventory.univariate.simulation.skSk_Policy;
 import jsdp.sdp.Action;
 import jsdp.sdp.HashType;
 import jsdp.sdp.ImmediateValueFunction;
@@ -66,7 +67,7 @@ public class CapacitatedStochasticLotSizingBatch {
       };
       String[] demandPattern = {"STA", "LC1", "LC2", "SIN1", "SIN2", "RAND", "EMP1", "EMP2", "EMP3", "EMP4"};
       
-      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Max order quantity, Expected Demand, ETC sdp, ETC sim sdp, ETC sim skSk, ETC sim skSk Two, ETC sim skSk One");
+      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Max order quantity, Expected Demand, ETC sdp, ETC sim sdp, ETC sim skSk, ETC sim skSk Two, ETC sim skSk One, Max number of levels");
       
       for(double oc : fixedOrderingCost) {
          for(double u : proportionalOrderingCost) {
@@ -74,8 +75,8 @@ public class CapacitatedStochasticLotSizingBatch {
                for(double m : maxOrderQuantity) {
                   for(int d = 0; d < meanDemand.length; d++) {
                      double totalDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
-                     double[] result = runInstance(oc, u, holdingCost, p, m*totalDemand, meanDemand[d]);
-                     writeToFile(fileName, oc + "," + u + "," + p + "," + m*totalDemand + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
+                     double[] result = runInstance(oc, u, holdingCost, p, Math.round(m*totalDemand), meanDemand[d]);
+                     writeToFile(fileName, oc + "," + u + "," + p + "," + Math.round(m*totalDemand) + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]+","+result[5]);
                   }
                }
             }
@@ -228,6 +229,11 @@ public class CapacitatedStochasticLotSizingBatch {
       /*******************************************************************
        * Simulate (sk,Sk) policy
        */
+      
+      skSk_Policy policy = new skSk_Policy(recursion, distributions.length);
+      double[][][] optimalPolicy = policy.getOptimalPolicy(initialInventory, Integer.MAX_VALUE);
+      long maxNumberOfLevels = Arrays.stream(optimalPolicy[0]).mapToLong(a -> Arrays.stream(a).count()).max().getAsLong();
+      
       System.out.println("--------------Simulate (sk,Sk) policy--------------");
       System.out.println("S[t][k], where t is the time period and k is the (sk,Sk) index.");
       System.out.println();
@@ -297,12 +303,13 @@ public class CapacitatedStochasticLotSizingBatch {
          if(samplingScheme != SamplingScheme.NONE) System.out.println("Cannot simulate a sampled solution, please disable sampling: set samplingScheme == SamplingScheme.NONE.");
       }
       
-      double[] etcOut = new double[5];
+      double[] etcOut = new double[6];
       etcOut[0] = ETC;
       etcOut[1] = simulatedETC;
       etcOut[2] = simulatedskSkETCGen;
       etcOut[3] = simulatedskSkETCTwo;
       etcOut[4] = simulatedskSkETCOne;
+      etcOut[5] = maxNumberOfLevels;
       return etcOut;
    }
 }
