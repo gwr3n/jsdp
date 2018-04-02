@@ -68,11 +68,18 @@ public class skSk_Policy {
          }
          nextAction = ((ActionImpl)action).getAction();
       }
-      if(s.size() == 0 || S.size() == 0)
-         throw new NullPointerException("State space boundaries probably too narrow.");
-      State[][] policy = new State[2][];
-      policy[0] = s.stream().toArray(State[]::new);
-      policy[1] = S.stream().toArray(State[]::new);
-      return policy;
+      if(s.size() == 0 || S.size() == 0) {
+         System.err.println("State space boundaries probably too narrow.");
+         StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(period, StateImpl.getMinState());
+         State[][] policy = new State[2][];
+         policy[0] = new State[] {((StateSpaceImpl)recursion.getStateSpace(period)).getState(stateDescriptor)};
+         policy[1] = new State[] {((StateSpaceImpl)recursion.getStateSpace(period)).getState(stateDescriptor)};    
+         return policy;
+      }else {
+         State[][] policy = new State[2][];
+         policy[0] = s.stream().toArray(State[]::new);
+         policy[1] = S.stream().toArray(State[]::new);
+         return policy;
+      }
    }
 }

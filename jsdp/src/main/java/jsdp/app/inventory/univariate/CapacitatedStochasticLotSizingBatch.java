@@ -51,7 +51,7 @@ public class CapacitatedStochasticLotSizingBatch {
       double[] proportionalOrderingCost = {2,5,10};
       double holdingCost = 1;
       double[] penaltyCost = {5,10,15};
-      double[] maxOrderQuantity = {3,5,7}; //Max order quantity in m*totalDemand
+      double[] maxOrderQuantity = {3,5,7}; //Max order quantity in m*avgDemand
       double[][] meanDemand = {
             {30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30}, 
             {46 ,49 ,50 ,50 ,49 ,46 ,42 ,38 ,35 ,33 ,30 ,28 ,26 ,23 ,21 ,18 ,14 ,11 ,8 ,6}, 
@@ -121,7 +121,7 @@ public class CapacitatedStochasticLotSizingBatch {
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
       double minState = -150;
-      double maxState = 300;
+      double maxState = 500;
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
       // Actions
@@ -185,7 +185,7 @@ public class CapacitatedStochasticLotSizingBatch {
                                                                   samplingScheme,
                                                                   maxSampleSize,
                                                                   reductionFactorPerStage,
-                                                                  HashType.HASHTABLE);
+                                                                  HashType.MAPDB_HEAP_SHARDED);
 
       System.out.println("--------------Backward recursion--------------");
       recursion.runBackwardRecursionMonitoring();
