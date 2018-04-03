@@ -48,11 +48,11 @@ public class CapacitatedStochasticLotSizingBatch {
    }
    
    public static void runBatch(String fileName){
-      double[] fixedOrderingCost = {500,1000,2000};
+      double[] fixedOrderingCost = {250,500,1000};
       double[] proportionalOrderingCost = {2,5,10};
       double holdingCost = 1;
       double[] penaltyCost = {5,10,15};
-      double[] maxOrderQuantity = {3,5,7}; //Max order quantity in m*avgDemand
+      double[] maxOrderQuantity = {1,2,3}; //Max order quantity in m*avgDemand
       double[][] meanDemand = {
             {30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30}, 
             {46 ,49 ,50 ,50 ,49 ,46 ,42 ,38 ,35 ,33 ,30 ,28 ,26 ,23 ,21 ,18 ,14 ,11 ,8 ,6}, 
