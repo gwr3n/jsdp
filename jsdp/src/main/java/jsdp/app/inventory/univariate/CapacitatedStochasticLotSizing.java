@@ -192,7 +192,7 @@ public class CapacitatedStochasticLotSizing {
        * KConvexity
        */
       
-      if(testKConvexity(0, recursion, StateImpl.getMinState(), StateImpl.getMaxState()))
+      if(testKConvexity(0, recursion, StateImpl.getMinState(), StateImpl.getMaxState(), fixedOrderingCost))
          System.out.println("The function is K convex");
       else
          System.out.println("The function is not K convex");
@@ -276,7 +276,7 @@ public class CapacitatedStochasticLotSizing {
       }
    }
    
-   static boolean testKConvexity(int targetPeriod, BackwardRecursionImpl recursion, double minState, double maxState) {
+   static boolean testKConvexity(int targetPeriod, BackwardRecursionImpl recursion, double minState, double maxState, double fixedOrderingCost) {
       //recursion.runBackwardRecursion(targetPeriod);
 
       for(int k = 0; k < 1000; k++) {
@@ -284,8 +284,8 @@ public class CapacitatedStochasticLotSizing {
          
          while(x <= Math.random()*(maxState-minState)+minState) x+=StateImpl.getStepSize();
          
-         double a = minState;
-         while(a <= Math.min(Math.random()*(maxState-minState)+x,maxState)) a+=StateImpl.getStepSize();
+         double a = 0;
+         while(a <= Math.random()*(maxState-x)) a+=StateImpl.getStepSize();
          
          StateDescriptorImpl stateDescriptorx = new StateDescriptorImpl(targetPeriod, x);
          double gx = recursion.getExpectedCost(stateDescriptorx);
@@ -294,13 +294,15 @@ public class CapacitatedStochasticLotSizing {
          double gxa = recursion.getExpectedCost(stateDescriptorxa);
          
          StateDescriptorImpl stateDescriptorxd = new StateDescriptorImpl(targetPeriod, x+StateImpl.getStepSize());
-         double gxd = recursion.getExpectedCost(stateDescriptorxd);
-         
-         double fixedOrderingCost = 200; 
+         double gxd = recursion.getExpectedCost(stateDescriptorxd)-recursion.getExpectedCost(stateDescriptorx); 
          
          if(!(fixedOrderingCost + gxa - gx - a*gxd >= 0)) {
+            System.out.println("K: "+fixedOrderingCost);
             System.out.println("x: "+x);
             System.out.println("a: "+a);
+            System.out.println("gx: "+gx);
+            System.out.println("gxa: "+gxa);
+            System.out.println("gxd: "+gxd);
             return false;
          }
       }
