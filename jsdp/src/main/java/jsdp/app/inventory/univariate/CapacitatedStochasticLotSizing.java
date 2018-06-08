@@ -52,6 +52,7 @@ import jsdp.app.inventory.univariate.simulation.SimulatePolicies;
 import jsdp.app.inventory.univariate.simulation.skSk_Policy;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
+import umontreal.ssj.probdist.NormalDist;;
 
 /**
  *  We formulate the capacitated stochastic lot sizing problem as a stochastic dynamic programming problem. 
@@ -79,7 +80,7 @@ public class CapacitatedStochasticLotSizing {
       double maxOrderQuantity = 65;
       
       double[] meanDemand = {20,40,60,40};
-      //double coefficientOfVariation = 0.2;
+      //double coefficientOfVariation = 0.15;
       //double[] stdDemand = {1,1,1,1,1,1,1,1};
       double truncationQuantile = 0.9999;
       
@@ -93,7 +94,8 @@ public class CapacitatedStochasticLotSizing {
                                               .toArray(Distribution[]::new);
       double[] supportLB = IntStream.iterate(0, i -> i + 1)
                                     .limit(meanDemand.length)
-                                    .mapToDouble(i -> distributions[i].inverseF(1-truncationQuantile))
+                                    //.mapToDouble(i -> distributions[i].inverseF(1-truncationQuantile))
+                                    .mapToDouble(i -> 0)
                                     .toArray();
       double[] supportUB = IntStream.iterate(0, i -> i + 1)
                                     .limit(meanDemand.length)
@@ -189,17 +191,6 @@ public class CapacitatedStochasticLotSizing {
       System.out.println();
       
       /*******************************************************************
-       * KConvexity
-       */
-      
-      if(testKConvexity(0, recursion, StateImpl.getMinState(), StateImpl.getMaxState(), fixedOrderingCost))
-         System.out.println("The function is K convex");
-      else
-         System.out.println("The function is not K convex");
-      
-      System.out.println();
-      
-      /*******************************************************************
        * Charting
        */   
       System.out.println("--------------Charting--------------");
@@ -218,7 +209,18 @@ public class CapacitatedStochasticLotSizing {
                                                                       maxSampleSize,
                                                                       reductionFactorPerStage,
                                                                       HashType.HASHTABLE);
-      plotOptimalPolicyCost(targetPeriod, recursionPlot, StateImpl.getMinState(), StateImpl.getMaxState());   //Plot optimal policy cost      
+      plotOptimalPolicyCost(targetPeriod, recursionPlot, 0, StateImpl.getMaxState());   //Plot optimal policy cost      
+      System.out.println();
+      
+      /*******************************************************************
+       * KConvexity
+       */
+      
+      if(testKConvexity(0, recursionPlot, -50, StateImpl.getMaxState(), fixedOrderingCost, maxOrderQuantity))
+         System.out.println("The function is K convex");
+      else
+         System.out.println("The function is not K convex");
+      
       System.out.println();
       
       /*******************************************************************
@@ -276,16 +278,22 @@ public class CapacitatedStochasticLotSizing {
       }
    }
    
-   static boolean testKConvexity(int targetPeriod, BackwardRecursionImpl recursion, double minState, double maxState, double fixedOrderingCost) {
-      //recursion.runBackwardRecursion(targetPeriod);
+   static boolean testKConvexity(int targetPeriod, BackwardRecursionImpl recursion, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
+      //recursion.runBackwardRecursion(targetPeriod); // Not strictly needed because it has been already called by the plot function, saves time.
 
       for(int k = 0; k < 1000; k++) {
          double x = minState;
          
-         while(x <= Math.random()*(maxState-minState)+minState) x+=StateImpl.getStepSize();
+         double lb = Math.random()*(maxState-minState)+minState;
+         while(x <= lb) 
+            x+=StateImpl.getStepSize();
+         //x = 42;
          
          double a = 0;
-         while(a <= Math.random()*(maxState-x)) a+=StateImpl.getStepSize();
+         double ub = Math.min(maxOrderQuantity, Math.random()*(maxState-x));
+         while(a <= ub) 
+            a+=StateImpl.getStepSize();
+         //a = 120;
          
          StateDescriptorImpl stateDescriptorx = new StateDescriptorImpl(targetPeriod, x);
          double gx = recursion.getExpectedCost(stateDescriptorx);
@@ -296,13 +304,14 @@ public class CapacitatedStochasticLotSizing {
          StateDescriptorImpl stateDescriptorxd = new StateDescriptorImpl(targetPeriod, x+StateImpl.getStepSize());
          double gxd = recursion.getExpectedCost(stateDescriptorxd)-recursion.getExpectedCost(stateDescriptorx); 
          
-         if(!(fixedOrderingCost + gxa - gx - a*gxd >= 0)) {
+         if(fixedOrderingCost + gxa - gx - a*gxd < 0) {
             System.out.println("K: "+fixedOrderingCost);
             System.out.println("x: "+x);
             System.out.println("a: "+a);
             System.out.println("gx: "+gx);
             System.out.println("gxa: "+gxa);
             System.out.println("gxd: "+gxd);
+            System.out.println("Discrepancy: "+(fixedOrderingCost + gxa - gx - a*gxd));
             return false;
          }
       }
@@ -316,7 +325,7 @@ public class CapacitatedStochasticLotSizing {
       for(double i = minState; i <= maxState; i += StateImpl.getStepSize()){
          StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(targetPeriod, i);
          series.add(i,recursion.getExpectedCost(stateDescriptor));
-         //System.out.println("("+i+","+(recursion.getExpectedCost(stateDescriptor)-250)+")");
+         //System.out.println("("+i+","+(recursion.getExpectedCost(stateDescriptor)-200)+")");
       }
       XYDataset xyDataset = new XYSeriesCollection(series);
       JFreeChart chart = ChartFactory.createXYLineChart("Optimal policy policy - period "+targetPeriod+" expected total cost", "Opening inventory level", "Expected total cost",
