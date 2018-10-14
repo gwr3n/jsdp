@@ -52,7 +52,7 @@ import jsdp.app.inventory.univariate.simulation.SimulatePolicies;
 import jsdp.app.inventory.univariate.simulation.skSk_Policy;
 import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.PoissonDist;
-import umontreal.ssj.probdist.NormalDist;;
+import umontreal.ssj.probdist.NormalDist;
 
 /**
  *  We formulate the capacitated stochastic lot sizing problem as a stochastic dynamic programming problem. 
@@ -60,6 +60,7 @@ import umontreal.ssj.probdist.NormalDist;;
  * @author Roberto Rossi
  *
  */
+@SuppressWarnings("unused")
 public class CapacitatedStochasticLotSizing {
    
    public static void main(String args[]){
