@@ -29,6 +29,7 @@ package jsdp.app.inventory.univariate;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.function.Function;
 import java.util.stream.IntStream;
@@ -64,7 +65,215 @@ import umontreal.ssj.probdist.NormalDist;
 public class CapacitatedStochasticLotSizing {
    
    public static void main(String args[]){
-      sampleInstance();
+      randomInstance();
+   }
+   
+   public static void randomInstance(){
+      
+      boolean simulate = true;
+      
+      /*******************************************************************
+       * Problem parameters
+       */
+      java.util.Random rnd = new java.util.Random();
+      
+      double fixedOrderingCost = rnd.nextInt(150) + 50; 
+      double proportionalOrderingCost = 0; 
+      double holdingCost = 1;
+      double penaltyCost = rnd.nextInt(15)+5;
+      double maxOrderQuantity = 35+rnd.nextInt(60);
+      
+      double[] meanDemand = IntStream.iterate(0, i -> i + 1)
+                                     .limit(10)
+                                     .mapToDouble(i -> rnd.nextInt(100)).toArray();
+      
+      System.out.println(
+            "Fixed ordering: "+fixedOrderingCost+"\n"+
+            "Proportional ordering: "+proportionalOrderingCost+"\n"+
+            "Holding cost: "+holdingCost+"\n"+
+            "Penalty cost: "+penaltyCost+"\n"+
+            "Capacity: "+maxOrderQuantity+"\n"+
+            "Demand: "+ Arrays.toString(meanDemand));
+      
+      //double coefficientOfVariation = 0.15;
+      //double[] stdDemand = {1,1,1,1,1,1,1,1};
+      double truncationQuantile = 0.9999;
+      
+      // Random variables
+
+      Distribution[] distributions = IntStream.iterate(0, i -> i + 1)
+                                              .limit(meanDemand.length)
+                                              //.mapToObj(i -> new NormalDist(meanDemand[i],stdDemand[i]))
+                                              //.mapToObj(i -> new NormalDist(meanDemand[i],meanDemand[i]*coefficientOfVariation))
+                                              .mapToObj(i -> new PoissonDist(meanDemand[i]))
+                                              .toArray(Distribution[]::new);
+      double[] supportLB = IntStream.iterate(0, i -> i + 1)
+                                    .limit(meanDemand.length)
+                                    //.mapToDouble(i -> distributions[i].inverseF(1-truncationQuantile))
+                                    .mapToDouble(i -> 0)
+                                    .toArray();
+      double[] supportUB = IntStream.iterate(0, i -> i + 1)
+                                    .limit(meanDemand.length)
+                                    .mapToDouble(i -> distributions[i].inverseF(truncationQuantile))
+                                    .toArray();      
+      double initialInventory = 0;
+      
+      /*******************************************************************
+       * Model definition
+       */
+      
+      // State space
+      
+      double stepSize = 1;       //Stepsize must be 1 for discrete distributions
+      double minState = -150;
+      double maxState = 200;
+      StateImpl.setStateBoundaries(stepSize, minState, maxState);
+
+      // Actions
+      
+      Function<State, ArrayList<Action>> buildActionList = s -> {
+         StateImpl state = (StateImpl) s;
+         ArrayList<Action> feasibleActions = new ArrayList<Action>();
+         for(double i = state.getInitialState(); 
+             i <= StateImpl.getMaxState() && i <= state.getInitialState() + maxOrderQuantity; 
+             i += StateImpl.getStepSize()){
+            feasibleActions.add(new ActionImpl(state, i - state.getInitialState()));
+         }
+         return feasibleActions;
+      };
+      
+      Function<State, Action> idempotentAction = s -> new ActionImpl(s, 0);
+      
+      // Immediate Value Function
+      
+      ImmediateValueFunction<State, Action, Double> immediateValueFunction = (initialState, action, finalState) -> {
+         ActionImpl a = (ActionImpl)action;
+         StateImpl fs = (StateImpl)finalState;
+         double orderingCost = 
+               a.getAction() > 0 ? (fixedOrderingCost + a.getAction()*proportionalOrderingCost) : 0;
+         double holdingAndPenaltyCost =   
+               holdingCost*Math.max(fs.getInitialState(),0) + penaltyCost*Math.max(-fs.getInitialState(),0);
+         return orderingCost+holdingAndPenaltyCost;
+      };
+      
+      // Random Outcome Function
+      
+      RandomOutcomeFunction<State, Action, Double> randomOutcomeFunction = (initialState, action, finalState) -> {
+         double realizedDemand = ((StateImpl)initialState).getInitialState() +
+                                 ((ActionImpl)action).getAction() -
+                                 ((StateImpl)finalState).getInitialState();
+         return realizedDemand;
+      };
+      
+      /*******************************************************************
+       * Solve
+       */
+      
+      // Sampling scheme
+      
+      SamplingScheme samplingScheme = SamplingScheme.NONE;
+      int maxSampleSize = 200;
+      double reductionFactorPerStage = 1;
+      
+      
+      // Value Function Processing Method: backward recursion
+      double discountFactor = 1.0;
+      BackwardRecursionImpl recursion = new BackwardRecursionImpl(OptimisationDirection.MIN,
+                                                                  distributions,
+                                                                  supportLB,
+                                                                  supportUB,                                                                  
+                                                                  immediateValueFunction,
+                                                                  randomOutcomeFunction,
+                                                                  buildActionList,
+                                                                  idempotentAction,
+                                                                  discountFactor,
+                                                                  samplingScheme,
+                                                                  maxSampleSize,
+                                                                  reductionFactorPerStage,
+                                                                  HashType.HASHTABLE);
+
+      System.out.println("--------------Backward recursion--------------");
+      recursion.runBackwardRecursionMonitoring();
+      System.out.println();
+      double ETC = recursion.getExpectedCost(initialInventory);
+      StateDescriptorImpl initialState = new StateDescriptorImpl(0, initialInventory);
+      double action = recursion.getOptimalAction(initialState).getAction();
+      long percent = recursion.getMonitoringInterfaceBackward().getPercentCPU();
+      System.out.println("Expected total cost (assuming an initial inventory level "+initialInventory+"): "+ETC);
+      System.out.println("Optimal initial action: "+action);
+      System.out.println("Time elapsed: "+recursion.getMonitoringInterfaceBackward().getTime());
+      System.out.println("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)");
+      System.out.println();
+      
+      /*******************************************************************
+       * KConvexity
+       */
+      
+      if(testKConvexity(0, recursion, -50, StateImpl.getMaxState(), fixedOrderingCost, maxOrderQuantity))
+         System.out.println("The function is (K,B) convex");
+      else {
+         System.out.println("The function is not (K,B) convex");
+         throw new NullPointerException("The function is not (K,B) convex");
+      }
+      
+      System.out.println();
+      
+      /*******************************************************************
+       * Simulation
+       */
+      System.out.println("--------------Simulate SDP policy--------------");
+      double confidence = 0.95;            //Simulation confidence level 
+      double errorTolerance = 0.0001;      //Simulation error threshold
+      
+      double simulatedETC = Double.NaN; 
+      
+      if(simulate && samplingScheme == SamplingScheme.NONE) 
+         simulatedETC = simulate(distributions, 
+                  fixedOrderingCost, 
+                  holdingCost, 
+                  penaltyCost, 
+                  proportionalOrderingCost, 
+                  maxOrderQuantity,
+                  initialInventory, 
+                  recursion, 
+                  confidence, 
+                  errorTolerance);
+      else{
+         if(!simulate) System.out.println("Simulation disabled.");
+         if(samplingScheme != SamplingScheme.NONE) System.out.println("Cannot simulate a sampled solution, please disable sampling: set samplingScheme == SamplingScheme.NONE.");
+      }
+      
+      /*******************************************************************
+       * Simulate (sk,Sk) policy
+       */
+      System.out.println("--------------Simulate (sk,Sk) policy--------------");
+      System.out.println("S[t][k], where t is the time period and k is the (sk,Sk) index.");
+      System.out.println();
+      confidence = 0.95;            //Simulation confidence level 
+      errorTolerance = 0.0001;      //Simulation error threshold
+      
+      int thresholdNumberLimit = Integer.MAX_VALUE; //Number of thresholds used by the (sk,Sk) policy in each period
+      
+      if(simulate && samplingScheme == SamplingScheme.NONE) { 
+         double policyCost = simulateskSk(distributions, 
+                      fixedOrderingCost, 
+                      holdingCost, 
+                      penaltyCost, 
+                      proportionalOrderingCost, 
+                      maxOrderQuantity,
+                      initialInventory, 
+                      recursion, 
+                      confidence, 
+                      errorTolerance,
+                      thresholdNumberLimit,
+                      simulatedETC);
+      
+      if(100*(policyCost-simulatedETC)/simulatedETC != 0)
+         throw new NullPointerException("Optimality gap not 0!");
+      }else{
+         if(!simulate) System.out.println("Simulation disabled.");
+         if(samplingScheme != SamplingScheme.NONE) System.out.println("Cannot simulate a sampled solution, please disable sampling: set samplingScheme == SamplingScheme.NONE.");
+      }
    }
    
    public static void sampleInstance(){
@@ -218,9 +427,9 @@ public class CapacitatedStochasticLotSizing {
        */
       
       if(testKConvexity(0, recursionPlot, -50, StateImpl.getMaxState(), fixedOrderingCost, maxOrderQuantity))
-         System.out.println("The function is K convex");
+         System.out.println("The function is (K,B) convex");
       else
-         System.out.println("The function is not K convex");
+         System.out.println("The function is not (K,B) convex");
       
       System.out.println();
       
