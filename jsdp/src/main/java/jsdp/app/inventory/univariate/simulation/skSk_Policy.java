@@ -51,6 +51,7 @@ public class skSk_Policy {
       ArrayList<State> s = new ArrayList<State>();
       ArrayList<State> S = new ArrayList<State>();
       double nextAction = 0;
+      boolean startedOrdering = false;
       for(double i = StateImpl.getMaxState(); i >= StateImpl.getMinState(); i -= StateImpl.getStepSize()){
          StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(period, i);
          Action action = recursion.getOptimalAction(stateDescriptor);
@@ -60,11 +61,15 @@ public class skSk_Policy {
                (((ActionImpl)action).getAction() > 0 && nextAction == 0) ||
                ((ActionImpl)action).getAction() > 0 && nextAction > ((ActionImpl)action).getAction()
                ){
+            if(!startedOrdering)
+               startedOrdering = true;
             State reorder = ((StateSpaceImpl)recursion.getStateSpace(period)).getState(stateDescriptor);
             s.add(0,reorder);
             double inv = ((ActionImpl)recursion.getValueRepository().getOptimalAction(reorder)).getAction()+((StateImpl)reorder).getInitialState();
             StateDescriptorImpl descriptor = new StateDescriptorImpl(period, inv);
             S.add(0, ((StateSpaceImpl)recursion.getStateSpace()[period]).getState(descriptor));
+         }else if(startedOrdering && ((ActionImpl)action).getAction() == 0) {
+            System.err.println("Zero order after started ordering. Period: "+period+". State: "+i+". Next action: "+nextAction);
          }
          nextAction = ((ActionImpl)action).getAction();
       }
