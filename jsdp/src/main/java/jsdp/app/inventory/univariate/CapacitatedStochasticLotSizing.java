@@ -65,12 +65,12 @@ import umontreal.ssj.probdist.NormalDist;
 public class CapacitatedStochasticLotSizing {
    
    public static void main(String args[]){
-      int counter = 0;
+      /*int counter = 0;
       while(true) {
          System.out.println("Instance #: "+ counter++);
          randomInstance();
-      }
-      //sampleInstance();
+      }*/
+      sampleInstance();
    }
    
    public static void randomInstance(){
@@ -287,13 +287,13 @@ public class CapacitatedStochasticLotSizing {
       /*******************************************************************
        * Problem parameters
        */
-      double fixedOrderingCost = 100; 
+      double fixedOrderingCost = 274; 
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
-      double penaltyCost = 10;
-      double maxOrderQuantity = 65;
+      double penaltyCost = 14;
+      double maxOrderQuantity = 190;
       
-      double[] meanDemand = {20, 40, 60, 40};
+      double[] meanDemand = {9.0, 4.0, 18.0, 22.0, 20.0, 8.0, 4.0, 19.0, 4.0, 7.0};
       //double coefficientOfVariation = 0.15;
       //double[] stdDemand = {1,1,1,1,1,1,1,1};
       double truncationQuantile = 0.9999;
@@ -324,8 +324,8 @@ public class CapacitatedStochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      double minState = -250;
-      double maxState = 300;
+      double minState = -500;
+      double maxState = 500;
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
       // Actions
@@ -620,7 +620,7 @@ public class CapacitatedStochasticLotSizing {
       DecimalFormat df = new DecimalFormat("#.00",otherSymbols);
 
       skSk_Policy policy = new skSk_Policy(recursion, distributions.length);
-      double[][][] optimalPolicy = policy.getOptimalPolicy(initialInventory, thresholdNumberLimit);
+      double[][][] optimalPolicy = policy.getOptimalPolicy(initialInventory, thresholdNumberLimit, maxOrderQuantity);
       double[][] s = optimalPolicy[0];
       double[][] S = optimalPolicy[1];
       for(int i = 0; i < distributions.length; i++){

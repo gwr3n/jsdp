@@ -231,7 +231,7 @@ public class CapacitatedStochasticLotSizingBatch {
        */
       
       skSk_Policy policy = new skSk_Policy(recursion, distributions.length);
-      double[][][] optimalPolicy = policy.getOptimalPolicy(initialInventory, Integer.MAX_VALUE);
+      double[][][] optimalPolicy = policy.getOptimalPolicy(initialInventory, Integer.MAX_VALUE, maxOrderQuantity);
       long maxNumberOfLevels = Arrays.stream(optimalPolicy[0]).mapToLong(a -> Arrays.stream(a).count()).max().getAsLong();
       
       System.out.println("--------------Simulate (sk,Sk) policy--------------");

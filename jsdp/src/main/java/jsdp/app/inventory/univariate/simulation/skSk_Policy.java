@@ -33,7 +33,7 @@ public class skSk_Policy {
     * @param initialInventory the initial inventory level
     * @return the optimal policy array
     */
-   public double[][][] getOptimalPolicy(double initialInventory, int thresholdNumberLimit){
+   public double[][][] getOptimalPolicy(double initialInventory, int thresholdNumberLimit, double maxOrderQuantity){
       double[][][] optimalPolicy = new double[2][][];
       double[][] S = new double[this.horizonLength][];
       double[][] s = new double[this.horizonLength][];
@@ -41,6 +41,8 @@ public class skSk_Policy {
          State[][] policy = find_skSk(i);
          s[i] = Arrays.stream(policy[0], Math.max(0, policy[0].length-thresholdNumberLimit), policy[0].length).mapToDouble(a -> ((StateImpl)a).getInitialState()).toArray();
          S[i] = Arrays.stream(policy[1], Math.max(0, policy[1].length-thresholdNumberLimit), policy[1].length).mapToDouble(a -> ((StateImpl)a).getInitialState()).toArray();
+         if(s[i][s[i].length-1]-s[i][0] > maxOrderQuantity)
+            System.err.println("Period "+(i+1)+". Gap between s thresholds greater than capacity: "+(s[i][s[i].length-1]-s[i][0]));
       }
       optimalPolicy[0] = s;
       optimalPolicy[1] = S;
