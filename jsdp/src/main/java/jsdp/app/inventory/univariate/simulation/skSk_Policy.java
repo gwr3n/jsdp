@@ -71,7 +71,7 @@ public class skSk_Policy {
             StateDescriptorImpl descriptor = new StateDescriptorImpl(period, inv);
             S.add(0, ((StateSpaceImpl)recursion.getStateSpace()[period]).getState(descriptor));
          }else if(startedOrdering && ((ActionImpl)action).getAction() == 0) {
-            System.err.println("Zero order after started ordering. Period: "+period+". State: "+i+". Next action: "+nextAction);
+            //System.err.println("Zero order after started ordering. Period: "+period+". State: "+i+". Next action: "+nextAction);
          }
          nextAction = ((ActionImpl)action).getAction();
       }

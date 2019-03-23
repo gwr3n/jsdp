@@ -85,11 +85,11 @@ public class CapacitatedStochasticLotSizing {
       double fixedOrderingCost = rnd.nextInt(150) + 50; 
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
-      double penaltyCost = rnd.nextInt(15)+5;
+      double penaltyCost = rnd.nextInt(10)+5;
       double maxOrderQuantity = 35+rnd.nextInt(60);
       
       double[] meanDemand = IntStream.iterate(0, i -> i + 1)
-                                     .limit(10)
+                                     .limit(8)
                                      .mapToDouble(i -> rnd.nextInt(100)).toArray();
       
       System.out.println(
@@ -102,7 +102,7 @@ public class CapacitatedStochasticLotSizing {
       
       //double coefficientOfVariation = 0.15;
       //double[] stdDemand = {1,1,1,1,1,1,1,1};
-      double truncationQuantile = 0.9999;
+      double truncationQuantile = 0.999999;
       
       // Random variables
 
@@ -130,8 +130,8 @@ public class CapacitatedStochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      double minState = -1000;
-      double maxState = 500;
+      double minState = -500;
+      double maxState = 1000;
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
       // Actions
@@ -195,7 +195,7 @@ public class CapacitatedStochasticLotSizing {
                                                                   samplingScheme,
                                                                   maxSampleSize,
                                                                   reductionFactorPerStage,
-                                                                  HashType.HASHTABLE);
+                                                                  HashType.THASHMAP);
 
       System.out.println("--------------Backward recursion--------------");
       recursion.runBackwardRecursionMonitoring();
@@ -210,14 +210,48 @@ public class CapacitatedStochasticLotSizing {
       System.out.println("Cpu usage: "+percent+"% ("+Runtime.getRuntime().availableProcessors()+" cores)");
       System.out.println();
       
+      
+      /*******************************************************************
+       * NoInitialOrder
+       */
+      
+      BackwardRecursionImpl recursionNoInitialOrder = new BackwardRecursionImpl(OptimisationDirection.MIN,
+                                                                                distributions,
+                                                                                supportLB,
+                                                                                supportUB,                                                                      
+                                                                                immediateValueFunction,
+                                                                                randomOutcomeFunction,
+                                                                                buildActionList,
+                                                                                idempotentAction,
+                                                                                discountFactor,
+                                                                                samplingScheme,
+                                                                                maxSampleSize,
+                                                                                reductionFactorPerStage,
+                                                                                HashType.THASHMAP);
+      int targetPeriod = 0;
+      recursionNoInitialOrder.runBackwardRecursion(targetPeriod);
+      
       /*******************************************************************
        * KConvexity
        */
       
-      if(testKConvexity(0, recursion, -50, StateImpl.getMaxState(), fixedOrderingCost, maxOrderQuantity))
+      if(testKConvexity(0, recursionNoInitialOrder, -50, StateImpl.getMaxState(), fixedOrderingCost, maxOrderQuantity))
          System.out.println("The function is (K,B) convex");
       else {
          System.err.println("The function is not (K,B) convex");
+      }
+      
+      System.out.println();
+      
+      /*******************************************************************
+       * OrderUpToCapacity
+       */
+      
+      if(testOrderUpToCapacity(0, distributions.length, recursionNoInitialOrder, -50, 400, fixedOrderingCost, maxOrderQuantity))
+         System.out.println("OrderUpToCapacity ok");
+      else {
+         System.err.println("OrderUpToCapacity violated");
+         throw new NullPointerException("OrderUpToCapacity violated");
       }
       
       System.out.println();
@@ -287,13 +321,13 @@ public class CapacitatedStochasticLotSizing {
       /*******************************************************************
        * Problem parameters
        */
-      double fixedOrderingCost = 274; 
+      double fixedOrderingCost = 200; 
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
-      double penaltyCost = 14;
-      double maxOrderQuantity = 190;
+      double penaltyCost = 2;
+      double maxOrderQuantity = 294;
       
-      double[] meanDemand = {9.0, 4.0, 18.0, 22.0, 20.0, 8.0, 4.0, 19.0, 4.0, 7.0};
+      double[] meanDemand = {17,53,31,27,148,45,146,132,198,140,73,52,7,119,9,138,158,175,113,57};
       //double coefficientOfVariation = 0.15;
       //double[] stdDemand = {1,1,1,1,1,1,1,1};
       double truncationQuantile = 0.9999;
@@ -324,8 +358,10 @@ public class CapacitatedStochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      double minState = -500;
-      double maxState = 500;
+      //double minState = -2400;
+      double minState = -8000;
+      //double maxState = 1400;
+      double maxState = 7000;
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
       // Actions
@@ -389,7 +425,7 @@ public class CapacitatedStochasticLotSizing {
                                                                   samplingScheme,
                                                                   maxSampleSize,
                                                                   reductionFactorPerStage,
-                                                                  HashType.HASHTABLE);
+                                                                  HashType.CONCURRENT_HASHMAP);
 
       System.out.println("--------------Backward recursion--------------");
       recursion.runBackwardRecursionMonitoring();
@@ -425,18 +461,30 @@ public class CapacitatedStochasticLotSizing {
                                                                       samplingScheme,
                                                                       maxSampleSize,
                                                                       reductionFactorPerStage,
-                                                                      HashType.HASHTABLE);
-      plotOptimalPolicyCost(targetPeriod, recursionPlot, 0, StateImpl.getMaxState());   //Plot optimal policy cost      
+                                                                      HashType.MAPDB_HEAP_SHARDED);
+      plotOptimalPolicyCost(targetPeriod, recursionPlot, -20, 300);   //Plot optimal policy cost      
       System.out.println();
       
       /*******************************************************************
        * KConvexity
        */
       
-      if(testKConvexity(0, recursionPlot, -50, StateImpl.getMaxState(), fixedOrderingCost, maxOrderQuantity))
+      if(testKConvexity(0, recursionPlot, -1000, 1000, fixedOrderingCost, maxOrderQuantity))
          System.out.println("The function is (K,B) convex");
       else
          System.err.println("The function is not (K,B) convex");
+      
+      System.out.println();
+      
+      /*******************************************************************
+       * OrderUpToCapacity
+       */
+      
+      if(testOrderUpToCapacity(0, distributions.length, recursionPlot, -1000, 1000, fixedOrderingCost, maxOrderQuantity))
+         System.out.println("OrderUpToCapacity ok");
+      else {
+         System.err.println("OrderUpToCapacity violated");
+      }
       
       System.out.println();
       
@@ -495,10 +543,100 @@ public class CapacitatedStochasticLotSizing {
       }
    }
    
+   static boolean testOrderUpToCapacityOld(int targetPeriod, int periods, BackwardRecursionImpl recursion, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
+      
+      skSk_Policy policy = new skSk_Policy(recursion, periods);
+      double[][][] optimalPolicy = policy.getOptimalPolicy(0, Integer.MAX_VALUE, maxOrderQuantity);
+      double S = optimalPolicy[1][0][optimalPolicy[1][0].length-1];
+      
+      for(int k = 0; k < 1000; k++) {
+         double x = minState;
+         double lb = Math.random()*(S-maxOrderQuantity-minState)+minState;
+         //double lb = Math.random()*(maxState-minState-maxOrderQuantity)+minState;
+         while(x <= lb) 
+            x+=StateImpl.getStepSize();
+         
+         double a = maxOrderQuantity;
+         
+         StateDescriptorImpl stateDescriptorx = new StateDescriptorImpl(targetPeriod, x);
+         double gx = recursion.getExpectedCost(stateDescriptorx);
+         
+         StateDescriptorImpl stateDescriptorxa = new StateDescriptorImpl(targetPeriod, x+a);
+         double gxa = recursion.getExpectedCost(stateDescriptorxa);
+         
+         if((fixedOrderingCost + gxa - gx)/a > 0) {
+            System.out.println("K: "+fixedOrderingCost);
+            System.out.println("x: "+x);
+            System.out.println("a: "+a);
+            System.out.println("gx: "+gx);
+            System.out.println("gxa: "+gxa);
+            System.out.println("Discrepancy: "+(fixedOrderingCost + gxa - gx));
+            return false;
+         }
+      }
+      
+      return true;
+   }
+   
+   static boolean testOrderUpToCapacity(int targetPeriod, int periods, BackwardRecursionImpl recursion, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
+            
+      boolean flag = true;
+      for(int k = 0; k < 1000; k++) {
+         double x = minState;
+         
+         double lb = Math.random()*(maxState-minState)+minState;
+         while(x <= lb) 
+            x+=StateImpl.getStepSize();
+         
+         //double a = maxOrderQuantity;
+         double y = minState;
+         
+         lb = Math.random()*(x-minState)+minState;
+         while(y <= lb) 
+            y+=StateImpl.getStepSize();
+         
+         StateDescriptorImpl stateDescriptorx = new StateDescriptorImpl(targetPeriod, x);
+         double gx = recursion.getExpectedCost(stateDescriptorx);
+         
+         StateDescriptorImpl stateDescriptorxa = new StateDescriptorImpl(targetPeriod, x+maxOrderQuantity);
+         double gxa = recursion.getExpectedCost(stateDescriptorxa);
+         
+         StateDescriptorImpl stateDescriptorxd = new StateDescriptorImpl(targetPeriod, x+StateImpl.getStepSize());
+         double gxd = recursion.getExpectedCost(stateDescriptorxd)-recursion.getExpectedCost(stateDescriptorx); 
+         
+         StateDescriptorImpl stateDescriptory = new StateDescriptorImpl(targetPeriod, y);
+         double gy = recursion.getExpectedCost(stateDescriptory);
+         
+         StateDescriptorImpl stateDescriptorya = new StateDescriptorImpl(targetPeriod, y+maxOrderQuantity);
+         double gya = recursion.getExpectedCost(stateDescriptorya);
+         
+         StateDescriptorImpl stateDescriptoryd = new StateDescriptorImpl(targetPeriod, y+StateImpl.getStepSize());
+         double gyd = recursion.getExpectedCost(stateDescriptoryd)-recursion.getExpectedCost(stateDescriptory); 
+         
+         if(Math.min(0,(fixedOrderingCost + gya - gy)/maxOrderQuantity) > Math.min(0,(fixedOrderingCost + gxa - gx)/maxOrderQuantity) + 0.000001){
+            System.out.println("K: "+fixedOrderingCost);
+            System.out.println("x: "+x);
+            System.out.println("y: "+y);
+            System.out.println("gx: "+gx);
+            System.out.println("gy: "+gy);
+            System.out.println("gxa: "+gxa);
+            System.out.println("gya: "+gya);
+            System.out.println("gxd: "+gxd);
+            System.out.println("gyd: "+gyd);
+            System.out.println("Discrepancy: "+(fixedOrderingCost + gya - gy)/maxOrderQuantity+">"+(fixedOrderingCost + gxa - gx)/maxOrderQuantity);
+            System.out.println("Discrepancy: "+(gya - gy)+">"+(gxa - gx));
+            flag = false;
+         }
+         
+      }
+      
+      return flag;
+   }
+   
    static boolean testKConvexity(int targetPeriod, BackwardRecursionImpl recursion, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
       //recursion.runBackwardRecursion(targetPeriod); // Not strictly needed because it has been already called by the plot function, saves time.
 
-      for(int k = 0; k < 1000; k++) {
+      for(int k = 0; k < 10000; k++) {
          double x = minState;
          
          double lb = Math.random()*(maxState-minState)+minState;
@@ -542,7 +680,7 @@ public class CapacitatedStochasticLotSizing {
       for(double i = minState; i <= maxState; i += StateImpl.getStepSize()){
          StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(targetPeriod, i);
          series.add(i,recursion.getExpectedCost(stateDescriptor));
-         //System.out.println("("+i+","+(recursion.getExpectedCost(stateDescriptor)-200)+")");
+         System.out.println("("+i+","+(recursion.getExpectedCost(stateDescriptor)/*-200*/)+")");
       }
       XYDataset xyDataset = new XYSeriesCollection(series);
       JFreeChart chart = ChartFactory.createXYLineChart("Optimal policy policy - period "+targetPeriod+" expected total cost", "Opening inventory level", "Expected total cost",
