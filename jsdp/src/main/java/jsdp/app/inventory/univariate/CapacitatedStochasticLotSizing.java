@@ -65,12 +65,12 @@ import umontreal.ssj.probdist.NormalDist;
 public class CapacitatedStochasticLotSizing {
    
    public static void main(String args[]){
-      int counter = 0;
+      /*int counter = 0;
       while(true) {
          System.out.println("Instance #: "+ counter++);
          randomInstance();
-      }
-      //sampleInstance();
+      }*/
+      sampleInstance();
    }
    
    public static void randomInstance(){
@@ -237,7 +237,7 @@ public class CapacitatedStochasticLotSizing {
        * KConvexity
        */
       
-      if(testKConvexity(0, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+      if(testKBConvexity(0, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
          System.out.println("The function is (K,B) convex");
       else {
          System.err.println("The function is not (K,B) convex");
@@ -323,13 +323,13 @@ public class CapacitatedStochasticLotSizing {
       /*******************************************************************
        * Problem parameters
        */
-      double fixedOrderingCost = 1000; 
+      double fixedOrderingCost = 500; 
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
       double penaltyCost = 10;
       double maxOrderQuantity = 65;
       
-      double[] meanDemand = {20,40,60,40};
+      double[] meanDemand = {20,4,60,40,5,50,10,2,70,20,4};
       //double coefficientOfVariation = 0.15;
       //double[] stdDemand = {1,1,1,1,1,1,1,1};
       double truncationQuantile = 0.9999;
@@ -360,7 +360,7 @@ public class CapacitatedStochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      double minState = -250;
+      double minState = -500;
       double minStateCheck = -50;
       double maxState = 1000;
       double maxStateCheck = 500;
@@ -468,10 +468,10 @@ public class CapacitatedStochasticLotSizing {
       System.out.println();
       
       /*******************************************************************
-       * KConvexity
+       * KBConvexity
        */
       
-      if(testKConvexity(0, recursionPlot, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+      if(testKBConvexity(0, recursionPlot, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
          System.out.println("The function is (K,B) convex");
       else
          System.err.println("The function is not (K,B) convex");
@@ -586,7 +586,6 @@ public class CapacitatedStochasticLotSizing {
                System.out.println("gxd: "+gxd);
                System.out.println("gyd: "+gyd);
                System.out.println("Discrepancy: "+(fixedOrderingCost + gya - gy)/maxOrderQuantity+">"+(fixedOrderingCost + gxa - gx)/maxOrderQuantity);
-               System.out.println("Discrepancy: "+(gya - gy)+">"+(gxa - gx));
                flag = false;
             }
          }
@@ -594,11 +593,11 @@ public class CapacitatedStochasticLotSizing {
       return flag;
    }
    
-   static boolean testKConvexity(int targetPeriod, BackwardRecursionImpl recursion, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
+   static boolean testKBConvexity(int targetPeriod, BackwardRecursionImpl recursion, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
       //recursion.runBackwardRecursion(targetPeriod); // Not strictly needed because it has been already called by the plot function, saves time.
 
-      for(double x = maxState; x >= minState; x -= StateImpl.getStepSize()) {
-         for(double a = StateImpl.getStepSize(); a <= maxState - x; a += StateImpl.getStepSize()) {
+      for(double x = maxState-maxOrderQuantity; x >= minState; x -= StateImpl.getStepSize()) {
+         for(double a = StateImpl.getStepSize(); a <= maxOrderQuantity; a += StateImpl.getStepSize()) {
 
             StateDescriptorImpl stateDescriptorx = new StateDescriptorImpl(targetPeriod, x);
             double gx = recursion.getExpectedCost(stateDescriptorx);
