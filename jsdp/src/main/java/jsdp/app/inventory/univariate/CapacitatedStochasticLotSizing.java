@@ -547,13 +547,12 @@ public class CapacitatedStochasticLotSizing {
    
    static boolean testOrderUpToCapacity(int targetPeriod, int periods, BackwardRecursionImpl recursion, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
             
-      /*skSk_Policy policy = new skSk_Policy(recursion, periods);
+      skSk_Policy policy = new skSk_Policy(recursion, periods);
       double[][][] optimalPolicy = policy.getOptimalPolicy(0, Integer.MAX_VALUE, maxOrderQuantity);
-      double S = optimalPolicy[1][0][optimalPolicy[1][0].length-1];*/
+      double S = optimalPolicy[1][0][optimalPolicy[1][0].length-1];
       
       boolean flag = true;
-      //S-maxOrderQuantity
-      for(double x = maxState; x >= minState; x -= StateImpl.getStepSize()) {
+      for(double x = S-maxOrderQuantity; x >= minState; x -= StateImpl.getStepSize()) {
          for(double y = x; y >= minState; y -= StateImpl.getStepSize()) {
 
             StateDescriptorImpl stateDescriptorx = new StateDescriptorImpl(targetPeriod, x);
