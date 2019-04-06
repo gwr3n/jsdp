@@ -599,7 +599,7 @@ public class CapacitatedStochasticLotSizing {
       //recursion.runBackwardRecursion(targetPeriod); // Not strictly needed because it has been already called by the plot function, saves time.
 
       for(double x = maxState; x >= minState; x -= StateImpl.getStepSize()) {
-         for(double a = x; a >= minState; a -= StateImpl.getStepSize()) {
+         for(double a = StateImpl.getStepSize(); a <= maxState - x; a += StateImpl.getStepSize()) {
 
             StateDescriptorImpl stateDescriptorx = new StateDescriptorImpl(targetPeriod, x);
             double gx = recursion.getExpectedCost(stateDescriptorx);
