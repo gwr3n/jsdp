@@ -109,7 +109,7 @@ public class StateImpl extends State {
    @Override
    public int hashCode(){
       String hash = "";
-      hash = (hash + period) + initialIntState;
+      hash = hash + period + "_" + initialIntState;
       return hash.hashCode();
    }
 

@@ -120,6 +120,7 @@ public class CLQG {
       
       // Actions
       
+      @SuppressWarnings("unchecked")
       Function<State, ArrayList<Action>> buildActionList = (Function<State, ArrayList<Action>> & Serializable) s -> {
          StateImpl state = (StateImpl) s;
          ArrayList<Action> feasibleActions = new ArrayList<Action>();
@@ -131,6 +132,7 @@ public class CLQG {
          return feasibleActions;
       };
       
+      @SuppressWarnings("unchecked")
       Function<State, Action> idempotentAction = (Function<State, Action> & Serializable) s -> new ActionImpl(s, 0.0);
       
       ImmediateValueFunction<State, Action, Double> immediateValueFunction = (initialState, action, finalState) -> {

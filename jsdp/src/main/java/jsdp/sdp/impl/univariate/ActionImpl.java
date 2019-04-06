@@ -70,7 +70,7 @@ public class ActionImpl extends Action {
    @Override
    public boolean equals(Object action){
       if(action instanceof ActionImpl)
-         return this.intAction == ((ActionImpl)action).intAction;
+         return this.state.equals(((ActionImpl)action).state) && (this.intAction == ((ActionImpl)action).intAction);
       else
          return false;
    }
@@ -78,7 +78,7 @@ public class ActionImpl extends Action {
    @Override
    public int hashCode(){
       String hash = "";
-        hash = (hash + intAction);
+        hash = (hash + this.state.hashCode() + "_" + intAction);
         return hash.hashCode();
    }
    
