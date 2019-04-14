@@ -249,7 +249,7 @@ public class CapacitatedStochasticLotSizing {
        * OrderUpToCapacity
        */
       
-      if(testOrderUpToCapacity(0, distributions.length, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+      if(testOrderUpToCapacity(0, distributions.length, recursionNoInitialOrder, recursion, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
          System.out.println("OrderUpToCapacity ok");
       else {
          System.err.println("OrderUpToCapacity violated");
@@ -323,13 +323,13 @@ public class CapacitatedStochasticLotSizing {
       /*******************************************************************
        * Problem parameters
        */
-      double fixedOrderingCost = 301; 
+      double fixedOrderingCost = 329; 
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
-      double penaltyCost = 3;
-      double maxOrderQuantity = 115.0;
+      double penaltyCost = 2;
+      double maxOrderQuantity = 224.0;
       
-      double[] meanDemand = {33.0, 76.0, 85.0, 29.0, 86.0, 86.0, 82.0, 78.0, 30.0, 99.0};
+      double[] meanDemand = {68,94,18,6,34,17,87,17,4,8};
       //double coefficientOfVariation = 0.15;
       //double[] stdDemand = {1,1,1,1,1,1,1,1};
       double truncationQuantile = 0.9999;
@@ -451,7 +451,7 @@ public class CapacitatedStochasticLotSizing {
          System.out.println("--------------Period "+i+"--------------");
          plotOptimalPolicyAction(i, recursion, StateImpl.getMinState(), StateImpl.getMaxState());     //Plot optimal policy action
       }
-      BackwardRecursionImpl recursionPlot = new BackwardRecursionImpl(OptimisationDirection.MIN,
+      BackwardRecursionImpl recursionNoInitialOrder = new BackwardRecursionImpl(OptimisationDirection.MIN,
                                                                       distributions,
                                                                       supportLB,
                                                                       supportUB,                                                                      
@@ -464,14 +464,14 @@ public class CapacitatedStochasticLotSizing {
                                                                       maxSampleSize,
                                                                       reductionFactorPerStage,
                                                                       HashType.MAPDB_HEAP_SHARDED);
-      plotOptimalPolicyCost(targetPeriod, recursionPlot, minState, maxState);   //Plot optimal policy cost      
+      plotOptimalPolicyCost(targetPeriod, recursionNoInitialOrder, minState, maxState);   //Plot optimal policy cost      
       System.out.println();
       
       /*******************************************************************
        * KBConvexity
        */
       
-      if(testKBConvexity(0, recursionPlot, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+      if(testKBConvexity(0, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
          System.out.println("The function is (K,B) convex");
       else
          System.err.println("The function is not (K,B) convex");
@@ -482,7 +482,7 @@ public class CapacitatedStochasticLotSizing {
        * OrderUpToCapacity
        */
       
-      if(testOrderUpToCapacity(0, distributions.length, recursionPlot, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+      if(testOrderUpToCapacity(0, distributions.length, recursionNoInitialOrder, recursion, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
          System.out.println("OrderUpToCapacity ok");
       else {
          System.err.println("OrderUpToCapacity violated");
@@ -546,11 +546,7 @@ public class CapacitatedStochasticLotSizing {
    }
    
    static boolean testOrderUpToCapacityShiaoxiang(int targetPeriod, int periods, BackwardRecursionImpl recursion, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
-      
-      skSk_Policy policy = new skSk_Policy(recursion, periods);
-      double[][][] optimalPolicy = policy.getOptimalPolicy(0, Integer.MAX_VALUE, maxOrderQuantity);
-      double S = optimalPolicy[1][0][optimalPolicy[1][0].length-1];
-      
+            
       boolean flag = true;
       for(double x = maxState; x >= minState; x -= StateImpl.getStepSize()) {
          for(double y = x; y >= minState; y -= StateImpl.getStepSize()) {
@@ -593,9 +589,9 @@ public class CapacitatedStochasticLotSizing {
       return flag;
    }
    
-   static boolean testOrderUpToCapacity(int targetPeriod, int periods, BackwardRecursionImpl recursion, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
+   static boolean testOrderUpToCapacity(int targetPeriod, int periods, BackwardRecursionImpl recursionNoOrder, BackwardRecursionImpl recursionOrder, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
             
-      skSk_Policy policy = new skSk_Policy(recursion, periods);
+      skSk_Policy policy = new skSk_Policy(recursionOrder, periods);
       double[][][] optimalPolicy = policy.getOptimalPolicy(0, Integer.MAX_VALUE, maxOrderQuantity);
       double S = optimalPolicy[1][0][optimalPolicy[1][0].length-1];
       
@@ -604,22 +600,22 @@ public class CapacitatedStochasticLotSizing {
          for(double y = x; y >= minState; y -= StateImpl.getStepSize()) {
 
             StateDescriptorImpl stateDescriptorx = new StateDescriptorImpl(targetPeriod, x);
-            double gx = recursion.getExpectedCost(stateDescriptorx);
+            double gx = recursionNoOrder.getExpectedCost(stateDescriptorx);
 
             StateDescriptorImpl stateDescriptorxa = new StateDescriptorImpl(targetPeriod, x+maxOrderQuantity);
-            double gxa = recursion.getExpectedCost(stateDescriptorxa);
+            double gxa = recursionNoOrder.getExpectedCost(stateDescriptorxa);
 
             StateDescriptorImpl stateDescriptorxd = new StateDescriptorImpl(targetPeriod, x+StateImpl.getStepSize());
-            double gxd = recursion.getExpectedCost(stateDescriptorxd)-recursion.getExpectedCost(stateDescriptorx); 
+            double gxd = recursionNoOrder.getExpectedCost(stateDescriptorxd)-recursionNoOrder.getExpectedCost(stateDescriptorx); 
 
             StateDescriptorImpl stateDescriptory = new StateDescriptorImpl(targetPeriod, y);
-            double gy = recursion.getExpectedCost(stateDescriptory);
+            double gy = recursionNoOrder.getExpectedCost(stateDescriptory);
 
             StateDescriptorImpl stateDescriptorya = new StateDescriptorImpl(targetPeriod, y+maxOrderQuantity);
-            double gya = recursion.getExpectedCost(stateDescriptorya);
+            double gya = recursionNoOrder.getExpectedCost(stateDescriptorya);
 
             StateDescriptorImpl stateDescriptoryd = new StateDescriptorImpl(targetPeriod, y+StateImpl.getStepSize());
-            double gyd = recursion.getExpectedCost(stateDescriptoryd)-recursion.getExpectedCost(stateDescriptory); 
+            double gyd = recursionNoOrder.getExpectedCost(stateDescriptoryd)-recursionNoOrder.getExpectedCost(stateDescriptory); 
 
             double delta = 0.000000000001;
             
