@@ -472,9 +472,14 @@ public class CapacitatedStochasticLotSizing {
        */
       
       if(testKBConvexity(0, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
-         System.out.println("The function is (K,B) convex");
+         System.out.println("The function is (K,B) convex (i)");
       else
-         System.err.println("The function is not (K,B) convex");
+         System.err.println("The function is not (K,B) convex (i)");
+      
+      if(testKBConvexityInverse(0, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+         System.out.println("The function is (K,B) convex (ii)");
+      else
+         System.err.println("The function is not (K,B) convex (ii)");
       
       System.out.println();
       
@@ -646,6 +651,37 @@ public class CapacitatedStochasticLotSizing {
                System.out.println("gxa: "+gxa);
                System.out.println("gxd: "+gxd);
                System.out.println("Discrepancy: "+(fixedOrderingCost + gxa - gx - a*gxd));
+               return false;
+            }
+         }
+      }
+      
+      return true;
+   }
+   
+   static boolean testKBConvexityInverse(int targetPeriod, BackwardRecursionImpl recursion, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
+      //recursion.runBackwardRecursion(targetPeriod); // Not strictly needed because it has been already called by the plot function, saves time.
+
+      for(double x = maxState-maxOrderQuantity; x >= minState; x -= StateImpl.getStepSize()) {
+         for(double a = StateImpl.getStepSize(); a <= maxOrderQuantity; a += StateImpl.getStepSize()) {
+
+            StateDescriptorImpl stateDescriptorx = new StateDescriptorImpl(targetPeriod, x);
+            double gx = recursion.getExpectedCost(stateDescriptorx);
+
+            StateDescriptorImpl stateDescriptorxa = new StateDescriptorImpl(targetPeriod, x+a);
+            double gxa = recursion.getExpectedCost(stateDescriptorxa);
+
+            StateDescriptorImpl stateDescriptorxd = new StateDescriptorImpl(targetPeriod, x+StateImpl.getStepSize());
+            double gxd = recursion.getExpectedCost(stateDescriptorxd)-recursion.getExpectedCost(stateDescriptorx); 
+
+            if(-fixedOrderingCost - gxa + gx + a*gxd > 0) {
+               System.out.println("K: "+fixedOrderingCost);
+               System.out.println("x: "+x);
+               System.out.println("a: "+a);
+               System.out.println("gx: "+gx);
+               System.out.println("gxa: "+gxa);
+               System.out.println("gxd: "+gxd);
+               System.out.println("Discrepancy: "+(-fixedOrderingCost - gxa + gx + a*gxd));
                return false;
             }
          }
