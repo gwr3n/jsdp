@@ -640,8 +640,8 @@ public class CapacitatedStochasticLotSizing {
             StateDescriptorImpl stateDescriptorxa = new StateDescriptorImpl(targetPeriod, x+a);
             double gxa = recursion.getExpectedCost(stateDescriptorxa);
 
-            StateDescriptorImpl stateDescriptorxd = new StateDescriptorImpl(targetPeriod, x+StateImpl.getStepSize());
-            double gxd = recursion.getExpectedCost(stateDescriptorxd)-recursion.getExpectedCost(stateDescriptorx); 
+            StateDescriptorImpl stateDescriptorxd = new StateDescriptorImpl(targetPeriod, x-StateImpl.getStepSize());
+            double gxd = recursion.getExpectedCost(stateDescriptorx)-recursion.getExpectedCost(stateDescriptorxd); 
 
             if(fixedOrderingCost + gxa - gx - a*gxd < 0) {
                System.out.println("K: "+fixedOrderingCost);
@@ -671,17 +671,17 @@ public class CapacitatedStochasticLotSizing {
             StateDescriptorImpl stateDescriptorxa = new StateDescriptorImpl(targetPeriod, x+a);
             double gxa = recursion.getExpectedCost(stateDescriptorxa);
 
-            StateDescriptorImpl stateDescriptorxd = new StateDescriptorImpl(targetPeriod, x+StateImpl.getStepSize());
-            double gxd = recursion.getExpectedCost(stateDescriptorxd)-recursion.getExpectedCost(stateDescriptorx); 
+            StateDescriptorImpl stateDescriptorxad = new StateDescriptorImpl(targetPeriod, x+a-StateImpl.getStepSize());
+            double gxad = recursion.getExpectedCost(stateDescriptorxa)-recursion.getExpectedCost(stateDescriptorxad); 
 
-            if(-fixedOrderingCost - gxa + gx + a*gxd > 0) {
+            if(-fixedOrderingCost - gxa + gx + a*gxad > 0) {
                System.out.println("K: "+fixedOrderingCost);
                System.out.println("x: "+x);
                System.out.println("a: "+a);
                System.out.println("gx: "+gx);
                System.out.println("gxa: "+gxa);
-               System.out.println("gxd: "+gxd);
-               System.out.println("Discrepancy: "+(-fixedOrderingCost - gxa + gx + a*gxd));
+               System.out.println("gxd: "+gxad);
+               System.out.println("Discrepancy: "+(-fixedOrderingCost - gxa + gx + a*gxad));
                return false;
             }
          }
