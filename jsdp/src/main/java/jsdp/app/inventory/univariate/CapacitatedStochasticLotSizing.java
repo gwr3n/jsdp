@@ -238,10 +238,14 @@ public class CapacitatedStochasticLotSizing {
        */
       
       if(testKBConvexity(0, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
-         System.out.println("The function is (K,B) convex");
-      else {
-         System.err.println("The function is not (K,B) convex");
-      }
+         System.out.println("The function is (K,B) convex (i)");
+      else
+         System.err.println("The function is not (K,B) convex (i)");
+      
+      if(testKBConvexityInverse(0, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+         System.out.println("The function is (K,B) convex (ii)");
+      else
+         System.err.println("The function is not (K,B) convex (ii)");
       
       System.out.println();
       
