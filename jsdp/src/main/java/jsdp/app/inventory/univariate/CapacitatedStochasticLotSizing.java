@@ -590,49 +590,35 @@ public class CapacitatedStochasticLotSizing {
    }
    
    static boolean testOrderUpToCapacity(int targetPeriod, int periods, BackwardRecursionImpl recursionNoOrder, BackwardRecursionImpl recursionOrder, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
-            
+
       skSk_Policy policy = new skSk_Policy(recursionOrder, periods);
       double[][][] optimalPolicy = policy.getOptimalPolicy(0, Integer.MAX_VALUE, maxOrderQuantity);
       double S = optimalPolicy[1][0][optimalPolicy[1][0].length-1];
-      
+
       boolean flag = true;
       for(double x = S-maxOrderQuantity; x >= minState; x -= StateImpl.getStepSize()) {
-         for(double y = x; y >= minState; y -= StateImpl.getStepSize()) {
 
-            StateDescriptorImpl stateDescriptorx = new StateDescriptorImpl(targetPeriod, x);
-            double gx = recursionNoOrder.getExpectedCost(stateDescriptorx);
+         StateDescriptorImpl stateDescriptorx = new StateDescriptorImpl(targetPeriod, x);
+         double gx = recursionNoOrder.getExpectedCost(stateDescriptorx);
 
-            StateDescriptorImpl stateDescriptorxa = new StateDescriptorImpl(targetPeriod, x+maxOrderQuantity);
-            double gxa = recursionNoOrder.getExpectedCost(stateDescriptorxa);
+         StateDescriptorImpl stateDescriptorxa = new StateDescriptorImpl(targetPeriod, x+maxOrderQuantity);
+         double gxa = recursionNoOrder.getExpectedCost(stateDescriptorxa);
 
-            StateDescriptorImpl stateDescriptorxd = new StateDescriptorImpl(targetPeriod, x+StateImpl.getStepSize());
-            double gxd = recursionNoOrder.getExpectedCost(stateDescriptorxd)-recursionNoOrder.getExpectedCost(stateDescriptorx); 
+         StateDescriptorImpl stateDescriptorxd = new StateDescriptorImpl(targetPeriod, x+StateImpl.getStepSize());
+         double gxd = recursionNoOrder.getExpectedCost(stateDescriptorxd)-recursionNoOrder.getExpectedCost(stateDescriptorx); 
 
-            StateDescriptorImpl stateDescriptory = new StateDescriptorImpl(targetPeriod, y);
-            double gy = recursionNoOrder.getExpectedCost(stateDescriptory);
+         double delta = 0.000000000001;
 
-            StateDescriptorImpl stateDescriptorya = new StateDescriptorImpl(targetPeriod, y+maxOrderQuantity);
-            double gya = recursionNoOrder.getExpectedCost(stateDescriptorya);
-
-            StateDescriptorImpl stateDescriptoryd = new StateDescriptorImpl(targetPeriod, y+StateImpl.getStepSize());
-            double gyd = recursionNoOrder.getExpectedCost(stateDescriptoryd)-recursionNoOrder.getExpectedCost(stateDescriptory); 
-
-            double delta = 0.000000000001;
-            
-            if((fixedOrderingCost + gya - gy)/maxOrderQuantity >= (fixedOrderingCost + gxa - gx)/maxOrderQuantity + delta){
-               System.out.println("K: "+fixedOrderingCost);
-               System.out.println("x: "+x);
-               System.out.println("y: "+y);
-               System.out.println("gx: "+gx);
-               System.out.println("gy: "+gy);
-               System.out.println("gxa: "+gxa);
-               System.out.println("gya: "+gya);
-               System.out.println("gxd: "+gxd);
-               System.out.println("gyd: "+gyd);
-               System.out.println("Discrepancy: "+(fixedOrderingCost + gya - gy)/maxOrderQuantity+">"+(fixedOrderingCost + gxa - gx)/maxOrderQuantity);
-               flag = false;
-            }
+         if((fixedOrderingCost + gxa - gx)/maxOrderQuantity + delta > 0){
+            System.out.println("K: "+fixedOrderingCost);
+            System.out.println("x: "+x);
+            System.out.println("gx: "+gx);
+            System.out.println("gxa: "+gxa);
+            System.out.println("gxd: "+gxd);
+            System.out.println("Discrepancy: "+(fixedOrderingCost + gxa - gx)/maxOrderQuantity+" > "+0);
+            flag = false;
          }
+
       }
       return flag;
    }
