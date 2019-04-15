@@ -65,12 +65,12 @@ import umontreal.ssj.probdist.NormalDist;
 public class CapacitatedStochasticLotSizing {
    
    public static void main(String args[]){
-      /*int counter = 0;
+      int counter = 0;
       while(true) {
          System.out.println("Instance #: "+ counter++);
          randomInstance();
-      }*/
-      sampleInstance();
+      }
+      //sampleInstance();
    }
    
    public static void randomInstance(){
@@ -675,8 +675,8 @@ public class CapacitatedStochasticLotSizing {
             StateDescriptorImpl stateDescriptorxa = new StateDescriptorImpl(targetPeriod, x+a);
             double gxa = recursion.getExpectedCost(stateDescriptorxa);
 
-            StateDescriptorImpl stateDescriptorxad = new StateDescriptorImpl(targetPeriod, x+a-StateImpl.getStepSize());
-            double gxad = recursion.getExpectedCost(stateDescriptorxa)-recursion.getExpectedCost(stateDescriptorxad); 
+            StateDescriptorImpl stateDescriptorxad = new StateDescriptorImpl(targetPeriod, x+a+StateImpl.getStepSize());
+            double gxad = recursion.getExpectedCost(stateDescriptorxad)-recursion.getExpectedCost(stateDescriptorxa); 
 
             if(-fixedOrderingCost - gxa + gx + a*gxad > 0) {
                System.out.println("K: "+fixedOrderingCost);
