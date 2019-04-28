@@ -65,12 +65,12 @@ import umontreal.ssj.probdist.NormalDist;
 public class CapacitatedStochasticLotSizing {
    
    public static void main(String args[]){
-      int counter = 0;
+      /*int counter = 0;
       while(true) {
          System.out.println("Instance #: "+ counter++);
          randomInstance();
-      }
-      //sampleInstance();
+      }*/
+      sampleInstance();
    }
    
    public static void randomInstance(){
@@ -238,14 +238,9 @@ public class CapacitatedStochasticLotSizing {
        */
       
       if(testKBConvexity(0, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
-         System.out.println("The function is (K,B) convex (i)");
+         System.out.println("The function is (K,B) convex");
       else
-         System.err.println("The function is not (K,B) convex (i)");
-      
-      if(testKBConvexityInverse(0, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
-         System.out.println("The function is (K,B) convex (ii)");
-      else
-         System.err.println("The function is not (K,B) convex (ii)");
+         System.err.println("The function is not (K,B) convex");
       
       System.out.println();
       
@@ -364,10 +359,10 @@ public class CapacitatedStochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      double minState = -1000;
-      double minStateCheck = -500;
-      double maxState = 1000;
-      double maxStateCheck = 500;
+      double minState = -150;
+      double minStateCheck = -50;
+      double maxState = 500;
+      double maxStateCheck = 200;
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
       // Actions
@@ -476,14 +471,9 @@ public class CapacitatedStochasticLotSizing {
        */
       
       if(testKBConvexity(0, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
-         System.out.println("The function is (K,B) convex (i)");
+         System.out.println("The function is (K,B) convex");
       else
-         System.err.println("The function is not (K,B) convex (i)");
-      
-      if(testKBConvexityInverse(0, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
-         System.out.println("The function is (K,B) convex (ii)");
-      else
-         System.err.println("The function is not (K,B) convex (ii)");
+         System.err.println("The function is not (K,B) convex");
       
       System.out.println();
       
@@ -655,37 +645,6 @@ public class CapacitatedStochasticLotSizing {
                System.out.println("gxa: "+gxa);
                System.out.println("gxd: "+gxd);
                System.out.println("Discrepancy: "+(fixedOrderingCost + gxa - gx - a*gxd));
-               return false;
-            }
-         }
-      }
-      
-      return true;
-   }
-   
-   static boolean testKBConvexityInverse(int targetPeriod, BackwardRecursionImpl recursion, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
-      //recursion.runBackwardRecursion(targetPeriod); // Not strictly needed because it has been already called by the plot function, saves time.
-
-      for(double x = maxState-maxOrderQuantity; x >= minState; x -= StateImpl.getStepSize()) {
-         for(double a = StateImpl.getStepSize(); a <= maxOrderQuantity; a += StateImpl.getStepSize()) {
-
-            StateDescriptorImpl stateDescriptorx = new StateDescriptorImpl(targetPeriod, x);
-            double gx = recursion.getExpectedCost(stateDescriptorx);
-
-            StateDescriptorImpl stateDescriptorxa = new StateDescriptorImpl(targetPeriod, x+a);
-            double gxa = recursion.getExpectedCost(stateDescriptorxa);
-
-            StateDescriptorImpl stateDescriptorxad = new StateDescriptorImpl(targetPeriod, x+a+StateImpl.getStepSize());
-            double gxad = recursion.getExpectedCost(stateDescriptorxad)-recursion.getExpectedCost(stateDescriptorxa); 
-
-            if(-fixedOrderingCost - gxa + gx + a*gxad > 0) {
-               System.out.println("K: "+fixedOrderingCost);
-               System.out.println("x: "+x);
-               System.out.println("a: "+a);
-               System.out.println("gx: "+gx);
-               System.out.println("gxa: "+gxa);
-               System.out.println("gxd: "+gxad);
-               System.out.println("Discrepancy: "+(-fixedOrderingCost - gxa + gx + a*gxad));
                return false;
             }
          }
