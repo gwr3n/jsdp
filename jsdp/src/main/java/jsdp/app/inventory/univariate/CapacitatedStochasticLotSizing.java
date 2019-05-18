@@ -481,7 +481,7 @@ public class CapacitatedStochasticLotSizing {
        * OrderUpToCapacity
        */
       
-      if(testOrderUpToCapacity(0, distributions.length, recursionNoInitialOrder, recursion, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+      if(testOrderUpToCapacityiii(0, distributions.length, recursionNoInitialOrder, recursion, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
          System.out.println("OrderUpToCapacity ok");
       else {
          System.err.println("OrderUpToCapacity violated");
@@ -618,6 +618,58 @@ public class CapacitatedStochasticLotSizing {
             flag = false;
          }
 
+      }
+      return flag;
+   }
+   
+   static boolean testOrderUpToCapacityiii(int targetPeriod, int periods, BackwardRecursionImpl recursionNoOrder, BackwardRecursionImpl recursionOrder, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
+      
+      skSk_Policy policy = new skSk_Policy(recursionOrder, periods);
+      double[][][] optimalPolicy = policy.getOptimalPolicy(0, Integer.MAX_VALUE, maxOrderQuantity);
+      double S = optimalPolicy[1][0][optimalPolicy[1][0].length-1];
+      double s = optimalPolicy[0][0][optimalPolicy[0][0].length-1];
+      System.out.println("S: "+S);
+      System.out.println("s: "+s);
+      System.out.println("S-s: "+(S-s));
+      
+      boolean flag = true;
+      for(double x = maxState; x >= minState; x -= StateImpl.getStepSize()) {
+         for(double y = x; y >= minState; y -= StateImpl.getStepSize()) {
+            for(double a = 0; a <= S-s; a += StateImpl.getStepSize()) {
+               
+               StateDescriptorImpl stateDescriptorx = new StateDescriptorImpl(targetPeriod, x);
+               double gx = recursionNoOrder.getExpectedCost(stateDescriptorx);
+
+               StateDescriptorImpl stateDescriptorxa = new StateDescriptorImpl(targetPeriod, x+a);
+               double gxa = recursionNoOrder.getExpectedCost(stateDescriptorxa);
+
+               //StateDescriptorImpl stateDescriptorxd = new StateDescriptorImpl(targetPeriod, x+StateImpl.getStepSize());
+               //double gxd = recursionNoOrder.getExpectedCost(stateDescriptorxd)-recursionNoOrder.getExpectedCost(stateDescriptorx); 
+
+               StateDescriptorImpl stateDescriptory = new StateDescriptorImpl(targetPeriod, y+a-maxOrderQuantity);
+               double gy = recursionNoOrder.getExpectedCost(stateDescriptory);
+
+               StateDescriptorImpl stateDescriptorya = new StateDescriptorImpl(targetPeriod, y+a);
+               double gya = recursionNoOrder.getExpectedCost(stateDescriptorya);
+
+               //StateDescriptorImpl stateDescriptoryd = new StateDescriptorImpl(targetPeriod, y+StateImpl.getStepSize());
+               //double gyd = recursionNoOrder.getExpectedCost(stateDescriptoryd)-recursionNoOrder.getExpectedCost(stateDescriptory); 
+
+               double delta = 0.000000000001;
+
+               if((fixedOrderingCost + gya - gy)/maxOrderQuantity >= (fixedOrderingCost + gxa - gx)/a + delta){
+                  System.out.println("K: "+fixedOrderingCost);
+                  System.out.println("x: "+x);
+                  System.out.println("y: "+y);
+                  System.out.println("gx: "+gx);
+                  System.out.println("gy: "+gy);
+                  System.out.println("gxa: "+gxa);
+                  System.out.println("gya: "+gya);
+                  System.out.println("Discrepancy: "+(fixedOrderingCost + gya - gy)/maxOrderQuantity+">"+(fixedOrderingCost + gxa - gx)/maxOrderQuantity);
+                  flag = false;
+               }
+            }
+         }
       }
       return flag;
    }
