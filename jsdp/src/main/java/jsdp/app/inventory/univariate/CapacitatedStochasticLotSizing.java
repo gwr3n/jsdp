@@ -81,6 +81,7 @@ public class CapacitatedStochasticLotSizing {
        * Problem parameters
        */
       java.util.Random rnd = new java.util.Random();
+      rnd.setSeed(2211);
       
       double fixedOrderingCost = rnd.nextInt(500) + 50; 
       double proportionalOrderingCost = 0; 
@@ -568,7 +569,7 @@ public class CapacitatedStochasticLotSizing {
             StateDescriptorImpl stateDescriptoryd = new StateDescriptorImpl(targetPeriod, y+StateImpl.getStepSize());
             double gyd = recursion.getExpectedCost(stateDescriptoryd)-recursion.getExpectedCost(stateDescriptory); 
 
-            double delta = 0.000000000001;
+            double delta = 0.0000000001;
             
             if((fixedOrderingCost + gya - gy)/maxOrderQuantity >= (fixedOrderingCost + gxa - gx)/maxOrderQuantity + delta){
                System.out.println("K: "+fixedOrderingCost);
@@ -606,7 +607,7 @@ public class CapacitatedStochasticLotSizing {
          StateDescriptorImpl stateDescriptorxd = new StateDescriptorImpl(targetPeriod, x+StateImpl.getStepSize());
          double gxd = recursionNoOrder.getExpectedCost(stateDescriptorxd)-recursionNoOrder.getExpectedCost(stateDescriptorx); 
 
-         double delta = 0.000000000001;
+         double delta = 0.0000000001;
 
          if((fixedOrderingCost + gxa - gx)/maxOrderQuantity + delta > 0){
             System.out.println("K: "+fixedOrderingCost);
@@ -655,7 +656,7 @@ public class CapacitatedStochasticLotSizing {
                //StateDescriptorImpl stateDescriptoryd = new StateDescriptorImpl(targetPeriod, y+StateImpl.getStepSize());
                //double gyd = recursionNoOrder.getExpectedCost(stateDescriptoryd)-recursionNoOrder.getExpectedCost(stateDescriptory); 
 
-               double delta = 0.000000000001;
+               double delta = 0.0000000001;
 
                if((fixedOrderingCost + gya - gy)/maxOrderQuantity >= (fixedOrderingCost + gxa - gx)/a + delta){
                   System.out.println("K: "+fixedOrderingCost);
