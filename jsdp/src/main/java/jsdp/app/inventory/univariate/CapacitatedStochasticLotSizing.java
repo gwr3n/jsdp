@@ -248,7 +248,7 @@ public class CapacitatedStochasticLotSizing {
        * OrderUpToCapacity
        */
       
-      if(testOrderUpToCapacity(0, distributions.length, recursionNoInitialOrder, recursion, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+      if(testOrderUpToCapacityiii(0, distributions.length, recursionNoInitialOrder, recursion, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
          System.out.println("OrderUpToCapacity ok");
       else {
          System.err.println("OrderUpToCapacity violated");
