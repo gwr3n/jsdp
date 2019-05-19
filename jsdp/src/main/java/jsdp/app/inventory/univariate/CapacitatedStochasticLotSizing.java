@@ -324,13 +324,13 @@ public class CapacitatedStochasticLotSizing {
       /*******************************************************************
        * Problem parameters
        */
-      double fixedOrderingCost = 329; 
+      double fixedOrderingCost = 168; 
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
-      double penaltyCost = 2;
-      double maxOrderQuantity = 224.0;
+      double penaltyCost = 5;
+      double maxOrderQuantity = 70.0;
       
-      double[] meanDemand = {68,94,18,6,34,17,87,17,4,8};
+      double[] meanDemand = {33.0, 25.0, 96.0, 76.0, 56.0, 12.0, 60.0, 56.0};
       //double coefficientOfVariation = 0.15;
       //double[] stdDemand = {1,1,1,1,1,1,1,1};
       double truncationQuantile = 0.9999;
@@ -628,16 +628,17 @@ public class CapacitatedStochasticLotSizing {
       
       skSk_Policy policy = new skSk_Policy(recursionOrder, periods);
       double[][][] optimalPolicy = policy.getOptimalPolicy(0, Integer.MAX_VALUE, maxOrderQuantity);
-      double S = optimalPolicy[1][0][optimalPolicy[1][0].length-1];
-      double s = optimalPolicy[0][0][optimalPolicy[0][0].length-1];
-      System.out.println("S: "+S);
-      System.out.println("s: "+s);
-      System.out.println("S-s: "+(S-s));
+      double Q = maxOrderQuantity;
+      for(int i = 0; i < optimalPolicy[1][0].length; i++) {
+         double S = optimalPolicy[1][0][i];
+         double s = optimalPolicy[0][0][i];
+         Q = Math.min(Q, S-s);
+      }
       
       boolean flag = true;
       for(double x = maxState; x >= minState; x -= StateImpl.getStepSize()) {
          for(double y = x; y >= minState; y -= StateImpl.getStepSize()) {
-            for(double a = 0; a <= S-s; a += StateImpl.getStepSize()) {
+            for(double a = 0; a <= Q; a += StateImpl.getStepSize()) {
                
                StateDescriptorImpl stateDescriptorx = new StateDescriptorImpl(targetPeriod, x);
                double gx = recursionNoOrder.getExpectedCost(stateDescriptorx);
