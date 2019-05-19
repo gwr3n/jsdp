@@ -31,6 +31,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
@@ -65,23 +66,23 @@ import umontreal.ssj.probdist.NormalDist;
 public class CapacitatedStochasticLotSizing {
    
    public static void main(String args[]){
-      /*int counter = 0;
+      Random rnd = new Random();
+      rnd.setSeed(2211);
+      int counter = 0;
       while(true) {
          System.out.println("Instance #: "+ counter++);
-         randomInstance();
-      }*/
-      sampleInstance();
+         randomInstance(rnd);
+      }
+      //sampleInstance();
    }
    
-   public static void randomInstance(){
+   public static void randomInstance(Random rnd){
       
       boolean simulate = true;
       
       /*******************************************************************
        * Problem parameters
        */
-      java.util.Random rnd = new java.util.Random();
-      rnd.setSeed(2211);
       
       double fixedOrderingCost = rnd.nextInt(500) + 50; 
       double proportionalOrderingCost = 0; 
