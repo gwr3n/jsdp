@@ -67,7 +67,7 @@ public class CapacitatedStochasticLotSizing {
    
    public static void main(String args[]){
       Random rnd = new Random();
-      rnd.setSeed(2211);
+      rnd.setSeed(1234);
       int counter = 0;
       while(true) {
          System.out.println("Instance #: "+ counter++);
@@ -88,7 +88,7 @@ public class CapacitatedStochasticLotSizing {
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
       double penaltyCost = rnd.nextInt(5)+1;
-      double maxOrderQuantity = 35+rnd.nextInt(200);
+      double maxOrderQuantity = 50+rnd.nextInt(150);
       
       double[] meanDemand = IntStream.iterate(0, i -> i + 1)
                                      .limit(8)
