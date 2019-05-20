@@ -132,7 +132,7 @@ public class CapacitatedStochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      double minState = -1000;
+      double minState = -2000;
       double minStateCheck = -500;
       double maxState = 1000;
       double maxStateCheck = 500;
