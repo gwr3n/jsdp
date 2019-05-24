@@ -66,14 +66,14 @@ import umontreal.ssj.probdist.NormalDist;
 public class CapacitatedStochasticLotSizing {
    
    public static void main(String args[]){
-      Random rnd = new Random();
+      /*Random rnd = new Random();
       rnd.setSeed(1234);
       int counter = 0;
       while(true) {
          System.out.println("Instance #: "+ counter++);
          randomInstance(rnd);
-      }
-      //sampleInstance();
+      }*/
+      sampleInstance();
    }
    
    public static void randomInstance(Random rnd){
@@ -324,16 +324,16 @@ public class CapacitatedStochasticLotSizing {
       /*******************************************************************
        * Problem parameters
        */
-      double fixedOrderingCost = 168; 
+      double fixedOrderingCost = 427.0; 
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
-      double penaltyCost = 5;
+      double penaltyCost = 6;
       double maxOrderQuantity = 70.0;
       
-      double[] meanDemand = {33.0, 25.0, 96.0, 76.0, 56.0, 12.0, 60.0, 56.0};
+      double[] meanDemand = {2,13,92,13,94,79,80,26};
       //double coefficientOfVariation = 0.15;
       //double[] stdDemand = {1,1,1,1,1,1,1,1};
-      double truncationQuantile = 0.9999;
+      double truncationQuantile = 0.999999;
       
       // Random variables
 
@@ -361,10 +361,10 @@ public class CapacitatedStochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      double minState = -150;
-      double minStateCheck = -50;
-      double maxState = 500;
-      double maxStateCheck = 200;
+      double minState = -2000;
+      double minStateCheck = -200;
+      double maxState = 1000;
+      double maxStateCheck = 500;
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
       // Actions
@@ -483,10 +483,12 @@ public class CapacitatedStochasticLotSizing {
        * OrderUpToCapacity
        */
       
-      if(testOrderUpToCapacityiii(0, distributions.length, recursionNoInitialOrder, recursion, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
-         System.out.println("OrderUpToCapacity ok");
-      else {
-         System.err.println("OrderUpToCapacity violated");
+      for(int t = 0; t < meanDemand.length; t++) {
+         if(testOrderUpToCapacityiii(t, distributions.length, recursionNoInitialOrder, recursion, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+            System.out.println("OrderUpToCapacity ok");
+         else {
+            System.err.println("OrderUpToCapacity violated");
+         }
       }
       
       System.out.println();
@@ -629,9 +631,9 @@ public class CapacitatedStochasticLotSizing {
       skSk_Policy policy = new skSk_Policy(recursionOrder, periods);
       double[][][] optimalPolicy = policy.getOptimalPolicy(0, Integer.MAX_VALUE, maxOrderQuantity);
       double Q = maxOrderQuantity;
-      for(int i = 0; i < optimalPolicy[1][0].length; i++) {
-         double S = optimalPolicy[1][0][i];
-         double s = optimalPolicy[0][0][i];
+      for(int i = 0; i < optimalPolicy[1][targetPeriod].length; i++) {
+         double S = optimalPolicy[1][targetPeriod][i];
+         double s = optimalPolicy[0][targetPeriod][i];
          Q = Math.min(Q, S-s);
       }
       
@@ -664,11 +666,12 @@ public class CapacitatedStochasticLotSizing {
                   System.out.println("K: "+fixedOrderingCost);
                   System.out.println("x: "+x);
                   System.out.println("y: "+y);
+                  System.out.println("a: "+a);
                   System.out.println("gx: "+gx);
                   System.out.println("gy: "+gy);
                   System.out.println("gxa: "+gxa);
                   System.out.println("gya: "+gya);
-                  System.out.println("Discrepancy: "+(fixedOrderingCost + gya - gy)/maxOrderQuantity+">"+(fixedOrderingCost + gxa - gx)/maxOrderQuantity);
+                  System.out.println("Discrepancy: "+(fixedOrderingCost + gya - gy)/maxOrderQuantity+">"+(fixedOrderingCost + gxa - gx)/a);
                   flag = false;
                }
             }
