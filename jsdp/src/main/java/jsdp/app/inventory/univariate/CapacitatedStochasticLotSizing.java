@@ -638,7 +638,7 @@ public class CapacitatedStochasticLotSizing {
       }
       
       boolean flag = true;
-      for(double x = maxState; x >= minState; x -= StateImpl.getStepSize()) {
+      for(double x = maxState-maxOrderQuantity; x >= minState; x -= StateImpl.getStepSize()) {
          for(double a = 0; a <= Q; a += StateImpl.getStepSize()) {
             for(double y = x + a - maxOrderQuantity; y >= minState; y -= StateImpl.getStepSize()) {
                
@@ -651,10 +651,10 @@ public class CapacitatedStochasticLotSizing {
                //StateDescriptorImpl stateDescriptorxd = new StateDescriptorImpl(targetPeriod, x+StateImpl.getStepSize());
                //double gxd = recursionNoOrder.getExpectedCost(stateDescriptorxd)-recursionNoOrder.getExpectedCost(stateDescriptorx); 
 
-               StateDescriptorImpl stateDescriptory = new StateDescriptorImpl(targetPeriod, y+a-maxOrderQuantity);
+               StateDescriptorImpl stateDescriptory = new StateDescriptorImpl(targetPeriod, y);
                double gy = recursionNoOrder.getExpectedCost(stateDescriptory);
 
-               StateDescriptorImpl stateDescriptorya = new StateDescriptorImpl(targetPeriod, y+a);
+               StateDescriptorImpl stateDescriptorya = new StateDescriptorImpl(targetPeriod, y+maxOrderQuantity);
                double gya = recursionNoOrder.getExpectedCost(stateDescriptorya);
 
                //StateDescriptorImpl stateDescriptoryd = new StateDescriptorImpl(targetPeriod, y+StateImpl.getStepSize());
