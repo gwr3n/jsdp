@@ -250,11 +250,13 @@ public class CapacitatedStochasticLotSizing {
        * OrderUpToCapacity
        */
       
-      if(testOrderUpToCapacityiii(0, distributions.length, recursionNoInitialOrder, recursion, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
-         System.out.println("OrderUpToCapacity ok");
-      else {
-         System.err.println("OrderUpToCapacity violated");
-         throw new NullPointerException("OrderUpToCapacity violated");
+      for(int t = 0; t < meanDemand.length; t++) {
+         if(testOrderUpToCapacityiii(t, distributions.length, recursionNoInitialOrder, recursion, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+            System.out.println("OrderUpToCapacity ok");
+         else {
+            System.err.println("OrderUpToCapacity violated");
+            throw new NullPointerException("OrderUpToCapacity violated");
+         }
       }
       
       System.out.println();
@@ -631,10 +633,12 @@ public class CapacitatedStochasticLotSizing {
       skSk_Policy policy = new skSk_Policy(recursionOrder, periods);
       double[][][] optimalPolicy = policy.getOptimalPolicy(0, Integer.MAX_VALUE, maxOrderQuantity);
       double Q = maxOrderQuantity;
-      for(int i = 0; i < optimalPolicy[1][targetPeriod].length; i++) {
-         double S = optimalPolicy[1][targetPeriod][i];
-         double s = optimalPolicy[0][targetPeriod][i];
-         Q = Math.min(Q, S-s);
+      for(int t = targetPeriod; t < optimalPolicy[1].length; t++) {
+         for(int i = 0; i < optimalPolicy[1][t].length; i++) {
+            double S = optimalPolicy[1][t][i];
+            double s = optimalPolicy[0][t][i];
+            Q = Math.min(Q, S-s);
+         }
       }
       
       boolean flag = true;
