@@ -251,7 +251,7 @@ public class CapacitatedStochasticLotSizing {
        */
       
       for(int t = 0; t < meanDemand.length; t++) {
-         if(testOrderUpToCapacityiii(t, distributions.length, recursionNoInitialOrder, recursion, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+         if(testOrderUpToCapacity(t, distributions.length, recursionNoInitialOrder, recursion, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
             System.out.println("OrderUpToCapacity ok");
          else {
             System.err.println("OrderUpToCapacity violated");
@@ -326,6 +326,7 @@ public class CapacitatedStochasticLotSizing {
       /*******************************************************************
        * Problem parameters
        */
+      
       double fixedOrderingCost = 427.0; 
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
@@ -333,6 +334,13 @@ public class CapacitatedStochasticLotSizing {
       double maxOrderQuantity = 166.0;
       
       double[] meanDemand = {2,13,92,13,94,79,80,26};
+      /*double fixedOrderingCost = 200.0; 
+      double proportionalOrderingCost = 0; 
+      double holdingCost = 1;
+      double penaltyCost = 2;
+      double maxOrderQuantity = 50.0;
+      
+      double[] meanDemand = {20,40,20,10};*/
       //double coefficientOfVariation = 0.15;
       //double[] stdDemand = {1,1,1,1,1,1,1,1};
       double truncationQuantile = 0.999999;
@@ -363,10 +371,10 @@ public class CapacitatedStochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      double minState = -2000;
-      double minStateCheck = -200;
+      double minState = -500;
+      double minStateCheck = -50;
       double maxState = 1000;
-      double maxStateCheck = 500;
+      double maxStateCheck = 250;
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
       // Actions
@@ -486,7 +494,7 @@ public class CapacitatedStochasticLotSizing {
        */
       
       for(int t = 0; t < meanDemand.length; t++) {
-         if(testOrderUpToCapacityiii(t, distributions.length, recursionNoInitialOrder, recursion, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+         if(testOrderUpToCapacity(t, distributions.length, recursionNoInitialOrder, recursion, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
             System.out.println("OrderUpToCapacity ok");
          else {
             System.err.println("OrderUpToCapacity violated");
@@ -598,7 +606,7 @@ public class CapacitatedStochasticLotSizing {
 
       skSk_Policy policy = new skSk_Policy(recursionOrder, periods);
       double[][][] optimalPolicy = policy.getOptimalPolicy(0, Integer.MAX_VALUE, maxOrderQuantity);
-      double S = optimalPolicy[1][0][optimalPolicy[1][0].length-1];
+      double S = optimalPolicy[1][targetPeriod][optimalPolicy[1][targetPeriod].length-1];
 
       boolean flag = true;
       for(double x = S-maxOrderQuantity; x >= minState; x -= StateImpl.getStepSize()) {
@@ -614,7 +622,7 @@ public class CapacitatedStochasticLotSizing {
 
          double delta = 0.0000000001;
 
-         if((fixedOrderingCost + gxa - gx)/maxOrderQuantity + delta > 0){
+         if((fixedOrderingCost + gxa - gx)/maxOrderQuantity - delta > 0){
             System.out.println("K: "+fixedOrderingCost);
             System.out.println("x: "+x);
             System.out.println("gx: "+gx);
@@ -624,62 +632,6 @@ public class CapacitatedStochasticLotSizing {
             flag = false;
          }
 
-      }
-      return flag;
-   }
-   
-   static boolean testOrderUpToCapacityiii(int targetPeriod, int periods, BackwardRecursionImpl recursionNoOrder, BackwardRecursionImpl recursionOrder, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
-      
-      skSk_Policy policy = new skSk_Policy(recursionOrder, periods);
-      double[][][] optimalPolicy = policy.getOptimalPolicy(0, Integer.MAX_VALUE, maxOrderQuantity);
-      double Q = maxOrderQuantity;
-      for(int t = targetPeriod; t < optimalPolicy[1].length; t++) {
-         for(int i = 0; i < optimalPolicy[1][t].length; i++) {
-            double S = optimalPolicy[1][t][i];
-            double s = optimalPolicy[0][t][i];
-            Q = Math.min(Q, S-s);
-         }
-      }
-      
-      boolean flag = true;
-      for(double x = maxState-maxOrderQuantity; x >= minState; x -= StateImpl.getStepSize()) {
-         for(double a = 0; a <= Q; a += StateImpl.getStepSize()) {
-            for(double y = x + a - maxOrderQuantity; y >= minState; y -= StateImpl.getStepSize()) {
-               
-               StateDescriptorImpl stateDescriptorx = new StateDescriptorImpl(targetPeriod, x);
-               double gx = recursionNoOrder.getExpectedCost(stateDescriptorx);
-
-               StateDescriptorImpl stateDescriptorxa = new StateDescriptorImpl(targetPeriod, x+a);
-               double gxa = recursionNoOrder.getExpectedCost(stateDescriptorxa);
-
-               //StateDescriptorImpl stateDescriptorxd = new StateDescriptorImpl(targetPeriod, x+StateImpl.getStepSize());
-               //double gxd = recursionNoOrder.getExpectedCost(stateDescriptorxd)-recursionNoOrder.getExpectedCost(stateDescriptorx); 
-
-               StateDescriptorImpl stateDescriptory = new StateDescriptorImpl(targetPeriod, y);
-               double gy = recursionNoOrder.getExpectedCost(stateDescriptory);
-
-               StateDescriptorImpl stateDescriptorya = new StateDescriptorImpl(targetPeriod, y+maxOrderQuantity);
-               double gya = recursionNoOrder.getExpectedCost(stateDescriptorya);
-
-               //StateDescriptorImpl stateDescriptoryd = new StateDescriptorImpl(targetPeriod, y+StateImpl.getStepSize());
-               //double gyd = recursionNoOrder.getExpectedCost(stateDescriptoryd)-recursionNoOrder.getExpectedCost(stateDescriptory); 
-
-               double delta = 0.0000000001;
-
-               if((fixedOrderingCost + gya - gy)/maxOrderQuantity >= (fixedOrderingCost + gxa - gx)/a + delta){
-                  System.out.println("K: "+fixedOrderingCost);
-                  System.out.println("x: "+x);
-                  System.out.println("y: "+y);
-                  System.out.println("a: "+a);
-                  System.out.println("gx: "+gx);
-                  System.out.println("gy: "+gy);
-                  System.out.println("gxa: "+gxa);
-                  System.out.println("gya: "+gya);
-                  System.out.println("Discrepancy: "+(fixedOrderingCost + gya - gy)/maxOrderQuantity+">"+(fixedOrderingCost + gxa - gx)/a);
-                  flag = false;
-               }
-            }
-         }
       }
       return flag;
    }
