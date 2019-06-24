@@ -343,7 +343,7 @@ public class CapacitatedStochasticLotSizing {
       double[] meanDemand = {20,40,20,10};*/
       //double coefficientOfVariation = 0.15;
       //double[] stdDemand = {1,1,1,1,1,1,1,1};
-      double truncationQuantile = 0.999999;
+      double truncationQuantile = 0.9999;
       
       // Random variables
 
@@ -371,9 +371,9 @@ public class CapacitatedStochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      double minState = -500;
+      double minState = -1000;
       double minStateCheck = -50;
-      double maxState = 1000;
+      double maxState = 2000;
       double maxStateCheck = 250;
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
@@ -490,6 +490,20 @@ public class CapacitatedStochasticLotSizing {
       System.out.println();
       
       /*******************************************************************
+       * OrderUpToCapacity Shiaoxiang
+       */
+      
+      for(int t = 0; t < meanDemand.length; t++) {
+         if(testOrderUpToCapacityShiaoxiang(t, distributions.length, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+            System.out.println("OrderUpToCapacity ok");
+         else {
+            System.err.println("OrderUpToCapacity violated");
+         }
+      }
+      
+      System.out.println();
+      
+      /*******************************************************************
        * OrderUpToCapacity
        */
       
@@ -558,29 +572,29 @@ public class CapacitatedStochasticLotSizing {
       }
    }
    
-   static boolean testOrderUpToCapacityShiaoxiang(int targetPeriod, int periods, BackwardRecursionImpl recursion, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
+   static boolean testOrderUpToCapacityShiaoxiang(int targetPeriod, int periods, BackwardRecursionImpl recursionNoOrder, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
             
       boolean flag = true;
       for(double x = maxState; x >= minState; x -= StateImpl.getStepSize()) {
          for(double y = x; y >= minState; y -= StateImpl.getStepSize()) {
 
             StateDescriptorImpl stateDescriptorx = new StateDescriptorImpl(targetPeriod, x);
-            double gx = recursion.getExpectedCost(stateDescriptorx);
+            double gx = recursionNoOrder.getExpectedCost(stateDescriptorx);
 
             StateDescriptorImpl stateDescriptorxa = new StateDescriptorImpl(targetPeriod, x+maxOrderQuantity);
-            double gxa = recursion.getExpectedCost(stateDescriptorxa);
+            double gxa = recursionNoOrder.getExpectedCost(stateDescriptorxa);
 
             StateDescriptorImpl stateDescriptorxd = new StateDescriptorImpl(targetPeriod, x+StateImpl.getStepSize());
-            double gxd = recursion.getExpectedCost(stateDescriptorxd)-recursion.getExpectedCost(stateDescriptorx); 
+            double gxd = recursionNoOrder.getExpectedCost(stateDescriptorxd)-recursionNoOrder.getExpectedCost(stateDescriptorx); 
 
             StateDescriptorImpl stateDescriptory = new StateDescriptorImpl(targetPeriod, y-maxOrderQuantity);
-            double gy = recursion.getExpectedCost(stateDescriptory);
+            double gy = recursionNoOrder.getExpectedCost(stateDescriptory);
 
             StateDescriptorImpl stateDescriptorya = new StateDescriptorImpl(targetPeriod, y);
-            double gya = recursion.getExpectedCost(stateDescriptorya);
+            double gya = recursionNoOrder.getExpectedCost(stateDescriptorya);
 
             StateDescriptorImpl stateDescriptoryd = new StateDescriptorImpl(targetPeriod, y+StateImpl.getStepSize());
-            double gyd = recursion.getExpectedCost(stateDescriptoryd)-recursion.getExpectedCost(stateDescriptory); 
+            double gyd = recursionNoOrder.getExpectedCost(stateDescriptoryd)-recursionNoOrder.getExpectedCost(stateDescriptory); 
 
             double delta = 0.0000000001;
             
