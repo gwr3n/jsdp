@@ -251,9 +251,9 @@ public class CapacitatedStochasticLotSizing {
        */
       
       if(testOrderUpToCapacityShiaoxiang(targetPeriod, distributions.length, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
-         System.out.println("OrderUpToCapacity ok");
+         System.out.println("OrderUpToCapacity Shiaoxiang ok");
       else {
-         System.err.println("OrderUpToCapacity violated");
+         System.err.println("OrderUpToCapacity Shiaoxiang violated");
       }
       
       System.out.println();
@@ -515,9 +515,9 @@ public class CapacitatedStochasticLotSizing {
        */
       
       if(testOrderUpToCapacityShiaoxiang(targetPeriod, distributions.length, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
-         System.out.println("OrderUpToCapacity ok");
+         System.out.println("OrderUpToCapacity Shiaoxiang ok");
       else {
-         System.err.println("OrderUpToCapacity violated");
+         System.err.println("OrderUpToCapacity Shiaoxiang violated");
       }
       
       System.out.println();
