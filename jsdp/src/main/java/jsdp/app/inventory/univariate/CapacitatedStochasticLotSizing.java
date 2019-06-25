@@ -594,8 +594,8 @@ public class CapacitatedStochasticLotSizing {
       //recursionNoOrder.runBackwardRecursion(targetPeriod);
       
       boolean flag = true;
-      for(double x = maxState; x >= minState; x -= StateImpl.getStepSize()) {
-         for(double y = x; y >= minState; y -= StateImpl.getStepSize()) {
+      for(double x = maxState-maxOrderQuantity; x >= minState; x -= StateImpl.getStepSize()) {
+         for(double y = x; y >= minState+maxOrderQuantity; y -= StateImpl.getStepSize()) {
 
             StateDescriptorImpl stateDescriptorx = new StateDescriptorImpl(targetPeriod, x);
             double gx = recursionNoOrder.getExpectedCost(stateDescriptorx);
