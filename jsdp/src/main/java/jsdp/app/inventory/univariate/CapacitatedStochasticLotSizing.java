@@ -239,7 +239,7 @@ public class CapacitatedStochasticLotSizing {
        * KConvexity
        */
       
-      if(testKBConvexity(0, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+      if(testKBConvexity(targetPeriod, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
          System.out.println("The function is (K,B) convex");
       else
          System.err.println("The function is not (K,B) convex");
@@ -247,16 +247,26 @@ public class CapacitatedStochasticLotSizing {
       System.out.println();
       
       /*******************************************************************
+       * OrderUpToCapacity Shiaoxiang
+       */
+      
+      if(testOrderUpToCapacityShiaoxiang(targetPeriod, distributions.length, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+         System.out.println("OrderUpToCapacity ok");
+      else {
+         System.err.println("OrderUpToCapacity violated");
+      }
+      
+      System.out.println();
+      
+      /*******************************************************************
        * OrderUpToCapacity
        */
       
-      for(int t = 0; t < meanDemand.length; t++) {
-         if(testOrderUpToCapacity(t, distributions.length, recursionNoInitialOrder, recursion, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
-            System.out.println("OrderUpToCapacity ok");
-         else {
-            System.err.println("OrderUpToCapacity violated");
-            throw new NullPointerException("OrderUpToCapacity violated");
-         }
+      if(testOrderUpToCapacity(targetPeriod, distributions.length, recursionNoInitialOrder, recursion, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+         System.out.println("OrderUpToCapacity ok");
+      else {
+         System.err.println("OrderUpToCapacity violated");
+         throw new NullPointerException("OrderUpToCapacity violated");
       }
       
       System.out.println();
@@ -454,14 +464,18 @@ public class CapacitatedStochasticLotSizing {
       System.out.println();
       
       /*******************************************************************
-       * Charting
+       * Charting Actions
        */   
       System.out.println("--------------Charting--------------");
-      int targetPeriod = 0;                                                                           //If targetPeriod > 0 then no sampling!
       for(int i = 0; i < meanDemand.length; i++) {
          System.out.println("--------------Period "+i+"--------------");
          plotOptimalPolicyAction(i, recursionOrder, StateImpl.getMinState(), StateImpl.getMaxState());     //Plot optimal policy action
       }
+      
+      /*******************************************************************
+       * NoInitialOrder
+       */
+      
       BackwardRecursionImpl recursionNoInitialOrder = new BackwardRecursionImpl(OptimisationDirection.MIN,
                                                                       distributions,
                                                                       supportLB,
@@ -475,44 +489,47 @@ public class CapacitatedStochasticLotSizing {
                                                                       maxSampleSize,
                                                                       reductionFactorPerStage,
                                                                       HashType.MAPDB_HEAP_SHARDED);
+      int targetPeriod = 0;  //If targetPeriod > 0 then no sampling!
+      recursionNoInitialOrder.runBackwardRecursion(targetPeriod);
+      
+      /*******************************************************************
+       * Charting Cost
+       */ 
+      
       plotOptimalPolicyCost(targetPeriod, recursionNoInitialOrder, minState, maxState);   //Plot optimal policy cost      
       System.out.println();
       
       /*******************************************************************
        * KBConvexity
-       *
+       */
       
-      if(testKBConvexity(0, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+      if(testKBConvexity(targetPeriod, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
          System.out.println("The function is (K,B) convex");
       else
          System.err.println("The function is not (K,B) convex");
       
-      System.out.println();*/
+      System.out.println();
       
       /*******************************************************************
        * OrderUpToCapacity Shiaoxiang
-       *
+       */
       
-      for(int t = 0; t < meanDemand.length; t++) {
-         if(testOrderUpToCapacityShiaoxiang(t, distributions.length, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
-            System.out.println("OrderUpToCapacity ok");
-         else {
-            System.err.println("OrderUpToCapacity violated");
-         }
+      if(testOrderUpToCapacityShiaoxiang(targetPeriod, distributions.length, recursionNoInitialOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+         System.out.println("OrderUpToCapacity ok");
+      else {
+         System.err.println("OrderUpToCapacity violated");
       }
       
-      System.out.println();*/
+      System.out.println();
       
       /*******************************************************************
        * OrderUpToCapacity
        */
       
-      for(int t = 0; t < meanDemand.length; t++) {
-         if(testOrderUpToCapacity(t, distributions.length, recursionNoInitialOrder, recursionOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
-            System.out.println("OrderUpToCapacity ok");
-         else {
-            System.err.println("OrderUpToCapacity violated");
-         }
+      if(testOrderUpToCapacity(targetPeriod, distributions.length, recursionNoInitialOrder, recursionOrder, minStateCheck, maxStateCheck, fixedOrderingCost, maxOrderQuantity))
+         System.out.println("OrderUpToCapacity ok");
+      else {
+         System.err.println("OrderUpToCapacity violated");
       }
       
       System.out.println();
@@ -574,7 +591,7 @@ public class CapacitatedStochasticLotSizing {
    
    static boolean testOrderUpToCapacityShiaoxiang(int targetPeriod, int periods, BackwardRecursionImpl recursionNoOrder, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
             
-      recursionNoOrder.runBackwardRecursion(targetPeriod);
+      //recursionNoOrder.runBackwardRecursion(targetPeriod);
       
       boolean flag = true;
       for(double x = maxState; x >= minState; x -= StateImpl.getStepSize()) {
@@ -619,8 +636,8 @@ public class CapacitatedStochasticLotSizing {
    }
    
    static boolean testOrderUpToCapacity(int targetPeriod, int periods, BackwardRecursionImpl recursionNoOrder, BackwardRecursionImpl recursionOrder, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
-
-      recursionNoOrder.runBackwardRecursion(targetPeriod);
+      
+      //recursionNoOrder.runBackwardRecursion(targetPeriod);
       
       skSk_Policy policy = new skSk_Policy(recursionOrder, periods);
       double[][][] optimalPolicy = policy.getOptimalPolicy(0, Integer.MAX_VALUE, maxOrderQuantity);
@@ -655,7 +672,8 @@ public class CapacitatedStochasticLotSizing {
    }
    
    static boolean testKBConvexity(int targetPeriod, BackwardRecursionImpl recursion, double minState, double maxState, double fixedOrderingCost, double maxOrderQuantity) {
-      recursion.runBackwardRecursion(targetPeriod); // Not strictly needed because it has been already called by the plot function, saves time.
+      
+      //recursion.runBackwardRecursion(targetPeriod); 
 
       for(double x = maxState-maxOrderQuantity; x >= minState; x -= StateImpl.getStepSize()) {
          for(double a = StateImpl.getStepSize(); a <= maxOrderQuantity; a += StateImpl.getStepSize()) {
@@ -685,13 +703,12 @@ public class CapacitatedStochasticLotSizing {
       return true;
    }
    
-   static void plotOptimalPolicyCost(int targetPeriod, BackwardRecursionImpl recursion, double minState, double maxState){
-      recursion.runBackwardRecursion(targetPeriod);
+   static void plotOptimalPolicyCost(int targetPeriod, BackwardRecursionImpl recursionNoInitialOrder, double minState, double maxState){
       XYSeries series = new XYSeries("Optimal policy");
       for(double i = minState; i <= maxState; i += StateImpl.getStepSize()){
          StateDescriptorImpl stateDescriptor = new StateDescriptorImpl(targetPeriod, i);
-         series.add(i,recursion.getExpectedCost(stateDescriptor));
-         System.out.println("("+i+","+(recursion.getExpectedCost(stateDescriptor)/*-200*/)+")");
+         series.add(i,recursionNoInitialOrder.getExpectedCost(stateDescriptor));
+         System.out.println("("+i+","+(recursionNoInitialOrder.getExpectedCost(stateDescriptor)/*-200*/)+")");
       }
       XYDataset xyDataset = new XYSeriesCollection(series);
       JFreeChart chart = ChartFactory.createXYLineChart("Optimal policy policy - period "+targetPeriod+" expected total cost", "Opening inventory level", "Expected total cost",
