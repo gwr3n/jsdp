@@ -66,14 +66,14 @@ import umontreal.ssj.probdist.NormalDist;
 public class CapacitatedStochasticLotSizing {
    
    public static void main(String args[]){
-      /*Random rnd = new Random();
+      Random rnd = new Random();
       rnd.setSeed(1234);
       int counter = 0;
       while(true) {
          System.out.println("Instance #: "+ counter++);
          randomInstance(rnd);
-      }*/
-      sampleInstance();
+      }
+      //sampleInstance();
    }
    
    public static void randomInstance(Random rnd){
@@ -132,10 +132,10 @@ public class CapacitatedStochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      double minState = -2000;
-      double minStateCheck = -500;
-      double maxState = 1000;
-      double maxStateCheck = 500;
+      double minState = -200;
+      double minStateCheck = -50;
+      double maxState = 500;
+      double maxStateCheck = 250;
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
       // Actions
