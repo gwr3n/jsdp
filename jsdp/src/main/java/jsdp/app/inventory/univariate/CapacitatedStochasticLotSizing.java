@@ -88,7 +88,7 @@ public class CapacitatedStochasticLotSizing {
       double proportionalOrderingCost = 0; 
       double holdingCost = 1;
       double penaltyCost = rnd.nextInt(5)+1;
-      double maxOrderQuantity = 50+rnd.nextInt(150);
+      double maxOrderQuantity = 75+rnd.nextInt(150);
       
       double[] meanDemand = IntStream.iterate(0, i -> i + 1)
                                      .limit(8)
@@ -104,7 +104,7 @@ public class CapacitatedStochasticLotSizing {
       
       //double coefficientOfVariation = 0.15;
       //double[] stdDemand = {1,1,1,1,1,1,1,1};
-      double truncationQuantile = 0.999999;
+      double truncationQuantile = 0.9999;
       
       // Random variables
 
@@ -132,9 +132,9 @@ public class CapacitatedStochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      double minState = -200;
+      double minState = -250;
       double minStateCheck = -50;
-      double maxState = 500;
+      double maxState = 700;
       double maxStateCheck = 250;
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
