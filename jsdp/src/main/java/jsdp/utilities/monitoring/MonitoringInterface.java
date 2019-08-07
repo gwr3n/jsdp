@@ -16,7 +16,7 @@ import com.sun.management.OperatingSystemMXBean;
  * @author Roberto Rossi
  *
  */
-@SuppressWarnings("restriction")
+
 public abstract class MonitoringInterface extends JFrame implements Runnable{
 
    private static final long serialVersionUID = 1L;

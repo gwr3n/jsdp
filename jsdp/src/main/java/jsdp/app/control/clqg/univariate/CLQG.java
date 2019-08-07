@@ -66,7 +66,6 @@ import umontreal.ssj.probdist.NormalDist;
  *
  */
 
-@SuppressWarnings("restriction")
 public class CLQG {
    
    public static void main(String args[]){

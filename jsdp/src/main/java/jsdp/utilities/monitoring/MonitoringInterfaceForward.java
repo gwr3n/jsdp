@@ -10,7 +10,7 @@ import jsdp.sdp.Recursion;
  * @author Roberto Rossi
  *
  */
-@SuppressWarnings("restriction")
+
 public class MonitoringInterfaceForward extends MonitoringInterface{
    
    private static final long serialVersionUID = 1L;
