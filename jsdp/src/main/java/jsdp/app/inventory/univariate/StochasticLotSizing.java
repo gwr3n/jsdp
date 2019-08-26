@@ -52,7 +52,7 @@ import jsdp.app.inventory.univariate.simulation.SimulatePolicies;
 import jsdp.app.inventory.univariate.simulation.sS_Policy;
 
 import umontreal.ssj.probdist.Distribution;
-//import umontreal.ssj.probdist.PoissonDist;
+import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.probdist.NormalDist;
 
 /**
@@ -113,7 +113,7 @@ public class StochasticLotSizing {
       // State space
       
       double stepSize = 1;       //Stepsize must be 1 for discrete distributions
-      double minState = -20;       //Inventory level lower bound in each period
+      double minState = -100;       //Inventory level lower bound in each period
       double maxState = 200;     //Inventory level upper bound in each period
       StateImpl.setStateBoundaries(stepSize, minState, maxState);
 
