@@ -37,7 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cern.colt.list.IntArrayList;
-import jsdp.utilities.sampling.SampleFactory;
+
 import umontreal.ssj.gof.GofStat;
 import umontreal.ssj.probdist.ChiSquareDist;
 import umontreal.ssj.probdist.DiscreteDistributionInt;

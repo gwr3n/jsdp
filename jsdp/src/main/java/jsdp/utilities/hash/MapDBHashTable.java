@@ -93,6 +93,7 @@ public class MapDBHashTable<K,V> implements Map<K,V>{
       
    }
    
+   @SuppressWarnings("deprecation")
    @Override
    protected void finalize() throws Throwable {
       super.finalize();

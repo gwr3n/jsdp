@@ -33,7 +33,6 @@ import java.util.stream.IntStream;
 
 import jsdp.sdp.State;
 import jsdp.sdp.StateSpaceIterator;
-import jsdp.sdp.impl.multivariate.StateImpl;
 
 import umontreal.ssj.randvar.UniformIntGen;
 import umontreal.ssj.rng.MRG32k3aL;

@@ -254,7 +254,7 @@ public class ValueRepository {
 	 * @param expectedValue the optimal expected total cost.
 	 */
 	public void setOptimalExpectedValue(State state, double expectedValue){
-		this.optimalValueHashTable.put(state, new Double(expectedValue));
+		this.optimalValueHashTable.put(state, Double.valueOf(expectedValue));
 	}
 	
 	/**

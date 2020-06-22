@@ -60,7 +60,7 @@ public class CF_TransitionProbability extends TransitionProbability {
       for(int demand = 0; demand < this.supportUB[initialState.getPeriod()]; demand++){
          CF_StateDescriptor descriptor = new CF_StateDescriptor(initialState.getPeriod() + 1,
                                                                 ((CF_State) initialState).getInventory() + ((CF_Action) action).orderQuantity - demand,
-                                                                ((CF_State) initialState).getCapital() + (int) Math.round(this.immediateValueFunction.apply(initialState, action, new Integer(demand))));
+                                                                ((CF_State) initialState).getCapital() + (int) Math.round(this.immediateValueFunction.apply(initialState, action, Integer.valueOf(demand))));
          finalStates.add(this.stateSpace[initialState.getPeriod() + 1].getState(descriptor));
       }
       

@@ -29,7 +29,6 @@ package jsdp.sdp.impl.multivariate;
 import java.util.Arrays;
 
 import jsdp.sdp.StateDescriptor;
-import jsdp.sdp.impl.multivariate.StateImpl;
 
 /**
  * A concrete implementation of {@code StateDescriptor}.
