@@ -52,7 +52,7 @@ import jsdp.app.inventory.univariate.simulation.SimulatePolicies;
 import jsdp.app.inventory.univariate.simulation.sS_Policy;
 
 import umontreal.ssj.probdist.Distribution;
-// import umontreal.ssj.probdist.PoissonDist;
+import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.probdist.NormalDist;
 
 /**
@@ -69,7 +69,12 @@ import umontreal.ssj.probdist.NormalDist;
  * @author Roberto Rossi
  *
  */
+
 public class StochasticLotSizing {
+   
+   enum DemandDistribution {
+      NORMAL, POISSON
+   };
    
    public static void main(String args[]){
       
@@ -84,16 +89,17 @@ public class StochasticLotSizing {
       double penaltyCost = 10;
       
       double[] meanDemand = {20,40,60,40};
-      //@SuppressWarnings("unused")
       double coefficientOfVariation = 0.25;
+      DemandDistribution demandDistribution = DemandDistribution.POISSON;
       double truncationQuantile = 0.999;
       
       // Random variables
 
       Distribution[] distributions = IntStream.iterate(0, i -> i + 1)
                                               .limit(meanDemand.length)
-                                              .mapToObj(i -> new NormalDist(meanDemand[i],meanDemand[i]*coefficientOfVariation))
-                                              //.mapToObj(i -> new PoissonDist(meanDemand[i]))
+                                              .mapToObj(i -> (demandDistribution == DemandDistribution.NORMAL) ? 
+                                                    new NormalDist(meanDemand[i],meanDemand[i]*coefficientOfVariation) : 
+                                                    new PoissonDist(meanDemand[i]))
                                               .toArray(Distribution[]::new);
       double[] supportLB = IntStream.iterate(0, i -> i + 1)
                                     .limit(meanDemand.length)
