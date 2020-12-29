@@ -2,6 +2,7 @@ package jsdp.app.standalone.stochastic;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
@@ -15,7 +16,6 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import jsdp.utilities.sampling.SampleFactory;
 import umontreal.ssj.probdist.ContinuousDistribution;
 import umontreal.ssj.probdist.DiscreteDistributionInt;
 import umontreal.ssj.probdist.Distribution;
@@ -23,6 +23,8 @@ import umontreal.ssj.probdist.GammaDist;
 import umontreal.ssj.probdist.NormalDist;
 import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.stat.Tally;
+
+import jsdp.utilities.sampling.SampleFactory;
 
 public class CapacitatedStochasticLotSizingFast {
 
