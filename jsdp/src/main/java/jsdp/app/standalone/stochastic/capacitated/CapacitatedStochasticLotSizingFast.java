@@ -1,4 +1,4 @@
-package jsdp.app.standalone.stochastic;
+package jsdp.app.standalone.stochastic.capacitated;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
