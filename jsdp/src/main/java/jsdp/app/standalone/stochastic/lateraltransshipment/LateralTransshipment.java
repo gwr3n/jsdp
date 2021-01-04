@@ -307,7 +307,7 @@ class InstancePortfolio{
       double vA = v;
       double KB = K;
       double vB = v;
-      double R = 5;
+      double R = 0;
       double u = 0.5;
       double hA = h;
       double hB = h;
