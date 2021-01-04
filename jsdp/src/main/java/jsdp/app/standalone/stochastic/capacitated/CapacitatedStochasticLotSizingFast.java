@@ -68,13 +68,17 @@ public class CapacitatedStochasticLotSizingFast {
       Random rnd = new Random();
       int C = (int)Math.round(capacity);
       int D = (int)Math.round(maxDemand);
-      demandProbabilities[rnd.nextInt(C + 1)] += 0.025;
-      demandProbabilities[rnd.nextInt(C + 1)] += 0.025;
-      demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + C] += 0.05;
-      demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + C] += 0.1;
-      demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + C] += 0.8;
+      demandProbabilities[rnd.nextInt(C + 1)] += rnd.nextDouble();
+      demandProbabilities[rnd.nextInt(C + 1)] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
+      demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + C] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
+      //demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + C] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
+      demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + C] += 1 - Arrays.stream(demandProbabilities).sum();
       assert(Arrays.stream(demandProbabilities).sum() == 1);
-      System.out.println(Arrays.toString(demandProbabilities));
+      String out = "";
+      for(int i = 0; i < demandProbabilities.length; i++) {
+         if(demandProbabilities[i] > 0) out += i+"/"+demandProbabilities[i]+",";
+      }
+      System.out.println(out);
       return demandProbabilities;
    }
    
@@ -278,6 +282,7 @@ public class CapacitatedStochasticLotSizingFast {
       //XYSeries seriesLQCE = new XYSeries("Left QCE");
       String cost = "cost"+(f == FUNCTION.Gn ? "Gn" : "Cn")+" = {";
       //String lqce = "lqce"+(f == FUNCTION.Gn ? "Gn" : "Cn")+" = {";
+      String order_up_to = "order_up_to = {";
       String action = "action = {";
       for(int i = Math.max(0,min-instance.minInventory); i < Math.min(instance.stateSpaceSize(),max-instance.minInventory); i++) {
          series.add(i+instance.minInventory,optimalCost[t][i]);
@@ -287,14 +292,18 @@ public class CapacitatedStochasticLotSizingFast {
                ((i == Math.min(instance.stateSpaceSize(),max-instance.minInventory) - 1) ? "" : ", ");
          //lqce += "{" + (i+instance.minInventory) + ", " + (f == FUNCTION.Gn ? solution.leftQuasiconvexEnvelopeGn[t][i] : solution.leftQuasiconvexEnvelopeCn[t][i]) + "}" + 
          //      ((i == Math.min(instance.stateSpaceSize(),max-instance.minInventory) - 1) ? "" : ", ");
-         action += "{" + (i+instance.minInventory) + ", " + (i+instance.minInventory+solution.optimalAction[t][i]) + "}" + 
+         order_up_to += "{" + (i+instance.minInventory) + ", " + (i+instance.minInventory+solution.optimalAction[t][i]) + "}" + 
+               ((i == Math.min(instance.stateSpaceSize(),max-instance.minInventory) - 1) ? "" : ", ");
+         action += "{" + (i+instance.minInventory) + ", " + (solution.optimalAction[t][i]) + "}" + 
                ((i == Math.min(instance.stateSpaceSize(),max-instance.minInventory) - 1) ? "" : ", ");
       }
       cost += "};";
       //lqce += "};";
+      order_up_to += "};";
       action += "};";
       System.out.println(cost);
       //System.out.println(lqce);
+      System.out.println(order_up_to);
       System.out.println(action);
       
       /** Plot the expected optimal cost **/
@@ -889,6 +898,8 @@ public class CapacitatedStochasticLotSizingFast {
          
          Instance instance = InstancePortfolio.generateSparseRandomInstance(rnd);
          
+         if(i+1 < 18) continue;
+         
          System.out.println("Instance sanity check: "+(instance.maxQuantity>instance.fixedOrderingCost/(instance.getStages()*instance.penaltyCost)));
          
          FUNCTION f = FUNCTION.Cn;
@@ -903,14 +914,15 @@ public class CapacitatedStochasticLotSizingFast {
          
          System.out.println();
          System.out.println("***************** Checks *****************");
-         boolean flag = testKBConvexity(instance, solution, safeMin, safeMax, f);
-         System.out.println("testKBConvexity: "+flag);   
-         flag &= testKBConvexity_visibility(instance, solution, safeMin, safeMax, f);
-         System.out.println("testKBConvexity_visibility: "+ flag);
-         flag &= testKBConvexity_ii_Shiaoxiang(instance, solution, safeMin, safeMax, f);
-         System.out.println("testKBConvexity_ii_Shiaoxiang: "+flag);
-         flag &= testKBConvexity_ii_Shiaoxiang_visibility(instance, solution, safeMin, safeMax, f);
-         System.out.println("testKBConvexity_ii_Shiaoxiang_visibility: "+ flag);
+         boolean flag = true;
+         //flag &= testKBConvexity(instance, solution, safeMin, safeMax, f);
+         //System.out.println("testKBConvexity: "+flag);   
+         //flag &= testKBConvexity_visibility(instance, solution, safeMin, safeMax, f);
+         //System.out.println("testKBConvexity_visibility: "+ flag);
+         //flag &= testKBConvexity_ii_Shiaoxiang(instance, solution, safeMin, safeMax, f);
+         //System.out.println("testKBConvexity_ii_Shiaoxiang: "+flag);
+         //flag &= testKBConvexity_ii_Shiaoxiang_visibility(instance, solution, safeMin, safeMax, f);
+         //System.out.println("testKBConvexity_ii_Shiaoxiang_visibility: "+ flag);
          //flag &= testKBConvexity_iii(instance, solution, safeMin, safeMax);
          //System.out.println("testKBConvexity_iii: "+ flag);
          //flag &= testQuasiKBConvexity_visibility(instance, solution, safeMin, safeMax, f);
@@ -920,14 +932,15 @@ public class CapacitatedStochasticLotSizingFast {
          System.out.println("*******************************************");
          System.out.println();
          
-         if(flag == false)
+         if(flag == false) {
+            boolean plot = false;
+            int plotPeriod = 2;
+            plotCostFunction(instance, solution, plotMin, plotMax, plot, f, plotPeriod);
+            plotCnMinusGn(instance, solution, plotMin, plotMax, plot);
+            System.out.println();
             System.exit(1);
-         
-         //boolean plot = false;
-         //int plotPeriod = 0;
-         //plotCostFunction(instance, solution, plotMin, plotMax, plot, f, plotPeriod);
-         //plotCnMinusGn(instance, solution, plotMin, plotMax, plot);
-         System.out.println();
+         }
+            
       }
    }
    
@@ -1265,7 +1278,7 @@ class InstancePortfolio{
       double fixedOrderingCost = 1 + rnd.nextInt(500); 
       double unitCost = 0; 
       double holdingCost = 1;
-      double penaltyCost = 1 + rnd.nextInt(30);
+      double penaltyCost = 2 + rnd.nextInt(30);
       int maxQuantity = 2 + rnd.nextInt(200);
       int maxDemand = 300;
       SparseRandomDist[] demand = new SparseRandomDist[stages];
