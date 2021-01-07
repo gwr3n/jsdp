@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Random;
-import java.util.stream.IntStream;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
@@ -22,7 +21,6 @@ import umontreal.ssj.probdist.DiscreteDistributionInt;
 
 import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.probdist.NormalDist;
-import umontreal.ssj.probdist.GammaDist;
 
 import umontreal.ssj.stat.Tally;
 
@@ -934,7 +932,7 @@ public class CapacitatedStochasticLotSizingFast {
          
          if(flag == false) {
             boolean plot = false;
-            int plotPeriod = 7;
+            int plotPeriod = 0;
             //plotCostFunction(instance, solution, plotMin, plotMax, plot, f, plotPeriod);
             //plotCnMinusGn(instance, solution, plotMin, plotMax, plot);
             System.out.println("********** End instance: "+(i+1)+" *********");
