@@ -214,7 +214,7 @@ public class LateralTransshipment {
       for(int i = 0; i < instance.stateSpaceSize(); i++) {
          System.out.print(instance.inventory(i) + "\t");
          for(int j = 0; j < instance.stateSpaceSize(); j++) {
-            System.out.print(solution.GnTransshipment[0][i][j] + "\t");
+            System.out.print(solution.GnTransshipment[t][i][j] + "\t");
          }
          System.out.println();
       }
@@ -229,7 +229,7 @@ public class LateralTransshipment {
       for(int i = 0; i < instance.stateSpaceSize(); i++) {
          System.out.print(instance.inventory(i) + "\t");
          for(int j = 0; j < instance.stateSpaceSize(); j++) {
-            System.out.print(solution.optimalActionTransshipment[0][i][j] + "\t");
+            System.out.print(solution.optimalActionTransshipment[t][i][j] + "\t");
          }
          System.out.println();
       }
@@ -244,7 +244,7 @@ public class LateralTransshipment {
       for(int i = 0; i < instance.stateSpaceSize(); i++) {
          System.out.print(instance.inventory(i) + "\t");
          for(int j = 0; j < instance.stateSpaceSize(); j++) {
-            System.out.print(solution.optimalActionOrder[0][i][j][0] + "\t");
+            System.out.print(solution.optimalActionOrder[t][i][j][0] + "\t");
          }
          System.out.println();
       }
@@ -259,7 +259,7 @@ public class LateralTransshipment {
       for(int i = 0; i < instance.stateSpaceSize(); i++) {
          System.out.print(instance.inventory(i) + "\t");
          for(int j = 0; j < instance.stateSpaceSize(); j++) {
-            System.out.print(solution.optimalActionOrder[0][i][j][1] + "\t");
+            System.out.print(solution.optimalActionOrder[t][i][j][1] + "\t");
          }
          System.out.println();
       }
@@ -307,7 +307,7 @@ class InstancePortfolio{
       double vA = v;
       double KB = K;
       double vB = v;
-      double R = 0;
+      double R = 3;
       double u = 0.5;
       double hA = h;
       double hB = h;
