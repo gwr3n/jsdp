@@ -68,10 +68,10 @@ public class CapacitatedStochasticLotSizingFast {
       Random rnd = new Random();
       int C = (int)Math.round(capacity);
       int D = (int)Math.round(maxDemand);
-      demandProbabilities[rnd.nextInt(C + 1)] += rnd.nextDouble();
+      demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + C] += rnd.nextDouble();
+      demandProbabilities[rnd.nextInt(C + 1)] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
       demandProbabilities[rnd.nextInt(C + 1)] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
       demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + C] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
-      //demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + C] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
       demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + C] += 1 - Arrays.stream(demandProbabilities).sum();
       assert(Arrays.stream(demandProbabilities).sum() == 1);
       String out = "";
@@ -884,10 +884,10 @@ public class CapacitatedStochasticLotSizingFast {
    
    public static void solveRandomInstances(int numberOfInstances, long seed) {
       
-      int safeMin = -500;
-      int safeMax = 500;
-      int plotMin = -300;
-      int plotMax = 1000;
+      int safeMin = -2000;
+      int safeMax = 2000;
+      int plotMin = -500;
+      int plotMax = 500;
       
       /** Random instances **/
       Random rnd = new Random();
@@ -898,7 +898,7 @@ public class CapacitatedStochasticLotSizingFast {
          
          Instance instance = InstancePortfolio.generateSparseRandomInstance(rnd);
          
-         if(i+1 < 18) continue;
+         if(i+1 < 4000) continue;
          
          System.out.println("Instance sanity check: "+(instance.maxQuantity>instance.fixedOrderingCost/(instance.getStages()*instance.penaltyCost)));
          
@@ -934,13 +934,12 @@ public class CapacitatedStochasticLotSizingFast {
          
          if(flag == false) {
             boolean plot = false;
-            int plotPeriod = 2;
-            plotCostFunction(instance, solution, plotMin, plotMax, plot, f, plotPeriod);
-            plotCnMinusGn(instance, solution, plotMin, plotMax, plot);
-            System.out.println();
+            int plotPeriod = 7;
+            //plotCostFunction(instance, solution, plotMin, plotMax, plot, f, plotPeriod);
+            //plotCnMinusGn(instance, solution, plotMin, plotMax, plot);
+            System.out.println("********** End instance: "+(i+1)+" *********");
             System.exit(1);
          }
-            
       }
    }
    
@@ -1022,7 +1021,7 @@ public class CapacitatedStochasticLotSizingFast {
       //solveSampleInstance(instance, seed);
       
       @SuppressWarnings("unused")
-      int instances = 1000;
+      int instances = 1000000;
       solveRandomInstances(instances, seed);
    }
 }
@@ -1267,19 +1266,19 @@ class InstancePortfolio{
    public static Instance generateSparseRandomInstance(Random rnd) {
       /** SDP boundary conditions **/
       double tail = 0.0000000001;
-      int minInventory = -10000;
-      int maxInventory = 10000;
+      int minInventory = -5000;
+      int maxInventory = 5000;
       
       /*******************************************************************
        * Problem parameters
        */
       
-      int stages = 12;
-      double fixedOrderingCost = 1 + rnd.nextInt(500); 
+      int stages = 6;
+      double fixedOrderingCost = 100 + rnd.nextInt(400); 
       double unitCost = 0; 
       double holdingCost = 1;
-      double penaltyCost = 2 + rnd.nextInt(30);
-      int maxQuantity = 2 + rnd.nextInt(200);
+      double penaltyCost = 10 + rnd.nextInt(30);
+      int maxQuantity = 20 + rnd.nextInt(180);
       int maxDemand = 300;
       SparseRandomDist[] demand = new SparseRandomDist[stages];
       Arrays.fill(demand, new SparseRandomDist(maxDemand));
