@@ -153,7 +153,7 @@ public class LateralTransshipment {
                                  (instance.inventory(iB) + QB - dB <= instance.maxInventory) && (instance.inventory(iB) + QB - dB >= instance.minInventory)) {
                               immediateCost = demandProbabilities[0][t][dA]*demandProbabilities[1][t][dB]*
                                     computeImmediateEndOfPeriodCost(instance.inventory(iA),instance.inventory(iB), QA, QB, dA, dB, instance.hA, instance.hB, instance.pA, instance.pB);
-                              futureCost = demandProbabilities[0][t][dA]*demandProbabilities[0][t][dB]*( (t==instance.getStages()-1) ? 0 : CnTransshipment[t+1][iA+QA-dA][iB+QB-dB]);
+                              futureCost = demandProbabilities[0][t][dA]*demandProbabilities[1][t][dB]*( (t==instance.getStages()-1) ? 0 : CnTransshipment[t+1][iA+QA-dA][iB+QB-dB]);
                               totalProbabilityMass += demandProbabilities[0][t][dA]*demandProbabilities[1][t][dB];
                            }
                            totalCostO[iA][iB][QA][QB] += immediateCost + futureCost;
