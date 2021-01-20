@@ -1349,7 +1349,8 @@ public class CapacitatedStochasticLotSizingFast {
       runBatchUniformInt("results_uniform_int.csv");
       runBatchGeometric("results_geometric.csv");
       boolean sparse = true;
-      runBatchRandom("results_random.csv", sparse);
+      runBatchRandom("results_random.csv", !sparse);
+      runBatchRandom("results_sparse_random.csv", sparse);
       runBatchNormal("results_normal.csv");
       runBatchLogNormal("results_lognormal.csv");
       runBatchGamma("results_gamma.csv");
