@@ -739,8 +739,8 @@ public class CapacitatedStochasticLotSizingFast {
    
    public static void runBatchPoisson(String fileName){
       double tail = 0.0001;
-      int minInventory = -50000;
-      int maxInventory = 50000;
+      int minInventory = -10000;
+      int maxInventory = 10000;
       int safeMin = -5000;
       int safeMax = 5000;
       
@@ -762,12 +762,11 @@ public class CapacitatedStochasticLotSizingFast {
                for(double m : maxOrderQuantity) {
                   for(int d = 0; d < meanDemand.length; d++) {
                      
-                     /* Skip instances
-                     if(count < 591) {
+                     /* Skip instances 
+                     if(count < 561) {
                         count++;
                         continue;
-                     }
-                     */
+                     }*/
                      
                      Distribution[] demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new PoissonDist(k)).toArray(Distribution[]::new);
                      
