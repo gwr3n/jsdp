@@ -677,15 +677,15 @@ public class CapacitatedStochasticLotSizingFast {
                   for(int d = 0; d < meanDemand.length; d++) {
                      Distribution[] demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new UniformIntDist(0, (int) Math.round(k))).toArray(Distribution[]::new);
                      
-                     double totalDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
-                     int maxQuantity = (int) Math.round(m*totalDemand);
+                     double avgDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
+                     int maxQuantity = (int) Math.round(m*avgDemand);
                      
                      Instance instance = new Instance(oc, u, holdingCost, p, demand, maxQuantity, tail, minInventory, maxInventory);
                      
                      int initialInventory = 0;
                      
                      double[] result = solveInstance(instance, initialInventory, safeMin, safeMax);
-                     writeToFile(fileName, oc + "," + u + "," + p + "," + Math.round(m*totalDemand) + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
+                     writeToFile(fileName, oc + "," + u + "," + p + "," + m + "D," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
                      System.out.println((++count)+"/"+instances);
                   }
                }
@@ -720,15 +720,15 @@ public class CapacitatedStochasticLotSizingFast {
                   for(int d = 0; d < meanDemand.length; d++) {
                      Distribution[] demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new GeometricDist(1/k)).toArray(Distribution[]::new);
                      
-                     double totalDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
-                     int maxQuantity = (int) Math.round(m*totalDemand);
+                     double avgDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
+                     int maxQuantity = (int) Math.round(m*avgDemand);
                      
                      Instance instance = new Instance(oc, u, holdingCost, p, demand, maxQuantity, tail, minInventory, maxInventory);
                      
                      int initialInventory = 0;
                      
                      double[] result = solveInstance(instance, initialInventory, safeMin, safeMax);
-                     writeToFile(fileName, oc + "," + u + "," + p + "," + Math.round(m*totalDemand) + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
+                     writeToFile(fileName, oc + "," + u + "," + p + "," + m + "D," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
                      System.out.println((++count)+"/"+instances);
                   }
                }
@@ -770,15 +770,15 @@ public class CapacitatedStochasticLotSizingFast {
                      
                      Distribution[] demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new PoissonDist(k)).toArray(Distribution[]::new);
                      
-                     double totalDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
-                     int maxQuantity = (int) Math.round(m*totalDemand);
+                     double avgDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
+                     int maxQuantity = (int) Math.round(m*avgDemand);
                      
                      Instance instance = new Instance(oc, u, holdingCost, p, demand, maxQuantity, tail, minInventory, maxInventory);
                      
                      int initialInventory = 0;
                      
                      double[] result = solveInstance(instance, initialInventory, safeMin, safeMax);
-                     writeToFile(fileName, oc + "," + u + "," + p + "," + Math.round(m*totalDemand) + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
+                     writeToFile(fileName, oc + "," + u + "," + p + "," + m + "D," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
                      System.out.println((++count)+"/"+instances);
                   }
                }
@@ -817,15 +817,15 @@ public class CapacitatedStochasticLotSizingFast {
                      else
                         demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new RandomDist((int) Math.round(k))).toArray(Distribution[]::new);
                            
-                     double totalDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
-                     int maxQuantity = (int) Math.round(m*totalDemand);
+                     double avgDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
+                     int maxQuantity = (int) Math.round(m*avgDemand);
                      
                      Instance instance = new Instance(oc, u, holdingCost, p, demand, maxQuantity, tail, minInventory, maxInventory);
                      
                      int initialInventory = 0;
                      
                      double[] result = solveInstance(instance, initialInventory, safeMin, safeMax);
-                     writeToFile(fileName, oc + "," + u + "," + p + "," + Math.round(m*totalDemand) + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
+                     writeToFile(fileName, oc + "," + u + "," + p + "," + m + "D," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
                      System.out.println((++count)+"/"+instances);
                   }
                }
@@ -863,15 +863,15 @@ public class CapacitatedStochasticLotSizingFast {
                         final int idx = c;
                         Distribution[] demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new NormalDist(k, k*coefficient_of_variation[idx])).toArray(Distribution[]::new);
                         
-                        double totalDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
-                        int maxQuantity = (int) Math.round(m*totalDemand);
+                        double avgDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
+                        int maxQuantity = (int) Math.round(m*avgDemand);
                         
                         Instance instance = new Instance(oc, u, holdingCost, p, demand, maxQuantity, tail, minInventory, maxInventory);
                         
                         int initialInventory = 0;
                         
                         double[] result = solveInstance(instance, initialInventory, safeMin, safeMax);
-                        writeToFile(fileName, oc + "," + u + "," + p + "," + Math.round(m*totalDemand) + ","+ coefficient_of_variation[idx] + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
+                        writeToFile(fileName, oc + "," + u + "," + p + "," + m + "D," + coefficient_of_variation[idx] + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
                         System.out.println((++count)+"/"+instances);
                      }
                   }
@@ -910,15 +910,15 @@ public class CapacitatedStochasticLotSizingFast {
                         final int idx = c;
                         Distribution[] demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new LognormalDist(Math.log(Math.pow(k, 2)/Math.sqrt(Math.pow(k, 2)+Math.pow(k*coefficient_of_variation[idx], 2))), Math.sqrt(Math.log1p(Math.pow(k*coefficient_of_variation[idx], 2)/Math.pow(k, 2))))).toArray(Distribution[]::new);
                         
-                        double totalDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
-                        int maxQuantity = (int) Math.round(m*totalDemand);
+                        double avgDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
+                        int maxQuantity = (int) Math.round(m*avgDemand);
                         
                         Instance instance = new Instance(oc, u, holdingCost, p, demand, maxQuantity, tail, minInventory, maxInventory);
                         
                         int initialInventory = 0;
                         
                         double[] result = solveInstance(instance, initialInventory, safeMin, safeMax);
-                        writeToFile(fileName, oc + "," + u + "," + p + "," + Math.round(m*totalDemand) + ","+ coefficient_of_variation[idx] + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
+                        writeToFile(fileName, oc + "," + u + "," + p + "," + m + "D," + coefficient_of_variation[idx] + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
                         System.out.println((++count)+"/"+instances);
                      }
                   }
@@ -959,15 +959,15 @@ public class CapacitatedStochasticLotSizingFast {
                         final double alpha = 1/Math.pow(coefficient_of_variation[idx], 2);
                         Distribution[] demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new GammaDist(alpha, alpha/k)).toArray(Distribution[]::new);
                         
-                        double totalDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
-                        int maxQuantity = (int) Math.round(m*totalDemand);
+                        double avgDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
+                        int maxQuantity = (int) Math.round(m*avgDemand);
                         
                         Instance instance = new Instance(oc, u, holdingCost, p, demand, maxQuantity, tail, minInventory, maxInventory);
                         
                         int initialInventory = 0;
                         
                         double[] result = solveInstance(instance, initialInventory, safeMin, safeMax);
-                        writeToFile(fileName, oc + "," + u + "," + p + "," + Math.round(m*totalDemand) + ","+ coefficient_of_variation[idx] + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
+                        writeToFile(fileName, oc + "," + u + "," + p + "," + m + "D," + coefficient_of_variation[idx] + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
                         System.out.println((++count)+"/"+instances);
                      }
                   }
