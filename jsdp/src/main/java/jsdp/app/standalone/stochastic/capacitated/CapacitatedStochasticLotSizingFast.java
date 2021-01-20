@@ -1346,7 +1346,7 @@ public class CapacitatedStochasticLotSizingFast {
       int instances = 1000000;
       //solveRandomInstances(instances, seed);
       
-      //runBatchPoisson("results_poisson.csv");
+      runBatchPoisson("results_poisson.csv");
       runBatchUniformInt("results_uniform_int.csv");
       runBatchGeometric("results_geometric.csv");
       boolean sparse = true;
