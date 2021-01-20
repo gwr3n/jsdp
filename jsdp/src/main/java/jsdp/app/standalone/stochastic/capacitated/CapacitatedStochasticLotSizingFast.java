@@ -1,5 +1,10 @@
 package jsdp.app.standalone.stochastic.capacitated;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 
@@ -19,8 +24,12 @@ import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.ContinuousDistribution;
 import umontreal.ssj.probdist.DiscreteDistributionInt;
 
+import umontreal.ssj.probdist.UniformIntDist;
+import umontreal.ssj.probdist.GeometricDist;
 import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.probdist.NormalDist;
+import umontreal.ssj.probdist.LognormalDist;
+import umontreal.ssj.probdist.GammaDist;
 
 import umontreal.ssj.stat.Tally;
 
@@ -28,144 +37,7 @@ import jsdp.utilities.sampling.SampleFactory;
 
 public class CapacitatedStochasticLotSizingFast {
 
-   static double[] tabulateProbabilityContinuous(ContinuousDistribution dist, double tail) {
-      // Note that minDemand is assumed to be 0;
-      int maxDemand = (int)Math.round(dist.inverseF(1-tail));
-      double[] demandProbabilities = new double[maxDemand + 1];
-      for(int i = 0; i <= maxDemand; i++) {
-         demandProbabilities [i] = (dist.cdf(i+0.5)-dist.cdf(i-0.5))/(dist.cdf(maxDemand+0.5)-dist.cdf(-0.5));
-      }
-      assert(Arrays.stream(demandProbabilities).sum() == 1);
-      return demandProbabilities;
-   }
-   
-   static double[] tabulateProbabilityDiscrete(DiscreteDistributionInt dist, double tail) {
-      // Note that minDemand is assumed to be 0;
-      int maxDemand = dist.inverseFInt(1-tail);
-      double[] demandProbabilities = new double[maxDemand + 1];
-      for(int i = 0; i <= maxDemand; i++) {
-         demandProbabilities [i] = dist.prob(i)/dist.cdf(maxDemand);
-      }
-      assert(Arrays.stream(demandProbabilities).sum() == 1);
-      return demandProbabilities;
-   }
-   
-   static double[] tabulateProbabilityRandom(double maxDemand) {
-      double[] demandProbabilities = new double[(int)Math.round(maxDemand) + 1];
-      Random rnd = new Random();
-      double quantiles = 1000;
-      for(int i = 0; i < quantiles; i++) {
-         demandProbabilities[rnd.nextInt((int)Math.round(maxDemand) + 1)] += 1/quantiles;
-      }
-      assert(Arrays.stream(demandProbabilities).sum() == 1);
-      return demandProbabilities;
-   }
-   
-   static double[] tabulateProbabilitySparseRandom(double maxDemand, double capacity) {
-      double[] demandProbabilities = new double[(int)Math.round(maxDemand) + 1];
-      Random rnd = new Random();
-      int C = (int)Math.round(capacity);
-      int D = (int)Math.round(maxDemand);
-      demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + C] += rnd.nextDouble();
-      demandProbabilities[rnd.nextInt(C + 1)] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
-      demandProbabilities[rnd.nextInt(C + 1)] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
-      demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + C] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
-      demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + C] += 1 - Arrays.stream(demandProbabilities).sum();
-      assert(Arrays.stream(demandProbabilities).sum() == 1);
-      String out = "";
-      for(int i = 0; i < demandProbabilities.length; i++) {
-         if(demandProbabilities[i] > 0) out += i+"/"+demandProbabilities[i]+",";
-      }
-      System.out.println(out);
-      return demandProbabilities;
-   }
-   
-   static double[] tabulateProbabilityShiaoxiang1996() {
-      return new double[] {0.00001,0.00001,0.00001,0.00001,0.00001,0.00001,0.94994,0.05};
-   }
-   
-   static double[] tabulateProbabilityGallego2000() {
-      return new double[] {0.00001,0.15,0.00001,0.00001,0.00001,0.00001,0.69995,0.15};
-   }
-   
-   static double[] tabulateProbabilityNoOrderOrder_1(int t) {
-      String distribution = "107/0.28804, 215/0.40838, 260/0.30358,\n"
-            + "53/0.27762, 174/0.00283, 199/0.00202, 245/0.71753,\n"
-            + "4/0.10204, 54/0.00752, 116/0.04826, 145/0.84218,\n"
-            + "59/0.29474, 131/0.31910, 136/0.38616,\n"
-            + "64/0.13203, 281/0.75405, 284/0.11392,\n"
-            + "137/0.75736, 153/0.02654, 197/0.21610,\n"
-            + "114/0.60165, 127/0.29033, 174/0.08904, 275/0.01898,\n"
-            + "209/0.76446, 258/0.11859, 276/0.11695,\n"
-            + "41/0.14676, 135/0.28086, 174/0.13442, 263/0.43796,\n"
-            + "88/0.09797, 131/0.76541, 233/0.01452, 287/0.12210,\n"
-            + "201/0.07041, 209/0.84693, 281/0.08266,\n"
-            + "50/0.01981, 132/0.04819, 289/0.93200,";
-      String[] periodDemand = distribution.split("\n");
-      String[] demandDistribution = periodDemand[t].split(",");
-      String[][] demandDistributionArray = Arrays.stream(demandDistribution).map(s -> s.split("/")).toArray(String[][]::new);
-      double[][] demandDistributionDoubleArray = Arrays.stream(demandDistributionArray).limit(demandDistributionArray.length).map(s -> new double[]{Double.parseDouble(s[0]), Double.parseDouble(s[1])}).toArray(double[][]::new);
-      double maxDemand = demandDistributionDoubleArray[demandDistributionDoubleArray.length - 1][0];
-      double[] res = new double[(int)Math.round(maxDemand+1)];
-      for(int i = 0; i < demandDistributionDoubleArray.length; i++) {
-         res[(int)Math.round(demandDistributionDoubleArray[i][0])] = demandDistributionDoubleArray[i][1];
-      }
-      assert(Arrays.stream(res).sum() == 1);
-      return res;
-   }
-   
-   static double[] tabulateProbabilityNoOrderOrder_2(int t) {
-      String distribution = "45/0.03671, 77/0.13654, 123/0.78596, 268/0.04079,\n"
-            + "70/0.71222, 111/0.25824, 158/0.02954,\n"
-            + "112/0.28034, 216/0.68764, 221/0.03202,\n"
-            + "50/0.04864, 228/0.59748, 246/0.35388,\n"
-            + "22/0.17562, 34/0.27540, 49/0.42421, 137/0.12477,\n"
-            + "13/0.66304, 226/0.23036, 230/0.10660,\n"
-            + "102/0.20559, 152/0.33795, 291/0.45646,\n"
-            + "27/0.00900, 112/0.00469, 153/0.04761, 293/0.93870,\n"
-            + "9/0.04179, 91/0.87259, 105/0.00064, 227/0.08498,\n"
-            + "31/0.00462, 32/0.05346, 196/0.93892, 292/0.00300,\n"
-            + "113/0.19172, 129/0.46507, 134/0.34321,\n"
-            + "6/0.02876, 8/0.07738, 66/0.04847, 246/0.84539,";
-      String[] periodDemand = distribution.split("\n");
-      String[] demandDistribution = periodDemand[t].split(",");
-      String[][] demandDistributionArray = Arrays.stream(demandDistribution).map(s -> s.split("/")).toArray(String[][]::new);
-      double[][] demandDistributionDoubleArray = Arrays.stream(demandDistributionArray).limit(demandDistributionArray.length).map(s -> new double[]{Double.parseDouble(s[0]), Double.parseDouble(s[1])}).toArray(double[][]::new);
-      double maxDemand = demandDistributionDoubleArray[demandDistributionDoubleArray.length - 1][0];
-      double[] res = new double[(int)Math.round(maxDemand+1)];
-      for(int i = 0; i < demandDistributionDoubleArray.length; i++) {
-         res[(int)Math.round(demandDistributionDoubleArray[i][0])] = demandDistributionDoubleArray[i][1];
-      }
-      assert(Arrays.stream(res).sum() == 1);
-      return res;
-   }
-   
-   static double[][] computeDemandProbability(Instance instance) {
-      double[][] demandProbability = new double [instance.demand.length][];
-      for(int t = 0; t < instance.demand.length; t++) {
-         if(instance.demand[t] instanceof RandomDist) {
-            demandProbability[t] = tabulateProbabilityRandom(((RandomDist)instance.demand[t]).maxDemand);
-         }else if(instance.demand[t] instanceof SparseRandomDist) {
-            demandProbability[t] = tabulateProbabilitySparseRandom(((SparseRandomDist)instance.demand[t]).maxDemand, instance.maxQuantity);
-         }else if(instance.demand[t] instanceof Shiaoxiang1996Dist) {
-            demandProbability[t] = tabulateProbabilityShiaoxiang1996();
-         }else if(instance.demand[t] instanceof Gallego2000Dist) {
-            demandProbability[t] = tabulateProbabilityGallego2000();
-         }else if(instance.demand[t] instanceof NoOrderOrder1Dist) {
-            demandProbability[t] = tabulateProbabilityNoOrderOrder_1(t);
-         }else if(instance.demand[t] instanceof NoOrderOrder2Dist) {
-            demandProbability[t] = tabulateProbabilityNoOrderOrder_2(t);
-         }else if(instance.demand[t] instanceof ContinuousDistribution) {
-            demandProbability[t] = tabulateProbabilityContinuous((ContinuousDistribution)instance.demand[t], instance.tail);
-         }else if(instance.demand[t] instanceof DiscreteDistributionInt) {
-            demandProbability[t] = tabulateProbabilityDiscrete((DiscreteDistributionInt)instance.demand[t], instance.tail);
-         }else
-            throw new NullPointerException("Distribution not recognized.");
-      }
-      return demandProbability;
-   }
-
-   static double computeImmediateCost(
+   private static double computeImmediateCost(
          int inventory, 
          int quantity, 
          int demand,
@@ -177,21 +49,23 @@ public class CapacitatedStochasticLotSizingFast {
             + penaltyCost *Math.max(0, demand - inventory - quantity);
    }
    
-   static double getOptimalCost(double[] expectedTotalCosts) {
+   private static final double error_tolerance = 1.0E-10; // Prevents double rounding errors
+   
+   private static double getOptimalCost(double[] expectedTotalCosts) {
       double min = expectedTotalCosts[0];
       for(int a = 1; a < expectedTotalCosts.length; a++) {
-         if(expectedTotalCosts[a] < min) {
+         if(expectedTotalCosts[a] < min-error_tolerance) {
             min = expectedTotalCosts[a];
          }
       }
       return min;
    }
    
-   static int getOptimalAction(double[] expectedTotalCosts) {
+   private static int getOptimalAction(double[] expectedTotalCosts) {
       double min = expectedTotalCosts[0];
       int action = 0;
       for(int a = 1; a < expectedTotalCosts.length; a++) {
-         if(expectedTotalCosts[a] < min) {
+         if(expectedTotalCosts[a] < min-error_tolerance) {
             min = expectedTotalCosts[a];
             action = a;
          }
@@ -203,9 +77,9 @@ public class CapacitatedStochasticLotSizingFast {
       Gn, Cn
    }
    
-   public static Solution solveInstance(Instance instance) {
+   public static Solution sdp(Instance instance) {
       
-      double demandProbabilities [][] = computeDemandProbability(instance);
+      double demandProbabilities [][] = InstancePortfolio.computeDemandProbability(instance);
       
       int optimalAction[][] = new int [instance.getStages()][instance.stateSpaceSize()];
       double Gn[][] = new double [instance.getStages()][instance.stateSpaceSize()];
@@ -261,7 +135,7 @@ public class CapacitatedStochasticLotSizingFast {
       }
    }
    
-   public static void plotCostFunction(Instance instance, Solution solution, int min, int max, boolean plot, FUNCTION f, int period) {
+   public static void plotCostFunction(Instance instance, Solution solution, int min, int max, boolean plot, FUNCTION f, int period, boolean QCE) {
       double[][] optimalCost;
       switch(f) {
       case Gn:
@@ -276,31 +150,36 @@ public class CapacitatedStochasticLotSizingFast {
       
       /** Plot the expected optimal cost **/
       XYSeries series = new XYSeries(f == FUNCTION.Gn ? "Gn" : "Cn");
-      //XYSeries seriesRQCE = new XYSeries("Right QCE");
-      //XYSeries seriesLQCE = new XYSeries("Left QCE");
+      XYSeries seriesRQCE = new XYSeries("Right QCE");
+      XYSeries seriesLQCE = new XYSeries("Left QCE");
       String cost = "cost"+(f == FUNCTION.Gn ? "Gn" : "Cn")+" = {";
-      //String lqce = "lqce"+(f == FUNCTION.Gn ? "Gn" : "Cn")+" = {";
+      String rqce = "rqce"+(f == FUNCTION.Gn ? "Gn" : "Cn")+" = {";
+      String lqce = "lqce"+(f == FUNCTION.Gn ? "Gn" : "Cn")+" = {";
       String order_up_to = "order_up_to = {";
       String action = "action = {";
       for(int i = Math.max(0,min-instance.minInventory); i < Math.min(instance.stateSpaceSize(),max-instance.minInventory); i++) {
          series.add(i+instance.minInventory,optimalCost[t][i]);
-         //seriesRQCE.add(i+instance.minInventory, f == FUNCTION.Gn ? solution.rightQuasiconvexEnvelopeGn[t][i] : solution.rightQuasiconvexEnvelopeCn[t][i]);
-         //seriesLQCE.add(i+instance.minInventory, f == FUNCTION.Gn ? solution.leftQuasiconvexEnvelopeGn[t][i] : solution.leftQuasiconvexEnvelopeCn[t][i]);
+         seriesRQCE.add(i+instance.minInventory, f == FUNCTION.Gn ? solution.rightQuasiconvexEnvelopeGn[t][i] : solution.rightQuasiconvexEnvelopeCn[t][i]);
+         seriesLQCE.add(i+instance.minInventory, f == FUNCTION.Gn ? solution.leftQuasiconvexEnvelopeGn[t][i] : solution.leftQuasiconvexEnvelopeCn[t][i]);
          cost += "{" + (i+instance.minInventory) + ", " + (optimalCost[t][i]) + "}" + 
                ((i == Math.min(instance.stateSpaceSize(),max-instance.minInventory) - 1) ? "" : ", ");
-         //lqce += "{" + (i+instance.minInventory) + ", " + (f == FUNCTION.Gn ? solution.leftQuasiconvexEnvelopeGn[t][i] : solution.leftQuasiconvexEnvelopeCn[t][i]) + "}" + 
-         //      ((i == Math.min(instance.stateSpaceSize(),max-instance.minInventory) - 1) ? "" : ", ");
+         rqce += "{" + (i+instance.minInventory) + ", " + (f == FUNCTION.Gn ? solution.rightQuasiconvexEnvelopeGn[t][i] : solution.rightQuasiconvexEnvelopeCn[t][i]) + "}" + 
+               ((i == Math.min(instance.stateSpaceSize(),max-instance.minInventory) - 1) ? "" : ", ");
+         lqce += "{" + (i+instance.minInventory) + ", " + (f == FUNCTION.Gn ? solution.leftQuasiconvexEnvelopeGn[t][i] : solution.leftQuasiconvexEnvelopeCn[t][i]) + "}" + 
+               ((i == Math.min(instance.stateSpaceSize(),max-instance.minInventory) - 1) ? "" : ", ");
          order_up_to += "{" + (i+instance.minInventory) + ", " + (i+instance.minInventory+solution.optimalAction[t][i]) + "}" + 
                ((i == Math.min(instance.stateSpaceSize(),max-instance.minInventory) - 1) ? "" : ", ");
          action += "{" + (i+instance.minInventory) + ", " + (solution.optimalAction[t][i]) + "}" + 
                ((i == Math.min(instance.stateSpaceSize(),max-instance.minInventory) - 1) ? "" : ", ");
       }
       cost += "};";
-      //lqce += "};";
+      rqce += "};";
+      lqce += "};";
       order_up_to += "};";
       action += "};";
       System.out.println(cost);
-      //System.out.println(lqce);
+      if(QCE) System.out.println(rqce);
+      if(QCE) System.out.println(lqce);
       System.out.println(order_up_to);
       System.out.println(action);
       
@@ -308,8 +187,8 @@ public class CapacitatedStochasticLotSizingFast {
       if(plot) {
          XYSeriesCollection xyDataset = new XYSeriesCollection();
          xyDataset.addSeries(series);
-         //xyDataset.addSeries(seriesRQCE);
-        // xyDataset.addSeries(seriesLQCE);
+         if(QCE) xyDataset.addSeries(seriesRQCE);
+         if(QCE) xyDataset.addSeries(seriesLQCE);
          JFreeChart chart = ChartFactory.createXYLineChart((f == FUNCTION.Gn ? "Gn" : "Cn"), "Opening inventory level", "Expected total cost",
                xyDataset, PlotOrientation.VERTICAL, false, true, false);
          ChartFrame frame = new ChartFrame((f == FUNCTION.Gn ? "Gn" : "Cn"),chart);
@@ -354,7 +233,7 @@ public class CapacitatedStochasticLotSizingFast {
          for(int y = i; y < Math.min(i+instance.maxQuantity+1, solution.Cn[0].length); y++) {
             double Vky = Math.min(0, instance.fixedOrderingCost+Arrays.stream(solution.Gn[0],y,Math.min(y+instance.maxQuantity+1, solution.Gn[0].length)).min().getAsDouble()-solution.Gn[0][y]);
             double Vki = Math.min(0, instance.fixedOrderingCost+Arrays.stream(solution.Gn[0],i,Math.min(i+instance.maxQuantity+1, solution.Gn[0].length)).min().getAsDouble()-solution.Gn[0][i]);
-            double temp = instance.fixedOrderingCost + solution.Gn[0][y] - solution.Gn[0][i] - Vki + Vky;
+            double temp = instance.fixedOrderingCost + solution.Gn[0][y] - solution.Gn[0][i] - Vki + Vky; // Shows that proof is broken (not equal to Cn-Gn)
             if(i+instance.minInventory == inventoryLevel) {
                System.out.println(y+instance.minInventory + " " +temp);
                System.out.println("K+Gn(y)-Gn(x) " +(instance.fixedOrderingCost + solution.Gn[0][y] - solution.Gn[0][i]));
@@ -366,6 +245,7 @@ public class CapacitatedStochasticLotSizingFast {
          }
          
          series1.add(i+instance.minInventory,step4);
+         
          cost += "{" + (i+instance.minInventory) + ", " + (solution.Cn[0][i]-solution.Gn[0][i]) + "}" + 
                ((i == Math.min(instance.stateSpaceSize(),max-instance.minInventory) - 1) ? "" : ", ");
       }
@@ -388,12 +268,12 @@ public class CapacitatedStochasticLotSizingFast {
    /************** TESTS ****************/
    
    /**
-    * Test a tighter version of CKi than the one presented in 
+    * Tests strong CK convexity  
     * 
     * Gallego G, Scheller-Wolf A (2000) Capacitated inventory problems with fixed order costs: 
     * Some optimal policy structure. European Journal of Operational Research 126(3):603-613.
     * 
-    * K+g(x+a)-g(x)-a(g(y+b)-g(y))/b>=0, where y<=x+a, 0<a<=B, 0<b<=a.
+    * K+g(x+a)-g(x)-a(g(y+b)-g(y))/b>=0, where y<=x, 0<a<=B, 0<b<=a.
     */
    public static boolean testKBConvexity(Instance instance, Solution solution, int min, int max, FUNCTION f) {
       boolean flag = true;
@@ -738,6 +618,420 @@ public class CapacitatedStochasticLotSizingFast {
    
    /*********** END TESTS ****************/
    
+   public static void writeToFile(String fileName, String str){
+      File results = new File(fileName);
+      try {
+         FileOutputStream fos = new FileOutputStream(results, true);
+         OutputStreamWriter osw = new OutputStreamWriter(fos);
+         osw.write(str+"\n");
+         osw.close();
+      } catch (FileNotFoundException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      } catch (IOException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+   }
+   
+   private static double[][] getDemandPatters(){
+      double[][] meanDemand = {
+            {30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30}, 
+            {46 ,49 ,50 ,50 ,49 ,46 ,42 ,38 ,35 ,33 ,30 ,28 ,26 ,23 ,21 ,18 ,14 ,11 ,8 ,6}, 
+            {7 ,9 ,11 ,13 ,17 ,22 ,24 ,26 ,32 ,34 ,36 ,41 ,44 ,47 ,48 ,50 ,50 ,49 ,47 ,44},
+            {47 ,30 ,13 ,6 ,13 ,30 ,47 ,54 ,47 ,30 ,13 ,6 ,13 ,30 ,47 ,30 ,15 ,8 ,11 ,30}, 
+            {36 ,30 ,24 ,21 ,24 ,30 ,36 ,39 ,36 ,30 ,24 ,21 ,24 ,30 ,36 ,31 ,24 ,21 ,26 ,33},
+            {63 ,27 ,10 ,24 ,1 ,23 ,33 ,35 ,67 ,7 ,14 ,41 ,4 ,63 ,26 ,45 ,53 ,25 ,10 ,50},
+            {5 ,15 ,46 ,140 ,80 ,147 ,134 ,74 ,84 ,109 ,47 ,88 ,66 ,28 ,32 ,89 ,162 ,36 ,32 ,50},
+            {14 ,24 ,71 ,118 ,49 ,86 ,152 ,117 ,226 ,208 ,78 ,59 ,96 ,33 ,57 ,116 ,18 ,135 ,128 ,180},
+            {13 ,35 ,79 ,43 ,44 ,59 ,22 ,55 ,61 ,34 ,50 ,95 ,36 ,145 ,160 ,104 ,151 ,86 ,123 ,64},
+            {15 ,56 ,19 ,84 ,136 ,67 ,67 ,155 ,87 ,164 ,194 ,67 ,65 ,132 ,35 ,131 ,133 ,36 ,173 ,152}
+      };
+      
+      return meanDemand;
+   }
+   
+   public static void runBatchUniformInt(String fileName){
+      double tail = 0.0001;
+      int minInventory = -10000;
+      int maxInventory = 10000;
+      int safeMin = -5000;
+      int safeMax = 5000;
+      
+      double[] fixedOrderingCost = {250,500,1000};
+      double[] proportionalOrderingCost = {2,5,10};
+      double holdingCost = 1;
+      double[] penaltyCost = {5,10,15};
+      double[] maxOrderQuantity = {2,3,4}; //Max order quantity in m*avgDemand
+      double[][] meanDemand = getDemandPatters();
+      String[] demandPattern = {"STA", "LC1", "LC2", "SIN1", "SIN2", "RAND", "EMP1", "EMP2", "EMP3", "EMP4"};
+      
+      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, ETC SDP, ETC sim (sk,Sk), ETC sim modified (s,S), Max number of levels, COP flag");
+      
+      int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*maxOrderQuantity.length*demandPattern.length;
+      int count = 0;
+      for(double oc : fixedOrderingCost) {
+         for(double u : proportionalOrderingCost) {
+            for(double p : penaltyCost) {
+               for(double m : maxOrderQuantity) {
+                  for(int d = 0; d < meanDemand.length; d++) {
+                     Distribution[] demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new UniformIntDist(0, (int) Math.round(k))).toArray(Distribution[]::new);
+                     
+                     double totalDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
+                     int maxQuantity = (int) Math.round(m*totalDemand);
+                     
+                     Instance instance = new Instance(oc, u, holdingCost, p, demand, maxQuantity, tail, minInventory, maxInventory);
+                     
+                     int initialInventory = 0;
+                     
+                     double[] result = solveInstance(instance, initialInventory, safeMin, safeMax);
+                     writeToFile(fileName, oc + "," + u + "," + p + "," + Math.round(m*totalDemand) + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
+                     System.out.println((++count)+"/"+instances);
+                  }
+               }
+            }
+         }
+      }
+   }
+   
+   public static void runBatchGeometric(String fileName){
+      double tail = 0.0001;
+      int minInventory = -10000;
+      int maxInventory = 10000;
+      int safeMin = -5000;
+      int safeMax = 5000;
+      
+      double[] fixedOrderingCost = {250,500,1000};
+      double[] proportionalOrderingCost = {2,5,10};
+      double holdingCost = 1;
+      double[] penaltyCost = {5,10,15};
+      double[] maxOrderQuantity = {2,3,4}; //Max order quantity in m*avgDemand
+      double[][] meanDemand = getDemandPatters();
+      String[] demandPattern = {"STA", "LC1", "LC2", "SIN1", "SIN2", "RAND", "EMP1", "EMP2", "EMP3", "EMP4"};
+      
+      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, ETC SDP, ETC sim (sk,Sk), ETC sim modified (s,S), Max number of levels, COP flag");
+      
+      int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*maxOrderQuantity.length*demandPattern.length;
+      int count = 0;
+      for(double oc : fixedOrderingCost) {
+         for(double u : proportionalOrderingCost) {
+            for(double p : penaltyCost) {
+               for(double m : maxOrderQuantity) {
+                  for(int d = 0; d < meanDemand.length; d++) {
+                     Distribution[] demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new GeometricDist(1/k)).toArray(Distribution[]::new);
+                     
+                     double totalDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
+                     int maxQuantity = (int) Math.round(m*totalDemand);
+                     
+                     Instance instance = new Instance(oc, u, holdingCost, p, demand, maxQuantity, tail, minInventory, maxInventory);
+                     
+                     int initialInventory = 0;
+                     
+                     double[] result = solveInstance(instance, initialInventory, safeMin, safeMax);
+                     writeToFile(fileName, oc + "," + u + "," + p + "," + Math.round(m*totalDemand) + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
+                     System.out.println((++count)+"/"+instances);
+                  }
+               }
+            }
+         }
+      }
+   }
+   
+   public static void runBatchPoisson(String fileName){
+      double tail = 0.0001;
+      int minInventory = -50000;
+      int maxInventory = 50000;
+      int safeMin = -5000;
+      int safeMax = 5000;
+      
+      double[] fixedOrderingCost = {250,500,1000};
+      double[] proportionalOrderingCost = {2,5,10};
+      double holdingCost = 1;
+      double[] penaltyCost = {5,10,15};
+      double[] maxOrderQuantity = {2,3,4}; //Max order quantity in m*avgDemand
+      double[][] meanDemand = getDemandPatters();
+      String[] demandPattern = {"STA", "LC1", "LC2", "SIN1", "SIN2", "RAND", "EMP1", "EMP2", "EMP3", "EMP4"};
+      
+      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, ETC SDP, ETC sim (sk,Sk), ETC sim modified (s,S), Max number of levels, COP flag");
+      
+      int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*maxOrderQuantity.length*demandPattern.length;
+      int count = 0;
+      for(double oc : fixedOrderingCost) {
+         for(double u : proportionalOrderingCost) {
+            for(double p : penaltyCost) {
+               for(double m : maxOrderQuantity) {
+                  for(int d = 0; d < meanDemand.length; d++) {
+                     
+                     /* Skip instances
+                     if(count < 591) {
+                        count++;
+                        continue;
+                     }
+                     */
+                     
+                     Distribution[] demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new PoissonDist(k)).toArray(Distribution[]::new);
+                     
+                     double totalDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
+                     int maxQuantity = (int) Math.round(m*totalDemand);
+                     
+                     Instance instance = new Instance(oc, u, holdingCost, p, demand, maxQuantity, tail, minInventory, maxInventory);
+                     
+                     int initialInventory = 0;
+                     
+                     double[] result = solveInstance(instance, initialInventory, safeMin, safeMax);
+                     writeToFile(fileName, oc + "," + u + "," + p + "," + Math.round(m*totalDemand) + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
+                     System.out.println((++count)+"/"+instances);
+                  }
+               }
+            }
+         }
+      }
+   }
+   
+   public static void runBatchRandom(String fileName, boolean sparse){
+      double tail = 0.0001;
+      int minInventory = -10000;
+      int maxInventory = 10000;
+      int safeMin = -5000;
+      int safeMax = 5000;
+      
+      double[] fixedOrderingCost = {250,500,1000};
+      double[] proportionalOrderingCost = {2,5,10};
+      double holdingCost = 1;
+      double[] penaltyCost = {5,10,15};
+      int[] maxOrderQuantity = {2,3,4}; //Max order quantity in m*avgDemand
+      double[][] meanDemand = getDemandPatters();
+      String[] demandPattern = {"STA", "LC1", "LC2", "SIN1", "SIN2", "RAND", "EMP1", "EMP2", "EMP3", "EMP4"};
+      
+      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, ETC SDP, ETC sim (sk,Sk), ETC sim modified (s,S), Max number of levels, COP flag");
+      
+      int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*maxOrderQuantity.length*demandPattern.length;
+      int count = 0;
+      for(double oc : fixedOrderingCost) {
+         for(double u : proportionalOrderingCost) {
+            for(double p : penaltyCost) {
+               for(int m : maxOrderQuantity) {
+                  for(int d = 0; d < meanDemand.length; d++) {
+                     Distribution[] demand;
+                     if(sparse)
+                        demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new SparseRandomDist((int) Math.round(k), m)).toArray(Distribution[]::new);
+                     else
+                        demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new RandomDist((int) Math.round(k))).toArray(Distribution[]::new);
+                           
+                     double totalDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
+                     int maxQuantity = (int) Math.round(m*totalDemand);
+                     
+                     Instance instance = new Instance(oc, u, holdingCost, p, demand, maxQuantity, tail, minInventory, maxInventory);
+                     
+                     int initialInventory = 0;
+                     
+                     double[] result = solveInstance(instance, initialInventory, safeMin, safeMax);
+                     writeToFile(fileName, oc + "," + u + "," + p + "," + Math.round(m*totalDemand) + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
+                     System.out.println((++count)+"/"+instances);
+                  }
+               }
+            }
+         }
+      }
+   }
+   
+   public static void runBatchNormal(String fileName){
+      double tail = 0.0001;
+      int minInventory = -10000;
+      int maxInventory = 10000;
+      int safeMin = -5000;
+      int safeMax = 5000;
+      
+      double[] fixedOrderingCost = {250,500,1000};
+      double[] proportionalOrderingCost = {2,5,10};
+      double holdingCost = 1;
+      double[] penaltyCost = {5,10,15};
+      double[] maxOrderQuantity = {2,3,4}; //Max order quantity in m*avgDemand
+      double[][] meanDemand = getDemandPatters();
+      double[] coefficient_of_variation = {0.1,0.2,0.3};
+      String[] demandPattern = {"STA", "LC1", "LC2", "SIN1", "SIN2", "RAND", "EMP1", "EMP2", "EMP3", "EMP4"};
+      
+      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, Coefficient of Variation, ETC SDP, ETC sim (sk,Sk), ETC sim modified (s,S), Max number of levels, COP flag");
+      
+      int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*maxOrderQuantity.length*demandPattern.length;
+      int count = 0;
+      for(double oc : fixedOrderingCost) {
+         for(double u : proportionalOrderingCost) {
+            for(double p : penaltyCost) {
+               for(double m : maxOrderQuantity) {
+                  for(int d = 0; d < meanDemand.length; d++) {
+                     for(int c = 0; c < coefficient_of_variation.length; c++) {
+                        final int idx = c;
+                        Distribution[] demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new NormalDist(k, k*coefficient_of_variation[idx])).toArray(Distribution[]::new);
+                        
+                        double totalDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
+                        int maxQuantity = (int) Math.round(m*totalDemand);
+                        
+                        Instance instance = new Instance(oc, u, holdingCost, p, demand, maxQuantity, tail, minInventory, maxInventory);
+                        
+                        int initialInventory = 0;
+                        
+                        double[] result = solveInstance(instance, initialInventory, safeMin, safeMax);
+                        writeToFile(fileName, oc + "," + u + "," + p + "," + Math.round(m*totalDemand) + ","+ coefficient_of_variation[idx] + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
+                        System.out.println((++count)+"/"+instances);
+                     }
+                  }
+               }
+            }
+         }
+      }
+   }
+   
+   public static void runBatchLogNormal(String fileName){
+      double tail = 0.0001;
+      int minInventory = -10000;
+      int maxInventory = 10000;
+      int safeMin = -5000;
+      int safeMax = 5000;
+      
+      double[] fixedOrderingCost = {250,500,1000};
+      double[] proportionalOrderingCost = {2,5,10};
+      double holdingCost = 1;
+      double[] penaltyCost = {5,10,15};
+      double[] maxOrderQuantity = {2,3,4}; //Max order quantity in m*avgDemand
+      double[][] meanDemand = getDemandPatters();
+      double[] coefficient_of_variation = {0.1,0.2,0.3};
+      String[] demandPattern = {"STA", "LC1", "LC2", "SIN1", "SIN2", "RAND", "EMP1", "EMP2", "EMP3", "EMP4"};
+      
+      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, Coefficient of Variation, ETC SDP, ETC sim (sk,Sk), ETC sim modified (s,S), Max number of levels, COP flag");
+      
+      int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*maxOrderQuantity.length*demandPattern.length;
+      int count = 0;
+      for(double oc : fixedOrderingCost) {
+         for(double u : proportionalOrderingCost) {
+            for(double p : penaltyCost) {
+               for(double m : maxOrderQuantity) {
+                  for(int d = 0; d < meanDemand.length; d++) {
+                     for(int c = 0; c < coefficient_of_variation.length; c++) {
+                        final int idx = c;
+                        Distribution[] demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new LognormalDist(Math.log(Math.pow(k, 2)/Math.sqrt(Math.pow(k, 2)+Math.pow(k*coefficient_of_variation[idx], 2))), Math.sqrt(Math.log1p(Math.pow(k*coefficient_of_variation[idx], 2)/Math.pow(k, 2))))).toArray(Distribution[]::new);
+                        
+                        double totalDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
+                        int maxQuantity = (int) Math.round(m*totalDemand);
+                        
+                        Instance instance = new Instance(oc, u, holdingCost, p, demand, maxQuantity, tail, minInventory, maxInventory);
+                        
+                        int initialInventory = 0;
+                        
+                        double[] result = solveInstance(instance, initialInventory, safeMin, safeMax);
+                        writeToFile(fileName, oc + "," + u + "," + p + "," + Math.round(m*totalDemand) + ","+ coefficient_of_variation[idx] + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
+                        System.out.println((++count)+"/"+instances);
+                     }
+                  }
+               }
+            }
+         }
+      }
+   }
+   
+   public static void runBatchGamma(String fileName){
+      double tail = 0.0001;
+      int minInventory = -10000;
+      int maxInventory = 10000;
+      int safeMin = -5000;
+      int safeMax = 5000;
+      
+      double[] fixedOrderingCost = {250,500,1000};
+      double[] proportionalOrderingCost = {2,5,10};
+      double holdingCost = 1;
+      double[] penaltyCost = {5,10,15};
+      // Let alpha be the shape parameter of a Gamma distribution and lambda be the scale parameter (where beta=1/lambda is the rate parameter)
+      double[] maxOrderQuantity = {2,3,4};               // Max order quantity in m*avgDemand
+      double[][] meanDemand = getDemandPatters();        // recall that beta=alpha/mu
+      double[] coefficient_of_variation = {0.1,0.2,0.3}; // recall that alpha=1/(coefficient_of_variation^2) 
+      String[] demandPattern = {"STA", "LC1", "LC2", "SIN1", "SIN2", "RAND", "EMP1", "EMP2", "EMP3", "EMP4"};
+      
+      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, Coefficient of Variation, ETC SDP, ETC sim (sk,Sk), ETC sim modified (s,S), Max number of levels, COP flag");
+      
+      int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*maxOrderQuantity.length*demandPattern.length;
+      int count = 0;
+      for(double oc : fixedOrderingCost) {
+         for(double u : proportionalOrderingCost) {
+            for(double p : penaltyCost) {
+               for(double m : maxOrderQuantity) {
+                  for(int d = 0; d < meanDemand.length; d++) {
+                     for(int c = 0; c < coefficient_of_variation.length; c++) {
+                        final int idx = c;
+                        final double alpha = 1/Math.pow(coefficient_of_variation[idx], 2);
+                        Distribution[] demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new GammaDist(alpha, alpha/k)).toArray(Distribution[]::new);
+                        
+                        double totalDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
+                        int maxQuantity = (int) Math.round(m*totalDemand);
+                        
+                        Instance instance = new Instance(oc, u, holdingCost, p, demand, maxQuantity, tail, minInventory, maxInventory);
+                        
+                        int initialInventory = 0;
+                        
+                        double[] result = solveInstance(instance, initialInventory, safeMin, safeMax);
+                        writeToFile(fileName, oc + "," + u + "," + p + "," + Math.round(m*totalDemand) + ","+ coefficient_of_variation[idx] + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
+                        System.out.println((++count)+"/"+instances);
+                     }
+                  }
+               }
+            }
+         }
+      }
+   }
+   
+   public static double[] solveInstance(Instance instance, int initialInventory, int safeMin, int safeMax) {
+      
+      boolean sanity_check = instance.maxQuantity>instance.fixedOrderingCost/(instance.getStages()*instance.penaltyCost);
+      if(!sanity_check) {
+         System.out.println("Instance sanity check: "+sanity_check);
+         System.exit(-1);
+      }
+      
+      //System.out.println("***************** Print instance ***************");
+      //System.out.println(instance.toString());
+      //System.out.println("************************************************");
+      //System.out.println();
+      
+      Solution solution = sdp(instance);
+      
+      double sdpETC = solution.Cn[0][initialInventory-instance.minInventory];
+      
+      //System.out.println("***************** Print policy *****************");
+      //printPolicy(instance, solution, safeMin);
+      //System.out.println("************************************************");
+      //System.out.println();
+      
+      double confidence = 0.95;
+      double error = 0.0001;
+      int[][] Sk = solution.find_Sk(instance, safeMin);
+      int[][] sk = solution.find_sk(instance, safeMin);
+      boolean verifyOptimal = true;
+      double simulatedskSkETC = CapacitatedStochasticLotSizingFast.simulate_skSk(instance, solution, initialInventory, Sk, sk, confidence, error, verifyOptimal)[0];
+      
+      int[][] S = Arrays.stream(Sk).map(k -> new int[] {k[k.length-1]}).toArray(int[][]::new);
+      int[][] s = Arrays.stream(sk).map(k -> new int[] {k[k.length-1]}).toArray(int[][]::new);      
+      double simulatedModifiedsSETC = CapacitatedStochasticLotSizingFast.simulate_skSk(instance, solution, initialInventory, S, s, confidence, error, !verifyOptimal)[0];
+      
+      long maxNumberOfLevels = Arrays.stream(Sk).mapToLong(k -> Arrays.stream(k).count()).max().getAsLong();
+      
+      double cop_violated = testAlwaysOrder(instance, solution, safeMin, safeMax) ? 0 : 1;
+      
+      //System.out.println("***************** Gn and Cn-Gn *****************");
+      //boolean plot = true;
+      //boolean QCE = false;
+      //plotCostFunction(instance, solution, safeMin, safeMax, plot, FUNCTION.Gn, 19, QCE);
+      //plotCnMinusGn(instance, solution, safeMin, safeMax, plot);
+      //System.out.println("*******************************************");
+      //System.out.println();
+      
+      double[] etcOut = new double[5];
+      etcOut[0] = sdpETC;
+      etcOut[1] = simulatedskSkETC;
+      etcOut[2] = simulatedModifiedsSETC;
+      etcOut[3] = maxNumberOfLevels;
+      etcOut[4] = cop_violated;
+      return etcOut;
+   }
+   
    public static void solveSampleInstance(Instances problemInstance, long seed) {
       
       /** Random instances **/
@@ -786,8 +1080,8 @@ public class CapacitatedStochasticLotSizingFast {
             instance = InstancePortfolio.generateInstanceNoOrderOrder_1();
             safeMin = -1000;
             safeMax = 1000;
-            plotMin = -10;
-            plotMax = 1000;
+            plotMin = 530;
+            plotMax = 570;
             break;
          case NO_ORDER_ORDER_2:
             instance = InstancePortfolio.generateInstanceNoOrderOrder_2();
@@ -817,12 +1111,12 @@ public class CapacitatedStochasticLotSizingFast {
             break;
       }
          
-      FUNCTION f = FUNCTION.Gn;
+      FUNCTION f = FUNCTION.Cn;
       
       System.out.println();
       System.out.println("Instance sanity check: "+(instance.maxQuantity>instance.fixedOrderingCost/(instance.getStages()*instance.penaltyCost)));
       
-      Solution solution = solveInstance(instance);
+      Solution solution = sdp(instance);
       
       System.out.println();
       printSolution(instance, solution, safeMin);
@@ -851,7 +1145,8 @@ public class CapacitatedStochasticLotSizingFast {
       
       System.out.println("***************** Gn and Cn-Gn *****************");
       boolean plot = true;
-      plotCostFunction(instance, solution, plotMin, plotMax, plot, f, plotPeriod);
+      boolean QCE = false;
+      plotCostFunction(instance, solution, plotMin, plotMax, plot, f, plotPeriod, QCE);
       plotCnMinusGn(instance, solution, plotMin, plotMax, plot);
       System.out.println("*******************************************");
       System.out.println();
@@ -865,7 +1160,8 @@ public class CapacitatedStochasticLotSizingFast {
       double error = 0.0001;
       double[] results = null;
       try {
-         results = CapacitatedStochasticLotSizingFast.simulate_skSk(instance, initialInventory, solution.find_Sk(instance, safeMin), solution.find_sk(instance, safeMin), confidence, error);
+         boolean verifyOptimal = true;
+         results = CapacitatedStochasticLotSizingFast.simulate_skSk(instance, solution, initialInventory, solution.find_Sk(instance, safeMin), solution.find_sk(instance, safeMin), confidence, error, verifyOptimal);
          System.out.println(
                "Optimal policy cost: "+ df.format(optimalPolicyCost)+
                "\nSimulated cost: "+ df.format(results[0])+
@@ -884,7 +1180,9 @@ public class CapacitatedStochasticLotSizingFast {
       
       int safeMin = -2000;
       int safeMax = 2000;
+      @SuppressWarnings("unused")
       int plotMin = -500;
+      @SuppressWarnings("unused")
       int plotMax = 500;
       
       /** Random instances **/
@@ -896,13 +1194,14 @@ public class CapacitatedStochasticLotSizingFast {
          
          Instance instance = InstancePortfolio.generateSparseRandomInstance(rnd);
          
-         if(i+1 < 4000) continue;
+         //if(i+1 < 4000) continue;
          
          System.out.println("Instance sanity check: "+(instance.maxQuantity>instance.fixedOrderingCost/(instance.getStages()*instance.penaltyCost)));
          
+         @SuppressWarnings("unused")
          FUNCTION f = FUNCTION.Cn;
          
-         Solution solution = solveInstance(instance);
+         Solution solution = sdp(instance);
          
          System.out.println();
          printSolution(instance, solution, safeMin);
@@ -931,8 +1230,8 @@ public class CapacitatedStochasticLotSizingFast {
          System.out.println();
          
          if(flag == false) {
-            boolean plot = false;
-            int plotPeriod = 0;
+            //boolean plot = false;
+            //int plotPeriod = 0;
             //plotCostFunction(instance, solution, plotMin, plotMax, plot, f, plotPeriod);
             //plotCnMinusGn(instance, solution, plotMin, plotMax, plot);
             System.out.println("********** End instance: "+(i+1)+" *********");
@@ -946,11 +1245,13 @@ public class CapacitatedStochasticLotSizingFast {
     */
    public static double[] simulate_skSk(
          Instance instance,
+         Solution solution,
          int initialStock,
          int[][] S, // first index t, second index k
          int[][] s, // first index t, second index k
          double confidence,
-         double error){
+         double error,
+         boolean verifyOptimal){
       Distribution[] demand = instance.demand;
       double orderCost = instance.fixedOrderingCost;
       double holdingCost = instance.holdingCost;
@@ -968,24 +1269,28 @@ public class CapacitatedStochasticLotSizingFast {
       }
       
       int minRuns = 1000;
-      int maxRuns = 1000000;
+      int maxRuns = 10000000;
       
       SampleFactory.resetStartStream();
       
       double[] centerAndRadius = new double[2];
-      for(int i = 0; i < minRuns || (centerAndRadius[1]>=centerAndRadius[0]*error && i < maxRuns); i++){
+      boolean precision_achieved = false;
+      for(int i = 0; i < minRuns || (!precision_achieved && i < maxRuns); i++){
          double[] demandRealizations = SampleFactory.getNextSample(demand);
+         // Round demands in line with unit-based discretisation in the SDP code
+         demandRealizations = Arrays.stream(demandRealizations).map(d -> Math.round(d)).toArray();
          
          double replicationCost = 0;
          double inventory = initialStock;
          for(int t = 0; t < demand.length; t++){
             double currentInventory = inventory;
+            double qty = Double.NaN;
             if(currentInventory > s[t][s[t].length - 1]) {
-               double qty = 0;
+               qty = 0;
                inventory = qty+inventory-demandRealizations[t];
                replicationCost += Math.max(inventory, 0)*holdingCost - Math.min(inventory, 0)*penaltyCost;
             }else if(currentInventory <= s[t][0]) {
-               double qty = Math.min(S[t][0]-inventory, maxOrderQuantity);
+               qty = Math.min(S[t][0]-inventory, maxOrderQuantity);
                replicationCost += orderCost;
                replicationCost += qty*unitCost;
                inventory = qty+inventory-demandRealizations[t];
@@ -993,7 +1298,7 @@ public class CapacitatedStochasticLotSizingFast {
             }else{
                for(int k = s[t].length - 2; k >= 0; k--) {
                   if(currentInventory > s[t][k] && currentInventory <= s[t][k+1]){
-                     double qty = Math.min(S[t][k+1]-inventory, maxOrderQuantity);
+                     qty = Math.min(S[t][k+1]-inventory, maxOrderQuantity);
                      replicationCost += orderCost;
                      replicationCost += qty*unitCost;
                      inventory = qty+inventory-demandRealizations[t];
@@ -1002,25 +1307,53 @@ public class CapacitatedStochasticLotSizingFast {
                }
             }
             replicationCost *= discountFactor;
-            
             stockPTally[t].add(Math.max(inventory, 0));
             stockNTally[t].add(Math.max(-inventory, 0));
+            
+            // Verify that (sk,Sk) policy action is equal to optimal action
+            if(verifyOptimal &&
+                  solution.optimalAction[t][(int)Math.round(currentInventory-instance.minInventory)] != (int)Math.round(qty))
+               System.err.println(t + "\t" +
+                     (int)Math.round(currentInventory) + "\t" +
+                     solution.optimalAction[t][(int)Math.round(currentInventory-instance.minInventory)] + " != " + (int)Math.round(qty) + "\t" +
+                     solution.Gn[t][(int)Math.round(currentInventory+solution.optimalAction[t][(int)Math.round(currentInventory-instance.minInventory)]-instance.minInventory)] + "\t" +
+                     solution.Gn[t][(int)Math.round(currentInventory+(int)Math.round(qty)-instance.minInventory)]);
          }
          costTally.add(replicationCost);
-         if(i >= minRuns) costTally.confidenceIntervalNormal(confidence, centerAndRadius);
+         if(i >= minRuns) { 
+            costTally.confidenceIntervalNormal(confidence, centerAndRadius);
+         
+            if(centerAndRadius[1]<=centerAndRadius[0]*error) 
+               precision_achieved = true;
+         }
       }
+      if(!precision_achieved) 
+         System.out.println("Maximum number of simulation runs reached: desired precision not achieved.");
+      
       return centerAndRadius;
    }
 
    public static void main(String[] args) {
+      
+      @SuppressWarnings("unused")
       long seed = 4321;
       
-      Instances instance = Instances.RANDOM;
+      @SuppressWarnings("unused")
+      Instances instance = Instances.NO_ORDER_ORDER_1;
       //solveSampleInstance(instance, seed);
       
       @SuppressWarnings("unused")
       int instances = 1000000;
-      solveRandomInstances(instances, seed);
+      //solveRandomInstances(instances, seed);
+      
+      //runBatchPoisson("results_poisson.csv");
+      runBatchUniformInt("results_uniform_int.csv");
+      runBatchGeometric("results_geometric.csv");
+      boolean sparse = true;
+      runBatchRandom("results_random.csv", sparse);
+      runBatchNormal("results_normal.csv");
+      runBatchLogNormal("results_lognormal.csv");
+      runBatchGamma("results_gamma.csv");
    }
 }
 
@@ -1029,6 +1362,53 @@ enum Instances {
 }
 
 class InstancePortfolio{
+   
+   static double[][] computeDemandProbability(Instance instance) {
+      double[][] demandProbability = new double [instance.demand.length][];
+      for(int t = 0; t < instance.demand.length; t++) {
+         if(instance.demand[t] instanceof RandomDist) {
+            demandProbability[t] = ((RandomDist)instance.demand[t]).cdf;
+         }else if(instance.demand[t] instanceof SparseRandomDist) {
+            demandProbability[t] = ((SparseRandomDist)instance.demand[t]).cdf;
+         }else if(instance.demand[t] instanceof Shiaoxiang1996Dist) {
+            demandProbability[t] = Shiaoxiang1996Dist.tabulateProbabilityShiaoxiang1996();
+         }else if(instance.demand[t] instanceof Gallego2000Dist) {
+            demandProbability[t] = Gallego2000Dist.tabulateProbabilityGallego2000();
+         }else if(instance.demand[t] instanceof NoOrderOrder1Dist) {
+            demandProbability[t] = NoOrderOrder1Dist.tabulateProbabilityNoOrderOrder_1(t);
+         }else if(instance.demand[t] instanceof NoOrderOrder2Dist) {
+            demandProbability[t] = NoOrderOrder2Dist.tabulateProbabilityNoOrderOrder_2(t);
+         }else if(instance.demand[t] instanceof ContinuousDistribution) {
+            demandProbability[t] = tabulateProbabilityContinuous((ContinuousDistribution)instance.demand[t], instance.tail);
+         }else if(instance.demand[t] instanceof DiscreteDistributionInt) {
+            demandProbability[t] = tabulateProbabilityDiscrete((DiscreteDistributionInt)instance.demand[t], instance.tail);
+         }else
+            throw new NullPointerException("Distribution not recognized.");
+      }
+      return demandProbability;
+   }
+
+   private static double[] tabulateProbabilityContinuous(ContinuousDistribution dist, double tail) {
+      // Note that minDemand is assumed to be 0;
+      int maxDemand = (int)Math.round(dist.inverseF(1-tail));
+      double[] demandProbabilities = new double[maxDemand + 1];
+      for(int i = 0; i <= maxDemand; i++) {
+         demandProbabilities [i] = (dist.cdf(i+0.5)-dist.cdf(i-0.5))/(dist.cdf(maxDemand+0.5)-dist.cdf(-0.5));
+      }
+      assert(Arrays.stream(demandProbabilities).sum() == 1);
+      return demandProbabilities;
+   }
+   
+   private static double[] tabulateProbabilityDiscrete(DiscreteDistributionInt dist, double tail) {
+      // Note that minDemand is assumed to be 0;
+      int maxDemand = dist.inverseFInt(1-tail);
+      double[] demandProbabilities = new double[maxDemand + 1];
+      for(int i = 0; i <= maxDemand; i++) {
+         demandProbabilities [i] = dist.prob(i)/dist.cdf(maxDemand);
+      }
+      assert(Arrays.stream(demandProbabilities).sum() == 1);
+      return demandProbabilities;
+   }
    
    public static Instance generateTestInstanceA() {
       /** SDP boundary conditions **/
@@ -1138,15 +1518,6 @@ class InstancePortfolio{
       Distribution[] demand = Arrays.stream(meanDemand).mapToObj(d -> new PoissonDist(d)).toArray(Distribution[]::new);
       
       int maxQuantity = 65;
-      
-      System.out.println(
-            "Fixed ordering: "+fixedOrderingCost+"\n"+
-            "Proportional ordering: "+unitCost+"\n"+
-            "Holding cost: "+holdingCost+"\n"+
-            "Penalty cost: "+penaltyCost+"\n"+
-            "Capacity: "+maxQuantity+"\n"+
-            "Demand: "+ Arrays.toString(meanDemand));
-   
    
       Instance instance = new Instance(
             fixedOrderingCost,
@@ -1159,6 +1530,8 @@ class InstancePortfolio{
             minInventory,
             maxInventory
             );
+      
+      System.out.println(instance.toString());
       
       return instance;
    }
@@ -1179,15 +1552,6 @@ class InstancePortfolio{
       Distribution[] demand = Arrays.stream(meanDemand).mapToObj(d -> new NormalDist(d, cv*d)).toArray(Distribution[]::new);
       int maxQuantity = 65;
       
-      System.out.println(
-            "Fixed ordering: "+fixedOrderingCost+"\n"+
-            "Proportional ordering: "+unitCost+"\n"+
-            "Holding cost: "+holdingCost+"\n"+
-            "Penalty cost: "+penaltyCost+"\n"+
-            "Capacity: "+maxQuantity+"\n"+
-            "Demand: "+ Arrays.toString(demand));
-   
-   
       Instance instance = new Instance(
             fixedOrderingCost,
             unitCost,
@@ -1199,6 +1563,8 @@ class InstancePortfolio{
             minInventory,
             maxInventory
             );
+      
+      System.out.println(instance.toString());
       
       return instance;
    }
@@ -1223,14 +1589,6 @@ class InstancePortfolio{
       RandomDist[] demand = new RandomDist[stages];
       Arrays.fill(demand, new RandomDist(maxDemand));
       
-      System.out.println(
-            "Fixed ordering: "+fixedOrderingCost+"\n"+
-            "Proportional ordering: "+unitCost+"\n"+
-            "Holding cost: "+holdingCost+"\n"+
-            "Penalty cost: "+penaltyCost+"\n"+
-            "Capacity: "+maxQuantity+"\n"+
-            "Demand: "+ Arrays.toString(demand));
-      
       Instance instance = new Instance(
             fixedOrderingCost,
             unitCost,
@@ -1242,6 +1600,8 @@ class InstancePortfolio{
             minInventory,
             maxInventory
             );
+      
+      System.out.println(instance.toString());
       
       return instance;
    }
@@ -1279,15 +1639,7 @@ class InstancePortfolio{
       int maxQuantity = 20 + rnd.nextInt(180);
       int maxDemand = 300;
       SparseRandomDist[] demand = new SparseRandomDist[stages];
-      Arrays.fill(demand, new SparseRandomDist(maxDemand));
-      
-      System.out.println(
-            "Fixed ordering: "+fixedOrderingCost+"\n"+
-            "Proportional ordering: "+unitCost+"\n"+
-            "Holding cost: "+holdingCost+"\n"+
-            "Penalty cost: "+penaltyCost+"\n"+
-            "Capacity: "+maxQuantity+"\n"+
-            "Demand: "+ Arrays.toString(demand));
+      Arrays.fill(demand, new SparseRandomDist(maxDemand, maxQuantity));
       
       Instance instance = new Instance(
             fixedOrderingCost,
@@ -1300,6 +1652,8 @@ class InstancePortfolio{
             minInventory,
             maxInventory
             );
+      
+      System.out.println(instance.toString());
       
       return instance;
    }
@@ -1320,15 +1674,6 @@ class InstancePortfolio{
       Arrays.fill(demand, new Shiaoxiang1996Dist());
       int maxQuantity = 9;
       
-      System.out.println(
-            "Fixed ordering: "+fixedOrderingCost+"\n"+
-            "Proportional ordering: "+unitCost+"\n"+
-            "Holding cost: "+holdingCost+"\n"+
-            "Penalty cost: "+penaltyCost+"\n"+
-            "Capacity: "+maxQuantity+"\n"+
-            "Demand: "+ Arrays.toString(demand));
-
-
       Instance instance = new Instance(
             fixedOrderingCost,
             unitCost,
@@ -1341,6 +1686,8 @@ class InstancePortfolio{
             minInventory,
             maxInventory
             );
+      
+      System.out.println(instance.toString());
       
       return instance;
    }
@@ -1358,16 +1705,8 @@ class InstancePortfolio{
       double penaltyCost = 9;
       Gallego2000Dist[] demand = new Gallego2000Dist[52];
       Arrays.fill(demand, new Gallego2000Dist());
-      int maxQuantity = 10;
       
-      System.out.println(
-            "Fixed ordering: "+fixedOrderingCost+"\n"+
-            "Proportional ordering: "+unitCost+"\n"+
-            "Holding cost: "+holdingCost+"\n"+
-            "Penalty cost: "+penaltyCost+"\n"+
-            "Capacity: "+maxQuantity+"\n"+
-            "Demand: "+ Arrays.toString(demand));
-
+      int maxQuantity = 10;
 
       Instance instance = new Instance(
             fixedOrderingCost,
@@ -1380,6 +1719,8 @@ class InstancePortfolio{
             minInventory,
             maxInventory
             );
+      
+      System.out.println(instance.toString());
       
       return instance;
    }
@@ -1387,28 +1728,20 @@ class InstancePortfolio{
    public static Instance generateInstanceNoOrderOrder_1() {
       /** SDP boundary conditions **/
       double tail = 0;
-      int minInventory = -5000;
-      int maxInventory = 5000;
+      int minInventory = -10000;
+      int maxInventory = 10000;
       
       /*** Problem instance ***/
-      int stages = 12;
+      int stages = 4;
       double fixedOrderingCost = 241;
       double unitCost = 0;
       double holdingCost = 1;
       double penaltyCost = 27;
       NoOrderOrder1Dist[] demand = new NoOrderOrder1Dist[stages];
       Arrays.fill(demand, new NoOrderOrder1Dist());
+      
       int maxQuantity = 116;
       
-      System.out.println(
-            "Fixed ordering: "+fixedOrderingCost+"\n"+
-            "Proportional ordering: "+unitCost+"\n"+
-            "Holding cost: "+holdingCost+"\n"+
-            "Penalty cost: "+penaltyCost+"\n"+
-            "Capacity: "+maxQuantity+"\n"+
-            "Demand: "+ Arrays.toString(demand));
-
-
       Instance instance = new Instance(
             fixedOrderingCost,
             unitCost,
@@ -1420,6 +1753,8 @@ class InstancePortfolio{
             minInventory,
             maxInventory
             );
+      
+      System.out.println(instance.toString());
       
       return instance;
    }
@@ -1431,23 +1766,15 @@ class InstancePortfolio{
       int maxInventory = 10000;
       
       /*** Problem instance ***/
-      int stages = 12;
+      int stages = 4;
       double fixedOrderingCost = 166;
       double unitCost = 0;
       double holdingCost = 1;
       double penaltyCost = 29;
       NoOrderOrder2Dist[] demand = new NoOrderOrder2Dist[stages];
       Arrays.fill(demand, new NoOrderOrder2Dist());
-      int maxQuantity = 46;
       
-      System.out.println(
-            "Fixed ordering: "+fixedOrderingCost+"\n"+
-            "Proportional ordering: "+unitCost+"\n"+
-            "Holding cost: "+holdingCost+"\n"+
-            "Penalty cost: "+penaltyCost+"\n"+
-            "Capacity: "+maxQuantity+"\n"+
-            "Demand: "+ Arrays.toString(demand));
-
+      int maxQuantity = 46;
 
       Instance instance = new Instance(
             fixedOrderingCost,
@@ -1460,6 +1787,8 @@ class InstancePortfolio{
             minInventory,
             maxInventory
             );
+      
+      System.out.println(instance.toString());
       
       return instance;
    }
@@ -1479,15 +1808,6 @@ class InstancePortfolio{
       Distribution[] demand = Arrays.stream(meanDemand).mapToObj(d -> new PoissonDist(d)).toArray(Distribution[]::new);
       int maxQuantity = 128;
       
-      System.out.println(
-            "Fixed ordering: "+fixedOrderingCost+"\n"+
-            "Proportional ordering: "+unitCost+"\n"+
-            "Holding cost: "+holdingCost+"\n"+
-            "Penalty cost: "+penaltyCost+"\n"+
-            "Capacity: "+maxQuantity+"\n"+
-            "Demand: "+ Arrays.toString(meanDemand));
-
-
       Instance instance = new Instance(
             fixedOrderingCost,
             unitCost,
@@ -1499,6 +1819,8 @@ class InstancePortfolio{
             minInventory,
             maxInventory
             );
+      
+      System.out.println(instance.toString());
       
       return instance;
    }
@@ -1570,6 +1892,17 @@ class Instance {
    
    public int stateSpaceSize() {
       return this.maxInventory - this.minInventory + 1;
+   }
+   
+   @Override
+   public String toString() {
+      return 
+            "Fixed ordering: "+fixedOrderingCost+"\n"+
+            "Proportional ordering: "+unitCost+"\n"+
+            "Holding cost: "+holdingCost+"\n"+
+            "Penalty cost: "+penaltyCost+"\n"+
+            "Capacity: "+maxQuantity+"\n"+
+            "Demand: "+ Arrays.toString(demand);
    }
 }
 
@@ -1702,9 +2035,24 @@ class Solution {
 
 class RandomDist implements Distribution{
    public int maxDemand = Integer.MAX_VALUE;
+   public double[] cdf;
+   
+   private static final long seed = 4321;
    
    public RandomDist(int maxDemand) {
       this.maxDemand = maxDemand;
+      cdf = tabulateProbabilityRandom(this.maxDemand);
+   }
+   
+   private static double[] tabulateProbabilityRandom(double maxDemand) {
+      double[] demandProbabilities = new double[(int)Math.round(maxDemand) + 1];
+      Random rnd = new Random(seed);
+      double quantiles = 1000;
+      for(int i = 0; i < quantiles; i++) {
+         demandProbabilities[rnd.nextInt((int)Math.round(maxDemand) + 1)] += 1/quantiles;
+      }
+      assert(Arrays.stream(demandProbabilities).sum() == 1);
+      return demandProbabilities;
    }
    
    @Override
@@ -1719,7 +2067,13 @@ class RandomDist implements Distribution{
 
    @Override
    public double inverseF(double u) {
-      throw new NullPointerException("Unimplemented method.");
+      double cumulate = 0;
+      for(int i = 0; i < this.cdf.length; i++) {
+         cumulate += this.cdf[i];
+         if(cumulate >= u)
+            return i;
+      }
+      throw new NullPointerException("Index exceeds max demand.");
    }
 
    @Override
@@ -1750,9 +2104,34 @@ class RandomDist implements Distribution{
 
 class SparseRandomDist implements Distribution{
    public int maxDemand = Integer.MAX_VALUE;
+   public int capacity = Integer.MAX_VALUE;
+   public double[] cdf;
    
-   public SparseRandomDist(int maxDemand) {
+   private static final long seed = 4321;
+   
+   public SparseRandomDist(int maxDemand, int capacity) {
       this.maxDemand = maxDemand;
+      this.capacity = capacity;
+      cdf = tabulateProbabilitySparseRandom(this.maxDemand, this.capacity);
+   }
+   
+   private static double[] tabulateProbabilitySparseRandom(double maxDemand, double capacity) {
+      double[] demandProbabilities = new double[(int)Math.round(maxDemand) + 1];
+      Random rnd = new Random(seed);
+      int C = (int)Math.round(capacity);
+      int D = (int)Math.round(maxDemand);
+      demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + Math.min(C, D)] += rnd.nextDouble();
+      demandProbabilities[rnd.nextInt(Math.min(C+1, D))] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
+      demandProbabilities[rnd.nextInt(Math.min(C+1, D))] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
+      demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + Math.min(C, D-1)] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
+      demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + Math.min(C, D-1)] += 1 - Arrays.stream(demandProbabilities).sum();
+      assert(Arrays.stream(demandProbabilities).sum() == 1);
+      /*String out = "";
+      for(int i = 0; i < demandProbabilities.length; i++) {
+         if(demandProbabilities[i] > 0) out += i+"/"+demandProbabilities[i]+",";
+      }
+      System.out.println(out);*/
+      return demandProbabilities;
    }
    
    @Override
@@ -1767,7 +2146,13 @@ class SparseRandomDist implements Distribution{
 
    @Override
    public double inverseF(double u) {
-      throw new NullPointerException("Unimplemented method.");
+      double cumulate = 0;
+      for(int i = 0; i < this.cdf.length; i++) {
+         cumulate += this.cdf[i];
+         if(cumulate >= u)
+            return i;
+      }
+      throw new NullPointerException("Index exceeds max demand.");
    }
 
    @Override
@@ -1798,6 +2183,10 @@ class SparseRandomDist implements Distribution{
 
 class Shiaoxiang1996Dist implements Distribution{
 
+   public static double[] tabulateProbabilityShiaoxiang1996() {
+      return new double[] {0.00001,0.00001,0.00001,0.00001,0.00001,0.00001,0.94994,0.05};
+   }
+   
    @Override
    public double cdf(double x) {
       throw new NullPointerException("Unimplemented method.");
@@ -1842,6 +2231,10 @@ class Shiaoxiang1996Dist implements Distribution{
 
 class Gallego2000Dist implements Distribution{
 
+   public static double[] tabulateProbabilityGallego2000() {
+      return new double[] {0.00001,0.15,0.00001,0.00001,0.00001,0.00001,0.69995,0.15};
+   }
+   
    @Override
    public double cdf(double x) {
       throw new NullPointerException("Unimplemented method.");
@@ -1886,6 +2279,32 @@ class Gallego2000Dist implements Distribution{
 
 class NoOrderOrder1Dist implements Distribution{
 
+   public static double[] tabulateProbabilityNoOrderOrder_1(int t) {
+      String distribution = /*"107/0.28804, 215/0.40838, 260/0.30358,\n"
+            + "53/0.27762, 174/0.00283, 199/0.00202, 245/0.71753,\n"
+            + "4/0.10204, 54/0.00752, 116/0.04826, 145/0.84218,\n"
+            + "59/0.29474, 131/0.31910, 136/0.38616,\n"
+            + "64/0.13203, 281/0.75405, 284/0.11392,\n"
+            + "137/0.75736, 153/0.02654, 197/0.21610,\n"
+            + "114/0.60165, 127/0.29033, 174/0.08904, 275/0.01898,\n"
+            + "209/0.76446, 258/0.11859, 276/0.11695,\n"
+            + */"41/0.14676, 135/0.28086, 174/0.13442, 263/0.43796,\n"
+            + "88/0.09797, 131/0.76541, 233/0.01452, 287/0.12210,\n"
+            + "201/0.07041, 209/0.84693, 281/0.08266,\n"
+            + "50/0.01981, 132/0.04819, 289/0.93200,";
+      String[] periodDemand = distribution.split("\n");
+      String[] demandDistribution = periodDemand[t].split(",");
+      String[][] demandDistributionArray = Arrays.stream(demandDistribution).map(s -> s.split("/")).toArray(String[][]::new);
+      double[][] demandDistributionDoubleArray = Arrays.stream(demandDistributionArray).limit(demandDistributionArray.length).map(s -> new double[]{Double.parseDouble(s[0]), Double.parseDouble(s[1])}).toArray(double[][]::new);
+      double maxDemand = demandDistributionDoubleArray[demandDistributionDoubleArray.length - 1][0];
+      double[] res = new double[(int)Math.round(maxDemand+1)];
+      for(int i = 0; i < demandDistributionDoubleArray.length; i++) {
+         res[(int)Math.round(demandDistributionDoubleArray[i][0])] = demandDistributionDoubleArray[i][1];
+      }
+      assert(Arrays.stream(res).sum() == 1);
+      return res;
+   }
+   
    @Override
    public double cdf(double x) {
       throw new NullPointerException("Unimplemented method.");
@@ -1930,6 +2349,32 @@ class NoOrderOrder1Dist implements Distribution{
 
 class NoOrderOrder2Dist implements Distribution{
 
+   public static double[] tabulateProbabilityNoOrderOrder_2(int t) {
+      String distribution = /*"45/0.03671, 77/0.13654, 123/0.78596, 268/0.04079,\n"
+            + "70/0.71222, 111/0.25824, 158/0.02954,\n"
+            + "112/0.28034, 216/0.68764, 221/0.03202,\n"
+            + "50/0.04864, 228/0.59748, 246/0.35388,\n"
+            + "22/0.17562, 34/0.27540, 49/0.42421, 137/0.12477,\n"
+            + "13/0.66304, 226/0.23036, 230/0.10660,\n"
+            + "102/0.20559, 152/0.33795, 291/0.45646,\n"
+            + "27/0.00900, 112/0.00469, 153/0.04761, 293/0.93870,\n"
+            + */"9/0.04179, 91/0.87259, 105/0.00064, 227/0.08498,\n"
+            + "31/0.00462, 32/0.05346, 196/0.93892, 292/0.00300,\n"
+            + "113/0.19172, 129/0.46507, 134/0.34321,\n"
+            + "6/0.02876, 8/0.07738, 66/0.04847, 246/0.84539,";
+      String[] periodDemand = distribution.split("\n");
+      String[] demandDistribution = periodDemand[t].split(",");
+      String[][] demandDistributionArray = Arrays.stream(demandDistribution).map(s -> s.split("/")).toArray(String[][]::new);
+      double[][] demandDistributionDoubleArray = Arrays.stream(demandDistributionArray).limit(demandDistributionArray.length).map(s -> new double[]{Double.parseDouble(s[0]), Double.parseDouble(s[1])}).toArray(double[][]::new);
+      double maxDemand = demandDistributionDoubleArray[demandDistributionDoubleArray.length - 1][0];
+      double[] res = new double[(int)Math.round(maxDemand+1)];
+      for(int i = 0; i < demandDistributionDoubleArray.length; i++) {
+         res[(int)Math.round(demandDistributionDoubleArray[i][0])] = demandDistributionDoubleArray[i][1];
+      }
+      assert(Arrays.stream(res).sum() == 1);
+      return res;
+   }
+   
    @Override
    public double cdf(double x) {
       throw new NullPointerException("Unimplemented method.");
