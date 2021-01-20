@@ -666,7 +666,7 @@ public class CapacitatedStochasticLotSizingFast {
       double[][] meanDemand = getDemandPatters();
       String[] demandPattern = {"STA", "LC1", "LC2", "SIN1", "SIN2", "RAND", "EMP1", "EMP2", "EMP3", "EMP4"};
       
-      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, ETC SDP, ETC sim (sk,Sk), ETC sim modified (s,S), Max number of levels, COP flag");
+      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, ETC SDP, ETC sim (skSk), ETC sim modified (sS), Max number of levels, COP flag");
       
       int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*maxOrderQuantity.length*demandPattern.length;
       int count = 0;
@@ -709,7 +709,7 @@ public class CapacitatedStochasticLotSizingFast {
       double[][] meanDemand = getDemandPatters();
       String[] demandPattern = {"STA", "LC1", "LC2", "SIN1", "SIN2", "RAND", "EMP1", "EMP2", "EMP3", "EMP4"};
       
-      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, ETC SDP, ETC sim (sk,Sk), ETC sim modified (s,S), Max number of levels, COP flag");
+      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, ETC SDP, ETC sim (skSk), ETC sim modified (sS), Max number of levels, COP flag");
       
       int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*maxOrderQuantity.length*demandPattern.length;
       int count = 0;
@@ -752,7 +752,7 @@ public class CapacitatedStochasticLotSizingFast {
       double[][] meanDemand = getDemandPatters();
       String[] demandPattern = {"STA", "LC1", "LC2", "SIN1", "SIN2", "RAND", "EMP1", "EMP2", "EMP3", "EMP4"};
       
-      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, ETC SDP, ETC sim (sk,Sk), ETC sim modified (s,S), Max number of levels, COP flag");
+      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, ETC SDP, ETC sim (skSk), ETC sim modified (sS), Max number of levels, COP flag");
       
       int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*maxOrderQuantity.length*demandPattern.length;
       int count = 0;
@@ -803,7 +803,7 @@ public class CapacitatedStochasticLotSizingFast {
       double[][] meanDemand = getDemandPatters();
       String[] demandPattern = {"STA", "LC1", "LC2", "SIN1", "SIN2", "RAND", "EMP1", "EMP2", "EMP3", "EMP4"};
       
-      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, ETC SDP, ETC sim (sk,Sk), ETC sim modified (s,S), Max number of levels, COP flag");
+      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, ETC SDP, ETC sim (skSk), ETC sim modified (sS), Max number of levels, COP flag");
       
       int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*maxOrderQuantity.length*demandPattern.length;
       int count = 0;
@@ -851,7 +851,7 @@ public class CapacitatedStochasticLotSizingFast {
       double[] coefficient_of_variation = {0.1,0.2,0.3};
       String[] demandPattern = {"STA", "LC1", "LC2", "SIN1", "SIN2", "RAND", "EMP1", "EMP2", "EMP3", "EMP4"};
       
-      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, Coefficient of Variation, ETC SDP, ETC sim (sk,Sk), ETC sim modified (s,S), Max number of levels, COP flag");
+      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, Coefficient of Variation, ETC SDP, ETC sim (skSk), ETC sim modified (sS), Max number of levels, COP flag");
       
       int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*maxOrderQuantity.length*demandPattern.length;
       int count = 0;
@@ -898,7 +898,7 @@ public class CapacitatedStochasticLotSizingFast {
       double[] coefficient_of_variation = {0.1,0.2,0.3};
       String[] demandPattern = {"STA", "LC1", "LC2", "SIN1", "SIN2", "RAND", "EMP1", "EMP2", "EMP3", "EMP4"};
       
-      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, Coefficient of Variation, ETC SDP, ETC sim (sk,Sk), ETC sim modified (s,S), Max number of levels, COP flag");
+      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, Coefficient of Variation, ETC SDP, ETC sim (skSk), ETC sim modified (sS), Max number of levels, COP flag");
       
       int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*maxOrderQuantity.length*demandPattern.length;
       int count = 0;
@@ -946,7 +946,7 @@ public class CapacitatedStochasticLotSizingFast {
       double[] coefficient_of_variation = {0.1,0.2,0.3}; // recall that alpha=1/(coefficient_of_variation^2) 
       String[] demandPattern = {"STA", "LC1", "LC2", "SIN1", "SIN2", "RAND", "EMP1", "EMP2", "EMP3", "EMP4"};
       
-      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, Coefficient of Variation, ETC SDP, ETC sim (sk,Sk), ETC sim modified (s,S), Max number of levels, COP flag");
+      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Penalty cost, Capacity, Expected Demand, Coefficient of Variation, ETC SDP, ETC sim (skSk), ETC sim modified (sS), Max number of levels, COP flag");
       
       int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*maxOrderQuantity.length*demandPattern.length;
       int count = 0;
