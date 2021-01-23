@@ -1090,6 +1090,13 @@ public class CapacitatedStochasticLotSizingFast {
             plotMin = -10;
             plotMax = 1000;
             break;
+         case NO_ORDER_ORDER_3:
+            instance = InstancePortfolio.generateInstanceNoOrderOrder_3();
+            safeMin = -1000;
+            safeMax = 1000;
+            plotMin = 600;
+            plotMax = 650;
+            break;
          case LOCAL_MINIMUM_COUNTEREXAMPLE:
             instance = InstancePortfolio.generateInstanceLocalMinimumCounterexample();
             safeMin = -100;
@@ -1194,7 +1201,7 @@ public class CapacitatedStochasticLotSizingFast {
          
          Instance instance = InstancePortfolio.generateSparseRandomInstance(rnd);
          
-         //if(i+1 < 4000) continue;
+         if(i+1 < 146) continue;
          
          System.out.println("Instance sanity check: "+(instance.maxQuantity>instance.fixedOrderingCost/(instance.getStages()*instance.penaltyCost)));
          
@@ -1339,7 +1346,7 @@ public class CapacitatedStochasticLotSizingFast {
       long seed = 4321;
       
       @SuppressWarnings("unused")
-      Instances instance = Instances.NO_ORDER_ORDER_1;
+      Instances instance = Instances.NO_ORDER_ORDER_3;
       solveSampleInstance(instance, seed);
       
       @SuppressWarnings("unused")
@@ -1360,7 +1367,7 @@ public class CapacitatedStochasticLotSizingFast {
 }
 
 enum Instances {
-   A, B, C, SAMPLE_POISSON, SAMPLE_NORMAL, RANDOM, SPARSE_RANDOM, SHIAOXIANG1996, GALLEGO2000, NO_ORDER_ORDER_1, NO_ORDER_ORDER_2, LOCAL_MINIMUM_COUNTEREXAMPLE
+   A, B, C, SAMPLE_POISSON, SAMPLE_NORMAL, RANDOM, SPARSE_RANDOM, SHIAOXIANG1996, GALLEGO2000, NO_ORDER_ORDER_1, NO_ORDER_ORDER_2, NO_ORDER_ORDER_3, LOCAL_MINIMUM_COUNTEREXAMPLE
 }
 
 class InstancePortfolio{
@@ -1380,6 +1387,8 @@ class InstancePortfolio{
             demandProbability[t] = NoOrderOrder1Dist.tabulateProbabilityNoOrderOrder_1(t);
          }else if(instance.demand[t] instanceof NoOrderOrder2Dist) {
             demandProbability[t] = NoOrderOrder2Dist.tabulateProbabilityNoOrderOrder_2(t);
+         }else if(instance.demand[t] instanceof NoOrderOrder3Dist) {
+            demandProbability[t] = NoOrderOrder3Dist.tabulateProbabilityNoOrderOrder_3(t);
          }else if(instance.demand[t] instanceof ContinuousDistribution) {
             demandProbability[t] = tabulateProbabilityContinuous((ContinuousDistribution)instance.demand[t], instance.tail);
          }else if(instance.demand[t] instanceof DiscreteDistributionInt) {
@@ -1610,19 +1619,7 @@ class InstancePortfolio{
    }
    
    /**
-    * Create another function (Sparse random demand)
-    * 
-    * capacity in [2,200]
-    * 
-    * maxDemand = uniform[1,300]
-    * 5 demand values in total, 3 above capacity, 2 below
-    * 
-    * N = 12
-    * K = uniform[1,500]
-    * h = 1
-    * p = uniform[1,30]
-    * 
-    * initial inventory = 0
+    * Instance # 146 no order - order
     */
    public static Instance generateSparseRandomInstance(Random rnd) {
       /** SDP boundary conditions **/
@@ -1779,6 +1776,40 @@ class InstancePortfolio{
       Arrays.fill(demand, new NoOrderOrder2Dist());
       
       int maxQuantity = 46;
+
+      Instance instance = new Instance(
+            fixedOrderingCost,
+            unitCost,
+            holdingCost,
+            penaltyCost,
+            demand,
+            maxQuantity,
+            tail,
+            minInventory,
+            maxInventory
+            );
+      
+      System.out.println(instance.toString());
+      
+      return instance;
+   }
+   
+   public static Instance generateInstanceNoOrderOrder_3() {
+      /** SDP boundary conditions **/
+      double tail = 0;
+      int minInventory = -10000;
+      int maxInventory = 10000;
+      
+      /*** Problem instance ***/
+      int stages = 4;
+      double fixedOrderingCost = 250;
+      double unitCost = 0;
+      double holdingCost = 1;
+      double penaltyCost = 26;
+      NoOrderOrder3Dist[] demand = new NoOrderOrder3Dist[stages];
+      Arrays.fill(demand, new NoOrderOrder3Dist());
+      
+      int maxQuantity = 41;
 
       Instance instance = new Instance(
             fixedOrderingCost,
@@ -2121,10 +2152,10 @@ class SparseRandomDist implements Distribution{
       int C = (int)Math.round(capacity);
       int D = (int)Math.round(maxDemand);
       demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + Math.min(C, D)] += rnd.nextDouble();
-      //demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + Math.min(C, D)] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
-      //demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + Math.min(C, D)] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
-      demandProbabilities[rnd.nextInt(Math.min(C+1, D))] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
-      demandProbabilities[rnd.nextInt(Math.min(C+1, D))] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
+      demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + Math.min(C, D)] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
+      demandProbabilities[(D - C > 0 ? rnd.nextInt(D - C) : 0) + Math.min(C, D)] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
+      //demandProbabilities[rnd.nextInt(Math.min(C+1, D))] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
+      //demandProbabilities[rnd.nextInt(Math.min(C+1, D))] += (1 - Arrays.stream(demandProbabilities).sum())*rnd.nextDouble();
       demandProbabilities[rnd.nextInt(Math.min(C+1, D))] += 1 - Arrays.stream(demandProbabilities).sum();
       assert(Arrays.stream(demandProbabilities).sum() == 1);
       String out = "";
@@ -2414,6 +2445,68 @@ class NoOrderOrder2Dist implements Distribution{
    @Override
    public String toString() {
       return "NoOrderOrder2Dist";
+   }
+   
+}
+
+class NoOrderOrder3Dist implements Distribution{
+
+   public static double[] tabulateProbabilityNoOrderOrder_3(int t) {
+      String distribution = "34/0.018300112034374982,159/0.8881207305362008,281/0.04624349956000293,286/0.04733565786942131,\n"
+            + "14/0.02798640267873942,223/0.27137712242890877,225/0.17032405597747283,232/0.530312418914879,\n"
+            + "5/0.04102254722793641,64/0.027174078729851975,115/0.8887968661050952,171/0.0430065079371164,\n"
+            + "35/0.06949500789777907,48/0.008504698672396994,145/0.01915220072578382,210/0.9028480927040401,";
+      String[] periodDemand = distribution.split("\n");
+      String[] demandDistribution = periodDemand[t].split(",");
+      String[][] demandDistributionArray = Arrays.stream(demandDistribution).map(s -> s.split("/")).toArray(String[][]::new);
+      double[][] demandDistributionDoubleArray = Arrays.stream(demandDistributionArray).limit(demandDistributionArray.length).map(s -> new double[]{Double.parseDouble(s[0]), Double.parseDouble(s[1])}).toArray(double[][]::new);
+      double maxDemand = demandDistributionDoubleArray[demandDistributionDoubleArray.length - 1][0];
+      double[] res = new double[(int)Math.round(maxDemand+1)];
+      for(int i = 0; i < demandDistributionDoubleArray.length; i++) {
+         res[(int)Math.round(demandDistributionDoubleArray[i][0])] = demandDistributionDoubleArray[i][1];
+      }
+      assert(Arrays.stream(res).sum() == 1);
+      return res;
+   }
+   
+   @Override
+   public double cdf(double x) {
+      throw new NullPointerException("Unimplemented method.");
+   }
+
+   @Override
+   public double barF(double x) {
+      throw new NullPointerException("Unimplemented method.");
+   }
+
+   @Override
+   public double inverseF(double u) {
+      throw new NullPointerException("Unimplemented method.");
+   }
+
+   @Override
+   public double getMean() {
+      throw new NullPointerException("Unimplemented method.");
+   }
+
+   @Override
+   public double getVariance() {
+      throw new NullPointerException("Unimplemented method.");
+   }
+
+   @Override
+   public double getStandardDeviation() {
+      throw new NullPointerException("Unimplemented method.");
+   }
+
+   @Override
+   public double[] getParams() {
+      throw new NullPointerException("Unimplemented method.");
+   }
+   
+   @Override
+   public String toString() {
+      return "NoOrderOrder3Dist";
    }
    
 }
