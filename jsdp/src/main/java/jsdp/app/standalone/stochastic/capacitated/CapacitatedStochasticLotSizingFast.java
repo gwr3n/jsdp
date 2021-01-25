@@ -1094,8 +1094,8 @@ public class CapacitatedStochasticLotSizingFast {
             instance = InstancePortfolio.generateInstanceNoOrderOrder_3();
             safeMin = -1000;
             safeMax = 1000;
-            plotMin = 600;
-            plotMax = 650;
+            plotMin = 590;
+            plotMax = 625;
             break;
          case LOCAL_MINIMUM_COUNTEREXAMPLE:
             instance = InstancePortfolio.generateInstanceLocalMinimumCounterexample();
@@ -2452,10 +2452,15 @@ class NoOrderOrder2Dist implements Distribution{
 class NoOrderOrder3Dist implements Distribution{
 
    public static double[] tabulateProbabilityNoOrderOrder_3(int t) {
-      String distribution = "34/0.018300112034374982,159/0.8881207305362008,281/0.04624349956000293,286/0.04733565786942131,\n"
+      String distribution = 
+            /*"34/0.018300112034374982,159/0.8881207305362008,281/0.04624349956000293,286/0.04733565786942131,\n"
             + "14/0.02798640267873942,223/0.27137712242890877,225/0.17032405597747283,232/0.530312418914879,\n"
             + "5/0.04102254722793641,64/0.027174078729851975,115/0.8887968661050952,171/0.0430065079371164,\n"
-            + "35/0.06949500789777907,48/0.008504698672396994,145/0.01915220072578382,210/0.9028480927040401,";
+            + "35/0.06949500789777907,48/0.008504698672396994,145/0.01915220072578382,210/0.9028480927040401,";*/
+            "34/0.018,159/0.888,281/0.046,286/0.048,\n"
+            + "14/0.028,223/0.271,225/0.170,232/0.531,\n"
+            + "5/0.041,64/0.027,115/0.889,171/0.043,\n"
+            + "35/0.069,48/0.008,145/0.019,210/0.904,";
       String[] periodDemand = distribution.split("\n");
       String[] demandDistribution = periodDemand[t].split(",");
       String[][] demandDistributionArray = Arrays.stream(demandDistribution).map(s -> s.split("/")).toArray(String[][]::new);
