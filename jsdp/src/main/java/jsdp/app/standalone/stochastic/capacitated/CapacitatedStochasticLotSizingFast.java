@@ -872,7 +872,7 @@ public class CapacitatedStochasticLotSizingFast {
                         int initialInventory = 0;
                         
                         double[] result = solveInstance(instance, initialInventory, safeMin, safeMax);
-                        writeToFile(fileName, oc + "," + u + "," + p + "," + m + "D," + coefficient_of_variation[idx] + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
+                        writeToFile(fileName, oc + "," + u + "," + p + "," + m + "D," + demandPattern[d] + "," + coefficient_of_variation[idx] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
                         System.out.println((++count)+"/"+instances);
                      }
                   }
@@ -919,7 +919,7 @@ public class CapacitatedStochasticLotSizingFast {
                         int initialInventory = 0;
                         
                         double[] result = solveInstance(instance, initialInventory, safeMin, safeMax);
-                        writeToFile(fileName, oc + "," + u + "," + p + "," + m + "D," + coefficient_of_variation[idx] + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
+                        writeToFile(fileName, oc + "," + u + "," + p + "," + m + "D," + demandPattern[d] + "," + coefficient_of_variation[idx] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
                         System.out.println((++count)+"/"+instances);
                      }
                   }
@@ -968,7 +968,7 @@ public class CapacitatedStochasticLotSizingFast {
                         int initialInventory = 0;
                         
                         double[] result = solveInstance(instance, initialInventory, safeMin, safeMax);
-                        writeToFile(fileName, oc + "," + u + "," + p + "," + m + "D," + coefficient_of_variation[idx] + "," + demandPattern[d] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
+                        writeToFile(fileName, oc + "," + u + "," + p + "," + m + "D," + demandPattern[d] + "," + coefficient_of_variation[idx] + "," + result[0] +","+ result[1] +","+ result[2] +","+result[3]+","+result[4]);
                         System.out.println((++count)+"/"+instances);
                      }
                   }
