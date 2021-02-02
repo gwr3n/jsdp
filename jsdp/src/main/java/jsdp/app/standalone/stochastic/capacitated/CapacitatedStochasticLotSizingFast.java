@@ -814,9 +814,9 @@ public class CapacitatedStochasticLotSizingFast {
                      Distribution[] demand;
                      final long seed = count;
                      if(sparse)
-                        demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new SparseRandomDist((int) Math.round(k), m, seed)).toArray(Distribution[]::new);
+                        demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new SparseRandomDist((int) Math.round(2*k), m, seed)).toArray(Distribution[]::new);
                      else
-                        demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new RandomDist((int) Math.round(k), seed)).toArray(Distribution[]::new);
+                        demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new RandomDist((int) Math.round(2*k), seed)).toArray(Distribution[]::new);
                            
                      double avgDemand = Arrays.stream(meanDemand[d]).average().getAsDouble();
                      int maxQuantity = (int) Math.round(m*avgDemand);
@@ -1347,13 +1347,12 @@ public class CapacitatedStochasticLotSizingFast {
       
       @SuppressWarnings("unused")
       Instances instance = Instances.NO_ORDER_ORDER_3;
-      solveSampleInstance(instance, seed);
+      //solveSampleInstance(instance, seed);
       
       @SuppressWarnings("unused")
       int instances = 1000000;
       //solveRandomInstances(instances, seed);
       
-      /*
       runBatchUniformInt("results_uniform_int.csv");
       runBatchGeometric("results_geometric.csv");
       runBatchPoisson("results_poisson.csv");
@@ -1362,7 +1361,7 @@ public class CapacitatedStochasticLotSizingFast {
       runBatchRandom("results_sparse_random.csv", sparse);
       runBatchNormal("results_normal.csv");
       runBatchLogNormal("results_lognormal.csv");
-      runBatchGamma("results_gamma.csv");*/
+      runBatchGamma("results_gamma.csv");
    }
 }
 
