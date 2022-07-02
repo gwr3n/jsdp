@@ -77,10 +77,10 @@ public class CapacitatedStochasticLotSizing {
       
       if(singleInstance) {
          switch(demand) {
-            case POISSON:
+            case NORMAL:
                sampleInstanceNormal();
                break;
-            case NORMAL:
+            case POISSON:
                sampleInstancePoisson();
                break;
          }
