@@ -19,7 +19,17 @@ To learn more please take a tour of our Wiki.
 
 https://github.com/gwr3n/jsdp/wiki
 
-jsdp is maintained by Roberto Rossi, Reader at 
-the University of Edinburgh.
+jsdp is maintained by Roberto Rossi, 
+Full Professsor and Chair in Uncertainty Modelling 
+at the University of Edinburgh.
 
+To cite jsdp:
+
+@software{jsdp_github,
+  author = {Roberto Rossi},
+  title = {jsdp: a Java Stochastic Dynamic Programming library},
+  url = {http://gwr3n.github.io/jsdp/},
+  version = {1.0.1},
+  year = {2018},
+}
 
