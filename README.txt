@@ -30,12 +30,12 @@ To cite jsdp:
   title = {jsdp: a Java Stochastic Dynamic Programming library},
   url = {http://gwr3n.github.io/jsdp/},
   version = {1.0.1},
-  year = {2018},
+  year = {2018}
 }
 
 @misc{2209.09979,
 Author = {Roberto Rossi},
 Title = {jsdp: a Java Stochastic Dynamic Programming Library},
 Year = {2022},
-Eprint = {arXiv:2209.09979},
+Eprint = {arXiv:2209.09979}
 }
