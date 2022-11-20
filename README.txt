@@ -34,8 +34,8 @@ To cite jsdp:
 }
 
 @misc{2209.09979,
-Author = {Roberto Rossi},
-Title = {jsdp: a Java Stochastic Dynamic Programming Library},
-Year = {2022},
-Eprint = {arXiv:2209.09979}
+  Author = {Roberto Rossi},
+  Title = {jsdp: a Java Stochastic Dynamic Programming Library},
+  Year = {2022},
+  Eprint = {arXiv:2209.09979}
 }
