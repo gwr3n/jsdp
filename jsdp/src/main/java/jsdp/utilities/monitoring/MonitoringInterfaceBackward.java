@@ -38,6 +38,7 @@ public class MonitoringInterfaceBackward extends MonitoringInterface{
       this.currentStage = currentStage;
    }
    
+   @SuppressWarnings("restriction")
    @Override
    public void run() {
       this.cpuAfter = this.osMBean.getProcessCpuTime();

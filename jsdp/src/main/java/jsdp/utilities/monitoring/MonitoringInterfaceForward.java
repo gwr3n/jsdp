@@ -43,6 +43,7 @@ public class MonitoringInterfaceForward extends MonitoringInterface{
       this.actionFrequencies = actionFrequencies;
    }
    
+   @SuppressWarnings("restriction")
    @Override
    public void run() {
       this.cpuAfter = this.osMBean.getProcessCpuTime();
