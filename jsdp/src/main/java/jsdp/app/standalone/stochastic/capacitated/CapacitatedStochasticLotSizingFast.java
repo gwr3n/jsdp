@@ -796,17 +796,18 @@ public class CapacitatedStochasticLotSizingFast {
       int safeMin = -100;
       int safeMax = 1000;
       
+      int periods = 10;
       double[] fixedOrderingCost = {250};
       double[] proportionalOrderingCost = {0};
       double holdingCost = 1;
       double[] penaltyCost = {5};
-      double[] maxOrderQuantity = {2}; //Max order quantity in m*avgDemand
+      double[] maxOrderQuantity = {periods}; //Max order quantity in m*avgDemand
       
       long seed = 4321;
       Random rnd = new Random(seed);
       double[][] meanDemand = new double[100][];
       for(int i = 0; i < meanDemand.length; i++) {
-         meanDemand[i] = rnd.doubles(0, 200).limit(10).toArray();
+         meanDemand[i] = rnd.doubles(0, 200).limit(periods).toArray();
       }
       
       int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*maxOrderQuantity.length*meanDemand.length;
