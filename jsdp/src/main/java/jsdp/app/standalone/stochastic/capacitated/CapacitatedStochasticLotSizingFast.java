@@ -801,7 +801,7 @@ public class CapacitatedStochasticLotSizingFast {
       double[] proportionalOrderingCost = {0};
       double holdingCost = 1;
       double[] penaltyCost = {5};
-      double[] maxOrderQuantity = {periods}; //Max order quantity in m*avgDemand
+      double[] maxOrderQuantity = {periods*100}; //Max order quantity in periods*avgDemand
       
       long seed = 4321;
       Random rnd = new Random(seed);
@@ -1119,7 +1119,7 @@ public class CapacitatedStochasticLotSizingFast {
       return out;
    }
    
-   public static void solveSampleInstance(Instances problemInstance, long seed) {
+   public static void solveSampleInstance(Instances problemInstance, long seed, boolean checks, boolean plotFunctions) {
       
       /** Random instances **/
       Random rnd = new Random();
@@ -1218,32 +1218,36 @@ public class CapacitatedStochasticLotSizingFast {
       System.out.println();
       printPolicy(instance, solution, safeMin);
       
-      System.out.println();
-      System.out.println("***************** Checks *****************");
-      System.out.println("testKBConvexity: "+
-            testKBConvexity(instance, solution, safeMin, safeMax, f));
-      System.out.println("testKBConvexity_visibility: "+
-            testKBConvexity_visibility(instance, solution, safeMin, safeMax, f));
-      System.out.println("testKBConvexity_ii_Shiaoxiang: "+
-            testKBConvexity_ii_Shiaoxiang(instance, solution, safeMin, safeMax, f));
-      System.out.println("testKBConvexity_ii_Shiaoxiang_visibility: "+
-            testKBConvexity_ii_Shiaoxiang_visibility(instance, solution, safeMin, safeMax, f));
-      //System.out.println("testKBConvexity_iii: "+
-      //      testKBConvexity_iii(instance, solution, safeMin, safeMax));
-      //System.out.println("testQuasiKBConvexity_visibility: "+
-      //      testQuasiKBConvexity_visibility(instance, solution, safeMin, safeMax, f));*/
-      System.out.println("testAlwaysOrder: "+
-            testAlwaysOrder(instance, solution, safeMin, safeMax));
-      System.out.println("*******************************************");
-      System.out.println();
+      if(checks){
+         System.out.println();
+         System.out.println("***************** Checks *****************");
+         System.out.println("testKBConvexity: "+
+               testKBConvexity(instance, solution, safeMin, safeMax, f));
+         System.out.println("testKBConvexity_visibility: "+
+               testKBConvexity_visibility(instance, solution, safeMin, safeMax, f));
+         System.out.println("testKBConvexity_ii_Shiaoxiang: "+
+               testKBConvexity_ii_Shiaoxiang(instance, solution, safeMin, safeMax, f));
+         System.out.println("testKBConvexity_ii_Shiaoxiang_visibility: "+
+               testKBConvexity_ii_Shiaoxiang_visibility(instance, solution, safeMin, safeMax, f));
+         //System.out.println("testKBConvexity_iii: "+
+         //      testKBConvexity_iii(instance, solution, safeMin, safeMax));
+         //System.out.println("testQuasiKBConvexity_visibility: "+
+         //      testQuasiKBConvexity_visibility(instance, solution, safeMin, safeMax, f));*/
+         System.out.println("testAlwaysOrder: "+
+               testAlwaysOrder(instance, solution, safeMin, safeMax));
+         System.out.println("*******************************************");
+         System.out.println();
+      }
       
-      System.out.println("***************** Gn and Cn-Gn *****************");
-      boolean plot = true;
-      boolean QCE = false;
-      plotCostFunction(instance, solution, plotMin, plotMax, plot, f, plotPeriod, QCE);
-      plotCnMinusGn(instance, solution, plotMin, plotMax, plot);
-      System.out.println("*******************************************");
-      System.out.println();
+      if(plotFunctions) {
+         System.out.println("***************** Gn and Cn-Gn *****************");
+         boolean plot = true;
+         boolean QCE = false;
+         plotCostFunction(instance, solution, plotMin, plotMax, plot, f, plotPeriod, QCE);
+         plotCnMinusGn(instance, solution, plotMin, plotMax, plot);
+         System.out.println("*******************************************");
+         System.out.println();
+      }
       
       System.out.println("***************** Simulate *****************");
       DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.ENGLISH);
@@ -1439,7 +1443,9 @@ public class CapacitatedStochasticLotSizingFast {
       long seed = 4321;
       
       Instances instance = Instances.NO_ORDER_ORDER_3;
-      solveSampleInstance(instance, seed);
+      boolean checks = false;
+      boolean plotFunction = false;
+      solveSampleInstance(instance, seed, checks, plotFunction);
       
       @SuppressWarnings("unused")
       int instances = 1000000;
