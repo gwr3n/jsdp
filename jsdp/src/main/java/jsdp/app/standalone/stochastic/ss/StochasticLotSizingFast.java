@@ -409,10 +409,10 @@ public class StochasticLotSizingFast {
       
       long seed = 4321;
       Instances instance = Instances.SAMPLE_POISSON;
-      //solveSampleInstance(instance, seed);
+      solveSampleInstance(instance, seed);
       
       //runBatchPoisson("results_poisson.csv");
-      tabulateBatchPoisson("results_poisson.csv");
+      //tabulateBatchPoisson("results_poisson.csv");
    }
 }
 
@@ -464,11 +464,11 @@ class InstancePortfolio{
       int maxInventory = 1000;
       
       /*** Problem instance ***/
-      double fixedOrderingCost = 250;
+      double fixedOrderingCost = 100;
       double unitCost = 1;
       double holdingCost = 1;
-      double penaltyCost = 5;
-      double[] meanDemand = {30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30};
+      double penaltyCost = 10;
+      double[] meanDemand = {20, 40, 60, 40};
       Distribution[] demand = Arrays.stream(meanDemand).mapToObj(d -> new PoissonDist(d)).toArray(Distribution[]::new);
    
       Instance instance = new Instance(
