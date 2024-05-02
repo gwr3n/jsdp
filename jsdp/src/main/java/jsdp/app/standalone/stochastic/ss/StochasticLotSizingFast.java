@@ -18,6 +18,7 @@ import jsdp.utilities.sampling.SampleFactory;
 import umontreal.ssj.probdist.ContinuousDistribution;
 import umontreal.ssj.probdist.DiscreteDistributionInt;
 import umontreal.ssj.probdist.Distribution;
+import umontreal.ssj.probdist.NormalDist;
 import umontreal.ssj.probdist.PoissonDist;
 import umontreal.ssj.stat.Tally;
 
@@ -280,7 +281,13 @@ public class StochasticLotSizingFast {
       Random rnd = new Random(seed);
       double[][] meanDemand = new double[100][];
       for(int i = 0; i < meanDemand.length; i++) {
-         meanDemand[i] = rnd.doubles(0, 200).limit(periods).toArray();
+         double scale = 20; // Max demand roughly 200
+         double[] epsilon = rnd.doubles(0, 1).limit(periods).toArray(); 
+         double [] Xt = new double[periods];
+         Xt[0] = 0 + NormalDist.inverseF01(epsilon[0]);
+         for(int k = 1; k < periods; k++)
+            Xt[k] = Xt[k-1] + NormalDist.inverseF01(epsilon[k]);
+         meanDemand[i] = Arrays.stream(Xt).map(k -> Math.abs(k)*scale).toArray();
       }
       
       int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*meanDemand.length;
