@@ -230,7 +230,7 @@ public class StochasticLotSizingFast {
    
    public static String tabulateInstanceCSV(Instance instance, int initialInventory, int safeMin, int safeMax, boolean compact) {
       
-      String out = ""+instance.fixedOrderingCost+","+instance.unitCost+","+instance.penaltyCost+",";
+      String out = ""+instance.fixedOrderingCost+","+instance.holdingCost+","+instance.unitCost+","+instance.penaltyCost+",";
       for(int i = 0; i < instance.demand.length; i++) {
          out += instance.demand[i].getMean();
          if(i < instance.demand.length-1) out += ",";
