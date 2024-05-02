@@ -11,6 +11,9 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Random;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import jsdp.utilities.sampling.SampleFactory;
 import umontreal.ssj.probdist.ContinuousDistribution;
 import umontreal.ssj.probdist.DiscreteDistributionInt;
@@ -225,7 +228,7 @@ public class StochasticLotSizingFast {
       }
    }
    
-   public static String tabulateInstance(Instance instance, int initialInventory, int safeMin, int safeMax, boolean compact) {
+   public static String tabulateInstanceCSV(Instance instance, int initialInventory, int safeMin, int safeMax, boolean compact) {
       
       String out = ""+instance.fixedOrderingCost+","+instance.unitCost+","+instance.penaltyCost+",";
       for(int i = 0; i < instance.demand.length; i++) {
@@ -253,6 +256,11 @@ public class StochasticLotSizingFast {
       }
       
       return out;
+   }
+   
+   public static String tabulateInstanceMongo(Instance instance, int initialInventory, int safeMin, int safeMax) {
+      Solution solution = sdp(instance);      
+      return Gn.getJSON(new Gn(instance, solution));
    }
    
    public static void tabulateBatchPoisson(String fileName, Storage store){
@@ -288,9 +296,19 @@ public class StochasticLotSizingFast {
                   
                   int initialInventory = 0;
                   
-                  boolean compact = false;
-                  String result = tabulateInstance(instance, initialInventory, safeMin, safeMax, compact);
-                  writeToFile(fileName, result);
+                  switch(store) {
+                     case CSV: {
+                        boolean compact = false;
+                        String result = tabulateInstanceCSV(instance, initialInventory, safeMin, safeMax, compact);
+                        writeToFile(fileName, result);
+                     }
+                     case MONGODB: 
+                     default: {
+                        String result = tabulateInstanceMongo(instance, initialInventory, safeMin, safeMax);
+                        writeToFile(fileName, result);
+                     }
+                  }
+                        
                   System.out.println((++count)+"/"+instances);
                }
             }
@@ -404,12 +422,12 @@ public class StochasticLotSizingFast {
 
    public static void main(String[] args) {
       
-      long seed = 4321;
-      Instances instance = Instances.SAMPLE_POISSON;
-      solveSampleInstance(instance, seed);
+      //long seed = 4321;
+      //Instances instance = Instances.SAMPLE_POISSON;
+      //solveSampleInstance(instance, seed);
       
       //runBatchPoisson("results_poisson.csv");
-      //tabulateBatchPoisson("results_poisson.csv");
+      tabulateBatchPoisson("results_poisson.csv", Storage.CSV);
    }
 }
 
@@ -577,7 +595,6 @@ class Solution {
       this.Cn = Cn;
    }
    
-   
    public int[] find_S(Instance instance, int safeMin) {
       int[] S = new int[instance.getStages()];
       for(int t = 0; t < instance.getStages(); t++) {
@@ -604,3 +621,29 @@ class Solution {
       return s;
    }
 }
+
+@SuppressWarnings("unused")
+class Gn {
+   private double K;
+   private double h;
+   private double v;
+   private double p;
+   private double[] Gn;
+   
+   public Gn(Instance instance, Solution solution) {
+      this.K = instance.fixedOrderingCost;
+      this.h = instance.holdingCost;
+      this.v = instance.unitCost;
+      this.p = instance.penaltyCost;
+      this.Gn = solution.Gn[0];
+   }
+   
+   public static String getJSON(Object object) {
+      GsonBuilder gsonBuilder = new GsonBuilder();
+      Gson gson = gsonBuilder.create();
+      return gson.toJson(object);
+   }
+}
+
+
+
