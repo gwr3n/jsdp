@@ -302,6 +302,7 @@ public class StochasticLotSizingFast {
                         String result = tabulateInstanceCSV(instance, initialInventory, safeMin, safeMax, compact);
                         writeToFile(fileName, result);
                      }
+                     break;
                      case MONGODB: 
                      default: {
                         String result = tabulateInstanceMongo(instance, initialInventory, safeMin, safeMax);
