@@ -77,7 +77,7 @@ public class StochasticLotSizingFast {
                optimalAction[t][i] = optimalAction[t][i+1]+1;
                continue;
             }
-            for(int a = 0; a < totalCost[i].length; a++) {                            // Actions
+            for(int a = 0; a < totalCost[i].length; a++) {                             // Actions
                double totalProbabilityMass = 0;
                for(int d = 0; d < demandProbabilities[t].length; d++) {                // Demand
                   double immediateCost = 0;
