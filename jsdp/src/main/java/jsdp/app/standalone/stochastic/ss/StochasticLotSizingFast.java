@@ -135,6 +135,35 @@ public class StochasticLotSizingFast {
       }
    }
    
+   public static double[] solveInstance(Instance instance, int initialInventory) {
+      
+      //System.out.println("***************** Print instance ***************");
+      //System.out.println(instance.toString());
+      //System.out.println("************************************************");
+      //System.out.println();
+      
+      Solution solution = sdp(instance);
+      
+      double sdpETC = solution.Cn[0][initialInventory-instance.minInventory];
+      
+      //System.out.println("***************** Print policy *****************");
+      //printPolicy(instance, solution, safeMin);
+      //System.out.println("************************************************");
+      //System.out.println();
+      
+      double confidence = 0.95;
+      double error = 0.0001;
+      int[] S = solution.find_S(instance, instance.minInventory);
+      int[] s = solution.find_s(instance, instance.minInventory);
+      boolean verifyOptimal = true;
+      double simulatedsSETC = simulate_sS(instance, solution, initialInventory, S, s, confidence, error, verifyOptimal)[0];
+      
+      double[] etcOut = new double[2];
+      etcOut[0] = sdpETC;
+      etcOut[1] = simulatedsSETC;
+      return etcOut;
+   }
+   
    private static double[][] getDemandPatters(){
       double[][] meanDemand = {
             {30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30},         //STA 
@@ -196,7 +225,37 @@ public class StochasticLotSizingFast {
       }
    }
    
-   public static void tabulateBatchPoisson(String fileName){
+   public static String tabulateInstance(Instance instance, int initialInventory, int safeMin, int safeMax, boolean compact) {
+      
+      String out = ""+instance.fixedOrderingCost+","+instance.unitCost+","+instance.penaltyCost+",";
+      for(int i = 0; i < instance.demand.length; i++) {
+         out += instance.demand[i].getMean();
+         if(i < instance.demand.length-1) out += ",";
+      }
+      out += "\n";
+      
+      Solution solution = sdp(instance);
+      
+      if(!compact) { // tabulate the functional equation
+         out += "";
+         for(int i = Math.max(0,safeMin-instance.minInventory); i < Math.min(instance.stateSpaceSize(),safeMax-instance.minInventory); i++) {
+            out += solution.Gn[0][i] + 
+                  ((i == Math.min(instance.stateSpaceSize(),safeMax-instance.minInventory) - 1) ? "" : ", ");
+         }
+         out += "";
+      } else { // tabulate (s,S) policy parameters
+         out += "";
+         int[] S = solution.find_S(instance, safeMin);
+         int[] s = solution.find_s(instance, safeMin);
+         double cost = solution.Gn[0][S[0]-instance.minInventory];
+         out += S[0] + "," + s[0] + "," + cost;
+         out += "";
+      }
+      
+      return out;
+   }
+   
+   public static void tabulateBatchPoisson(String fileName, Storage store){
       double tail = 0.0001;
       int minInventory = -1000;
       int maxInventory = 1000;
@@ -239,117 +298,6 @@ public class StochasticLotSizingFast {
       }
    }
    
-   public static double[] solveInstance(Instance instance, int initialInventory) {
-      
-      //System.out.println("***************** Print instance ***************");
-      //System.out.println(instance.toString());
-      //System.out.println("************************************************");
-      //System.out.println();
-      
-      Solution solution = sdp(instance);
-      
-      double sdpETC = solution.Cn[0][initialInventory-instance.minInventory];
-      
-      //System.out.println("***************** Print policy *****************");
-      //printPolicy(instance, solution, safeMin);
-      //System.out.println("************************************************");
-      //System.out.println();
-      
-      double confidence = 0.95;
-      double error = 0.0001;
-      int[] S = solution.find_S(instance, instance.minInventory);
-      int[] s = solution.find_s(instance, instance.minInventory);
-      boolean verifyOptimal = true;
-      double simulatedsSETC = simulate_sS(instance, solution, initialInventory, S, s, confidence, error, verifyOptimal)[0];
-      
-      double[] etcOut = new double[2];
-      etcOut[0] = sdpETC;
-      etcOut[1] = simulatedsSETC;
-      return etcOut;
-   }
-   
-   public static String tabulateInstance(Instance instance, int initialInventory, int safeMin, int safeMax, boolean compact) {
-      
-      String out = ""+instance.fixedOrderingCost+","+instance.unitCost+","+instance.penaltyCost+",";
-      for(int i = 0; i < instance.demand.length; i++) {
-         out += instance.demand[i].getMean();
-         if(i < instance.demand.length-1) out += ",";
-      }
-      out += "\n";
-      
-      Solution solution = sdp(instance);
-      
-      if(!compact) { // tabulate the functional equation
-         out += "";
-         for(int i = Math.max(0,safeMin-instance.minInventory); i < Math.min(instance.stateSpaceSize(),safeMax-instance.minInventory); i++) {
-            out += solution.Gn[0][i] + 
-                  ((i == Math.min(instance.stateSpaceSize(),safeMax-instance.minInventory) - 1) ? "" : ", ");
-         }
-         out += "";
-      } else { // tabulate (s,S) policy parameters
-         out += "";
-         int[] S = solution.find_S(instance, safeMin);
-         int[] s = solution.find_s(instance, safeMin);
-         double cost = solution.Gn[0][S[0]-instance.minInventory];
-         out += S[0] + "," + s[0] + "," + cost;
-         out += "";
-      }
-      
-      return out;
-   }
-
-   public static void solveSampleInstance(Instances problemInstance, long seed) {
-      
-      /** Random instances **/
-      Random rnd = new Random();
-      rnd.setSeed(seed);
-      
-      Instance instance; 
-      switch(problemInstance) {
-         case SAMPLE_POISSON:
-         default:
-            instance = InstancePortfolio.generateSamplePoissonInstance();
-            break;
-      }
-      
-      Solution solution = sdp(instance);
-      
-      System.out.println();
-      printSolution(instance, solution, instance.minInventory);
-      
-      System.out.println();
-      printPolicy(instance, solution, instance.minInventory);
-      
-      System.out.println("***************** Simulate *****************");
-      DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.ENGLISH);
-      DecimalFormat df = new DecimalFormat("#.000",otherSymbols);
-      int initialInventory = 0;
-      double optimalPolicyCost = solution.Cn[0][initialInventory-instance.minInventory];
-      double confidence = 0.95;
-      double error = 0.0001;
-      double[] results = null;
-      try {
-         boolean verifyOptimal = true;
-         int[] S = solution.find_S(instance, instance.minInventory);
-         int[] s = solution.find_s(instance, instance.minInventory);
-         results = simulate_sS(instance, solution, initialInventory, S, s, confidence, error, verifyOptimal);
-         System.out.println(
-               "Optimal policy cost: "+ df.format(optimalPolicyCost)+
-               "\nSimulated cost: "+ df.format(results[0])+
-               "\nConfidence interval=("+df.format(results[0]-results[1])+","+
-               df.format(results[0]+results[1])+")@"+
-               df.format(confidence*100)+"% confidence");
-         System.out.println("Optimality gap: "+df.format(100*(results[0]-optimalPolicyCost)/optimalPolicyCost)+"%");
-      }catch(Exception e) {
-         System.out.println("This instance cannot be simulated.");
-      }
-      System.out.println("*******************************************");
-      System.out.println();
-   }
-
-   /**
-    * Simulation of an (s,S) policy
-    */
    public static double[] simulate_sS(
          Instance instance,
          Solution solution,
@@ -405,6 +353,55 @@ public class StochasticLotSizingFast {
       return centerAndRadius;
    }
 
+   public static void solveSampleInstance(Instances problemInstance, long seed) {
+      
+      /** Random instances **/
+      Random rnd = new Random();
+      rnd.setSeed(seed);
+      
+      Instance instance; 
+      switch(problemInstance) {
+         case SAMPLE_POISSON:
+         default:
+            instance = InstancePortfolio.generateSamplePoissonInstance();
+            break;
+      }
+      
+      Solution solution = sdp(instance);
+      
+      System.out.println();
+      printSolution(instance, solution, instance.minInventory);
+      
+      System.out.println();
+      printPolicy(instance, solution, instance.minInventory);
+      
+      System.out.println("***************** Simulate *****************");
+      DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.ENGLISH);
+      DecimalFormat df = new DecimalFormat("#.000",otherSymbols);
+      int initialInventory = 0;
+      double optimalPolicyCost = solution.Cn[0][initialInventory-instance.minInventory];
+      double confidence = 0.95;
+      double error = 0.0001;
+      double[] results = null;
+      try {
+         boolean verifyOptimal = true;
+         int[] S = solution.find_S(instance, instance.minInventory);
+         int[] s = solution.find_s(instance, instance.minInventory);
+         results = simulate_sS(instance, solution, initialInventory, S, s, confidence, error, verifyOptimal);
+         System.out.println(
+               "Optimal policy cost: "+ df.format(optimalPolicyCost)+
+               "\nSimulated cost: "+ df.format(results[0])+
+               "\nConfidence interval=("+df.format(results[0]-results[1])+","+
+               df.format(results[0]+results[1])+")@"+
+               df.format(confidence*100)+"% confidence");
+         System.out.println("Optimality gap: "+df.format(100*(results[0]-optimalPolicyCost)/optimalPolicyCost)+"%");
+      }catch(Exception e) {
+         System.out.println("This instance cannot be simulated.");
+      }
+      System.out.println("*******************************************");
+      System.out.println();
+   }
+
    public static void main(String[] args) {
       
       long seed = 4321;
@@ -414,6 +411,10 @@ public class StochasticLotSizingFast {
       //runBatchPoisson("results_poisson.csv");
       //tabulateBatchPoisson("results_poisson.csv");
    }
+}
+
+enum Storage {
+   CSV, MONGODB
 }
 
 enum Instances {
