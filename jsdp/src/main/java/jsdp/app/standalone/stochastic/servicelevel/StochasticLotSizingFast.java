@@ -1132,7 +1132,7 @@ class PoissonMultiperiodNewsboy extends MultiperiodNewsboy {
       for(int i = 0; i < demand.length; i++) {
          cumDemand += demand[i].getMean();
          PoissonLossFunction lf = new PoissonLossFunction(cumDemand);
-         //NormalLossFunction lf = new NormalLossFunction(cumDemand, Math.sqrt(cumDemand));
+         //NormalLossFunction lf = new NormalLossFunction(cumDemand, Math.sqrt(cumDemand)); // Normal approximation to Poisson
          etc += this.h*lf.Lc(x) + this.p[i]*lf.L(x); 
       }
       return etc;
