@@ -712,7 +712,7 @@ public class StochasticLotSizingFast {
       double[][] meanDemand = getDemandPatters();
       String[] demandPattern = {"STA", "LC1", "LC2", "SIN1", "SIN2", "RAND", "EMP1", "EMP2", "EMP3", "EMP4"};
       
-      writeToFile(fileName, "Fixed ordering cost, Proportional ordering cost, Service Level, Expected Demand, ETC SDP, ETC CD, Service Levels");
+      writeToFile(fileName, "Fixed ordering cost, Proportional ordering cost, Service Level, Expected Demand, ETC SDP, Time SDP (s), ETC CD, Time CD (s), Service Levels CD");
       
       int instances = fixedOrderingCost.length*serviceLevels.length*demandPattern.length;
       int count = 0;
@@ -733,11 +733,15 @@ public class StochasticLotSizingFast {
                
                int initialInventory = 0;
                
+               long timeSDP = System.currentTimeMillis();
                double[] resultSDP = solveInstance(instance, initialInventory, safeMin, METHOD.SDP);
+               timeSDP = System.currentTimeMillis() - timeSDP;
+               long timeCD = System.currentTimeMillis();
                double[] resultFast = solveInstanceFast(instance, initialInventory, safeMin);
-
+               timeCD = System.currentTimeMillis() - timeCD;
+               
                String serviceLevelsStr = Arrays.toString(Arrays.copyOfRange(resultFast, 2, 2 + instance.getStages() - 1));
-               writeToFile(fileName, oc + "," + s + "," + demandPattern[d] + "," + resultSDP[0] + "," + resultFast[0] +","+ serviceLevelsStr.substring(1, serviceLevelsStr.length() - 1));
+               writeToFile(fileName, oc + "," + s + "," + demandPattern[d] + "," + resultSDP[0] + "," + timeSDP/1000.0 + "," + resultFast[0] + "," + timeCD/1000. + "," + serviceLevelsStr.substring(1, serviceLevelsStr.length() - 1));
                System.out.println((++count)+"/"+instances);
             }
          }
@@ -758,7 +762,7 @@ public class StochasticLotSizingFast {
       double[] coefficient_of_variation = {0.1,0.2,0.3};
       String[] demandPattern = {"STA", "LC1", "LC2", "SIN1", "SIN2", "RAND", "EMP1", "EMP2", "EMP3", "EMP4"};
       
-      writeToFile(fileName,  "Fixed ordering cost, Service Level, Expected Demand, Coefficient of Variation, ETC SDP, ETC CD, Service Levels");
+      writeToFile(fileName,  "Fixed ordering cost, Service Level, Expected Demand, Coefficient of Variation, ETC SDP, Time SDP (s), ETC CD, Time CD (s), Service Levels CD");
       
       int instances = fixedOrderingCost.length*serviceLevels.length*demandPattern.length*coefficient_of_variation.length;
       int count = 0;
@@ -775,11 +779,15 @@ public class StochasticLotSizingFast {
                   
                   int initialInventory = 0;
                   
+                  long timeSDP = System.currentTimeMillis();
                   double[] resultSDP = solveInstance(instance, initialInventory, safeMin, METHOD.SDP);
+                  timeSDP = System.currentTimeMillis() - timeSDP;
+                  long timeCD = System.currentTimeMillis();
                   double[] resultFast = solveInstanceFast(instance, initialInventory, safeMin);
+                  timeCD = System.currentTimeMillis() - timeCD;
                   
                   String serviceLevelsStr = Arrays.toString(Arrays.copyOfRange(resultFast, 2, 2 + instance.getStages() - 1));
-                  writeToFile(fileName, oc + "," + s + "," + demandPattern[d] + "," + coefficient_of_variation[idx] + "," + resultSDP[0] +","+ resultFast[0] +","+ serviceLevelsStr.substring(1, serviceLevelsStr.length() - 1));
+                  writeToFile(fileName, oc + "," + s + "," + demandPattern[d] + "," + coefficient_of_variation[idx] + "," + resultSDP[0] +","+ timeSDP/1000.0 +","+ resultFast[0] +","+ timeCD/1000.0 +","+ serviceLevelsStr.substring(1, serviceLevelsStr.length() - 1));
                   System.out.println((++count)+"/"+instances);
                }
             }
