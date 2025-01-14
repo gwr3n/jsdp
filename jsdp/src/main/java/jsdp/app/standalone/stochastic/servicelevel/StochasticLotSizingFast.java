@@ -760,7 +760,7 @@ public class StochasticLotSizingFast {
       
       writeToFile(fileName,  "Fixed ordering cost, Service Level, Expected Demand, Coefficient of Variation, ETC SDP, ETC CD, Service Levels");
       
-      int instances = fixedOrderingCost.length*serviceLevels.length*demandPattern.length;
+      int instances = fixedOrderingCost.length*serviceLevels.length*demandPattern.length*coefficient_of_variation.length;
       int count = 0;
       for(double oc : fixedOrderingCost) {
          for(double s : serviceLevels) {
