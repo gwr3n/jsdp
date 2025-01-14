@@ -1052,8 +1052,8 @@ class PoissonLossFunction extends LossFunction {
 
    @Override
    public double Lc(double r) {
-      final double R = r;
-      return Stream.iterate(0, i -> i + 1).limit((int) r).mapToDouble(v -> (R - v)*poissonDistribution.prob(v)).sum(); 
+      //return Stream.iterate(0, i -> i + 1).limit((int) r).mapToDouble(v -> (r - v)*poissonDistribution.prob(v)).sum();
+      return (r-this.poissonDistribution.getLambda())*poissonDistribution.cdf(r)+this.poissonDistribution.getLambda()*poissonDistribution.prob((int) r);
    }
 }
 
