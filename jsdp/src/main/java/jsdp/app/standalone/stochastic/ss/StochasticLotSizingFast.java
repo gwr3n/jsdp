@@ -123,207 +123,6 @@ public class StochasticLotSizingFast {
       }
    }
    
-   public static void writeToFile(String fileName, String str){
-      File results = new File(fileName);
-      try {
-         FileOutputStream fos = new FileOutputStream(results, true);
-         OutputStreamWriter osw = new OutputStreamWriter(fos);
-         osw.write(str+"\n");
-         osw.close();
-      } catch (FileNotFoundException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      } catch (IOException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      }
-   }
-   
-   public static double[] solveInstance(Instance instance, int initialInventory) {
-      
-      //System.out.println("***************** Print instance ***************");
-      //System.out.println(instance.toString());
-      //System.out.println("************************************************");
-      //System.out.println();
-      
-      Solution solution = sdp(instance);
-      
-      double sdpETC = solution.Cn[0][initialInventory-instance.minInventory];
-      
-      //System.out.println("***************** Print policy *****************");
-      //printPolicy(instance, solution, safeMin);
-      //System.out.println("************************************************");
-      //System.out.println();
-      
-      double confidence = 0.95;
-      double error = 0.0001;
-      int[] S = solution.find_S(instance, instance.minInventory);
-      int[] s = solution.find_s(instance, instance.minInventory);
-      boolean verifyOptimal = true;
-      double simulatedsSETC = simulate_sS(instance, solution, initialInventory, S, s, confidence, error, verifyOptimal)[0];
-      
-      double[] etcOut = new double[2];
-      etcOut[0] = sdpETC;
-      etcOut[1] = simulatedsSETC;
-      return etcOut;
-   }
-   
-   private static double[][] getDemandPatters(){
-      double[][] meanDemand = {
-            {30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30 ,30},         //STA 
-            {46 ,49 ,50 ,50 ,49 ,46 ,42 ,38 ,35 ,33 ,30 ,28 ,26 ,23 ,21 ,18 ,14 ,11 ,8 ,6},           //LC1
-            {7 ,9 ,11 ,13 ,17 ,22 ,24 ,26 ,32 ,34 ,36 ,41 ,44 ,47 ,48 ,50 ,50 ,49 ,47 ,44},           //LC2
-            {47 ,30 ,13 ,6 ,13 ,30 ,47 ,54 ,47 ,30 ,13 ,6 ,13 ,30 ,47 ,30 ,15 ,8 ,11 ,30},            //SIN1
-            {36 ,30 ,24 ,21 ,24 ,30 ,36 ,39 ,36 ,30 ,24 ,21 ,24 ,30 ,36 ,31 ,24 ,21 ,26 ,33},         //SIN2
-            {63 ,27 ,10 ,24 ,1 ,23 ,33 ,35 ,67 ,7 ,14 ,41 ,4 ,63 ,26 ,45 ,53 ,25 ,10 ,50},            //RAND
-            {5 ,15 ,46 ,140 ,80 ,147 ,134 ,74 ,84 ,109 ,47 ,88 ,66 ,28 ,32 ,89 ,162 ,36 ,32 ,50},     //EMP1
-            {14 ,24 ,71 ,118 ,49 ,86 ,152 ,117 ,226 ,208 ,78 ,59 ,96 ,33 ,57 ,116 ,18 ,135 ,128 ,180},//EMP2
-            {13 ,35 ,79 ,43 ,44 ,59 ,22 ,55 ,61 ,34 ,50 ,95 ,36 ,145 ,160 ,104 ,151 ,86 ,123 ,64},    //EMP3
-            {15 ,56 ,19 ,84 ,136 ,67 ,67 ,155 ,87 ,164 ,194 ,67 ,65 ,132 ,35 ,131 ,133 ,36 ,173 ,152} //EMP4
-      };
-
-      
-      return meanDemand;
-   }
-   
-   public static void runBatchPoisson(String fileName){
-      double tail = 0.0001;
-      int minInventory = -1000;
-      int maxInventory = 1000;
-      
-      double[] fixedOrderingCost = {250,500,1000};
-      double[] proportionalOrderingCost = {2,5,10};
-      double holdingCost = 1;
-      double[] penaltyCost = {5,10,15};
-      double[] maxOrderQuantity = {2,3,4}; //Max order quantity in m*avgDemand
-      double[][] meanDemand = getDemandPatters();
-      String[] demandPattern = {"STA", "LC1", "LC2", "SIN1", "SIN2", "RAND", "EMP1", "EMP2", "EMP3", "EMP4"};
-      
-      writeToFile(fileName,  "Fixed ordering cost, Proportional ordering cost, Capacity, Expected Demand, ETC SDP, ETC sim");
-      
-      int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*maxOrderQuantity.length*demandPattern.length;
-      int count = 0;
-      for(double oc : fixedOrderingCost) {
-         for(double u : proportionalOrderingCost) {
-            for(double p : penaltyCost) {
-               for(int d = 0; d < meanDemand.length; d++) {
-                  
-                  /* Skip instances 
-                  if(count < 561) {
-                     count++;
-                     continue;
-                  }*/
-                  
-                  Distribution[] demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new PoissonDist(k)).toArray(Distribution[]::new);
-                  
-                  Instance instance = new Instance(oc, u, holdingCost, p, demand, tail, minInventory, maxInventory);
-                  
-                  int initialInventory = 0;
-                  
-                  double[] result = solveInstance(instance, initialInventory);
-                  writeToFile(fileName, oc + "," + u + "," + p + "," + demandPattern[d] + "," + result[0] +","+ result[1]);
-                  System.out.println((++count)+"/"+instances);
-               }
-            }
-         }
-      }
-   }
-   
-   public static String tabulateInstanceCSV(Instance instance, int initialInventory, int safeMin, int safeMax, boolean compact) {
-      
-      String out = ""+instance.fixedOrderingCost+","+instance.holdingCost+","+instance.unitCost+","+instance.penaltyCost+",";
-      for(int i = 0; i < instance.demand.length; i++) {
-         out += instance.demand[i].getMean();
-         if(i < instance.demand.length-1) out += ",";
-      }
-      out += "\n";
-      
-      Solution solution = sdp(instance);
-      
-      if(!compact) { // tabulate the functional equation
-         out += "";
-         for(int i = Math.max(0,safeMin-instance.minInventory); i < Math.min(instance.stateSpaceSize(),safeMax-instance.minInventory); i++) {
-            out += solution.Gn[0][i] + 
-                  ((i == Math.min(instance.stateSpaceSize(),safeMax-instance.minInventory) - 1) ? "" : ", ");
-         }
-         out += "";
-      } else { // tabulate (s,S) policy parameters
-         out += "";
-         int[] S = solution.find_S(instance, safeMin);
-         int[] s = solution.find_s(instance, safeMin);
-         double cost = solution.Gn[0][S[0]-instance.minInventory];
-         out += S[0] + "," + s[0] + "," + cost;
-         out += "";
-      }
-      
-      return out;
-   }
-   
-   public static String tabulateInstanceMongo(Instance instance, int initialInventory, int safeMin, int safeMax) {
-      Solution solution = sdp(instance);      
-      return Gn.getJSON(new Gn(instance, solution));
-   }
-   
-   public static void tabulateBatchPoisson(String fileName, Storage store){
-      double tail = 0.0001;
-      int minInventory = -1000;
-      int maxInventory = 1000;
-      int safeMin = -100;
-      int safeMax = 1000;
-      
-      int periods = 10;
-      double[] fixedOrderingCost = {250};
-      double[] proportionalOrderingCost = {0};
-      double holdingCost = 1;
-      double[] penaltyCost = {5};
-      
-      long seed = 4321;
-      Random rnd = new Random(seed);
-      double[][] meanDemand = new double[100][];
-      for(int i = 0; i < meanDemand.length; i++) {
-         double scale = 20; // Max demand roughly 200
-         double[] epsilon = rnd.doubles(0, 1).limit(periods).toArray(); 
-         double [] Xt = new double[periods];
-         Xt[0] = 0 + NormalDist.inverseF01(epsilon[0]);
-         for(int k = 1; k < periods; k++)
-            Xt[k] = Xt[k-1] + NormalDist.inverseF01(epsilon[k]);
-         meanDemand[i] = Arrays.stream(Xt).map(k -> Math.abs(k)*scale).toArray();
-      }
-      
-      int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*meanDemand.length;
-      int count = 0;
-      for(double oc : fixedOrderingCost) {
-         for(double u : proportionalOrderingCost) {
-            for(double p : penaltyCost) {
-               for(int d = 0; d < meanDemand.length; d++) {
-                  
-                  Distribution[] demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new PoissonDist(k)).toArray(Distribution[]::new);
-                  
-                  Instance instance = new Instance(oc, u, holdingCost, p, demand, tail, minInventory, maxInventory);
-                  
-                  int initialInventory = 0;
-                  
-                  switch(store) {
-                     case CSV: {
-                        boolean compact = false;
-                        String result = tabulateInstanceCSV(instance, initialInventory, safeMin, safeMax, compact);
-                        writeToFile(fileName, result);
-                     }
-                     break;
-                     case MONGODB: 
-                     default: {
-                        String result = tabulateInstanceMongo(instance, initialInventory, safeMin, safeMax);
-                        writeToFile(fileName, result);
-                     }
-                  }
-                        
-                  System.out.println((++count)+"/"+instances);
-               }
-            }
-         }
-      }
-   }
-   
    public static double[] simulate_sS(
          Instance instance,
          Solution solution,
@@ -379,6 +178,35 @@ public class StochasticLotSizingFast {
       return centerAndRadius;
    }
 
+   public static double[] solveInstance(Instance instance, int initialInventory) {
+      
+      //System.out.println("***************** Print instance ***************");
+      //System.out.println(instance.toString());
+      //System.out.println("************************************************");
+      //System.out.println();
+      
+      Solution solution = sdp(instance);
+      
+      double sdpETC = solution.Cn[0][initialInventory-instance.minInventory];
+      
+      //System.out.println("***************** Print policy *****************");
+      //printPolicy(instance, solution, safeMin);
+      //System.out.println("************************************************");
+      //System.out.println();
+      
+      double confidence = 0.95;
+      double error = 0.0001;
+      int[] S = solution.find_S(instance, instance.minInventory);
+      int[] s = solution.find_s(instance, instance.minInventory);
+      boolean verifyOptimal = true;
+      double simulatedsSETC = simulate_sS(instance, solution, initialInventory, S, s, confidence, error, verifyOptimal)[0];
+      
+      double[] etcOut = new double[2];
+      etcOut[0] = sdpETC;
+      etcOut[1] = simulatedsSETC;
+      return etcOut;
+   }
+   
    public static void solveSampleInstance(Instances problemInstance, long seed) {
       
       /** Random instances **/
@@ -428,6 +256,120 @@ public class StochasticLotSizingFast {
       System.out.println();
    }
 
+   public static String tabulateInstanceCSV(Instance instance, int initialInventory, int safeMin, int safeMax, boolean compact) {
+      
+      String out = ""+instance.fixedOrderingCost+","+instance.holdingCost+","+instance.unitCost+","+instance.penaltyCost+",";
+      for(int i = 0; i < instance.demand.length; i++) {
+         out += instance.demand[i].getMean();
+         if(i < instance.demand.length-1) out += ",";
+      }
+      out += "\n";
+      
+      Solution solution = sdp(instance);
+      
+      if(!compact) { // tabulate the functional equation
+         out += "";
+         for(int i = Math.max(0,safeMin-instance.minInventory); i < Math.min(instance.stateSpaceSize(),safeMax-instance.minInventory); i++) {
+            out += solution.Gn[0][i] + 
+                  ((i == Math.min(instance.stateSpaceSize(),safeMax-instance.minInventory) - 1) ? "" : ", ");
+         }
+         out += "";
+      } else { // tabulate (s,S) policy parameters
+         out += "";
+         int[] S = solution.find_S(instance, safeMin);
+         int[] s = solution.find_s(instance, safeMin);
+         double cost = solution.Gn[0][S[0]-instance.minInventory];
+         out += S[0] + "," + s[0] + "," + cost;
+         out += "";
+      }
+      
+      return out;
+   }
+   
+   public static String tabulateInstanceMongo(Instance instance, int initialInventory, int safeMin, int safeMax) {
+      Solution solution = sdp(instance);      
+      return Gn.getJSON(new Gn(instance, solution, safeMin, safeMax));
+   }
+   
+   public static void writeToFile(String fileName, String str){
+      File results = new File(fileName);
+      try {
+         FileOutputStream fos = new FileOutputStream(results, true);
+         OutputStreamWriter osw = new OutputStreamWriter(fos);
+         osw.write(str+"\n");
+         osw.close();
+      } catch (FileNotFoundException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      } catch (IOException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+   }
+
+   public static void tabulateBatchPoisson(String fileName, Storage store){
+      double tail = 0.0001;
+      int minInventory = -500;
+      int maxInventory = 500;
+      int safeMin = -20;
+      int safeMax = 400;
+      
+      int periods = 25;
+      double[] fixedOrderingCost = {50,100,150,200,250};
+      double[] proportionalOrderingCost = {0};
+      double holdingCost = 1;
+      double[] penaltyCost = {2,5,10,15,20};
+      
+      long seed = 4321;
+      Random rnd = new Random(seed);
+      double[][] meanDemand = new double[500][];
+      for(int i = 0; i < meanDemand.length; i++) {
+         double level = 50;
+         double scale = 5; 
+         double[] epsilon = rnd.doubles(0, 1).limit(periods).toArray(); 
+         double [] Xt = new double[periods];
+         Xt[0] = level + NormalDist.inverseF01(epsilon[0])*scale;
+         for(int k = 1; k < periods; k++)
+            Xt[k] = Xt[k-1] + NormalDist.inverseF01(epsilon[k])*scale;
+         meanDemand[i] = Arrays.stream(Xt).map(k -> Math.max(k,0)).toArray();
+      }
+      
+      int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*meanDemand.length;
+      int count = 0;
+      if(store == Storage.MONGODB) writeToFile(fileName, "["); 
+      for(double oc : fixedOrderingCost) {
+         for(double u : proportionalOrderingCost) {
+            for(double p : penaltyCost) {
+               for(int d = 0; d < meanDemand.length; d++) {
+                  
+                  Distribution[] demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new PoissonDist(k)).toArray(Distribution[]::new);
+                  
+                  Instance instance = new Instance(oc, u, holdingCost, p, demand, tail, minInventory, maxInventory);
+                  
+                  int initialInventory = 0;
+                  
+                  switch(store) {
+                     case CSV: {
+                        boolean compact = false;
+                        String result = tabulateInstanceCSV(instance, initialInventory, safeMin, safeMax, compact);
+                        writeToFile(fileName, result);
+                     }
+                     break;
+                     case MONGODB: 
+                     default: {
+                        String result = tabulateInstanceMongo(instance, initialInventory, safeMin, safeMax);
+                        writeToFile(fileName, result + ((count == instances - 1) ? "" : ","));
+                     }
+                  }
+                        
+                  System.out.println((++count)+"/"+instances);
+               }
+            }
+         }
+      }
+      if(store == Storage.MONGODB) writeToFile(fileName, "]"); 
+   }
+   
    public static void main(String[] args) {
       
       //long seed = 4321;
@@ -435,7 +377,7 @@ public class StochasticLotSizingFast {
       //solveSampleInstance(instance, seed);
       
       //runBatchPoisson("results_poisson.csv");
-      tabulateBatchPoisson("results_poisson.csv", Storage.CSV);
+      tabulateBatchPoisson("batch_poisson.json", Storage.MONGODB);
    }
 }
 
@@ -636,14 +578,16 @@ class Gn {
    private double h;
    private double v;
    private double p;
+   private double[] d;
    private double[] Gn;
    
-   public Gn(Instance instance, Solution solution) {
+   public Gn(Instance instance, Solution solution, int safeMin, int safeMax) {
       this.K = instance.fixedOrderingCost;
       this.h = instance.holdingCost;
       this.v = instance.unitCost;
       this.p = instance.penaltyCost;
-      this.Gn = solution.Gn[0];
+      this.d = Arrays.stream(instance.demand).mapToDouble(d -> d.getMean()).toArray();
+      this.Gn = Arrays.copyOfRange(solution.Gn[0], safeMin - instance.minInventory, safeMax - instance.minInventory);
    }
    
    public static String getJSON(Object object) {
