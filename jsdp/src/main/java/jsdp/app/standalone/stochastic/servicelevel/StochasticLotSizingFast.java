@@ -10,7 +10,6 @@ import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
