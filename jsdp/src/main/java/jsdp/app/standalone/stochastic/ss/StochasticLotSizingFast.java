@@ -315,16 +315,16 @@ public class StochasticLotSizingFast {
       int safeMax = 400;
       
       int periods = 25;
-      double[] fixedOrderingCost = {50,100,150,200,250};
+      double[] fixedOrderingCost = {125};
       double[] proportionalOrderingCost = {0};
       double holdingCost = 1;
-      double[] penaltyCost = {2,5,10,15,20};
+      double[] penaltyCost = {5};
       
       long seed = 4321;
       Random rnd = new Random(seed);
       double[][] meanDemand = new double[500][];
       for(int i = 0; i < meanDemand.length; i++) {
-         double level = 50;
+         double level = rnd.nextInt(100);
          double scale = 5; 
          double[] epsilon = rnd.doubles(0, 1).limit(periods).toArray(); 
          double [] Xt = new double[periods];
