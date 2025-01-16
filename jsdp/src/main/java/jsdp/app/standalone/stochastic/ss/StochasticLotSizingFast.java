@@ -286,7 +286,7 @@ public class StochasticLotSizingFast {
       return out;
    }
    
-   public static String tabulateInstanceMongo(Instance instance, int initialInventory, int safeMin, int safeMax) {
+   public static String tabulateInstanceJSON(Instance instance, int initialInventory, int safeMin, int safeMax) {
       Solution solution = sdp(instance);      
       return Gn.getJSON(new Gn(instance, solution, safeMin, safeMax));
    }
@@ -336,7 +336,7 @@ public class StochasticLotSizingFast {
       
       int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*meanDemand.length;
       int count = 0;
-      if(store == Storage.MONGODB) writeToFile(fileName, "["); 
+      if(store == Storage.JSON) writeToFile(fileName, "["); 
       for(double oc : fixedOrderingCost) {
          for(double u : proportionalOrderingCost) {
             for(double p : penaltyCost) {
@@ -355,9 +355,9 @@ public class StochasticLotSizingFast {
                         writeToFile(fileName, result);
                      }
                      break;
-                     case MONGODB: 
+                     case JSON: 
                      default: {
-                        String result = tabulateInstanceMongo(instance, initialInventory, safeMin, safeMax);
+                        String result = tabulateInstanceJSON(instance, initialInventory, safeMin, safeMax);
                         writeToFile(fileName, result + ((count == instances - 1) ? "" : ","));
                      }
                   }
@@ -367,7 +367,7 @@ public class StochasticLotSizingFast {
             }
          }
       }
-      if(store == Storage.MONGODB) writeToFile(fileName, "]"); 
+      if(store == Storage.JSON) writeToFile(fileName, "]"); 
    }
    
    public static void main(String[] args) {
@@ -377,12 +377,12 @@ public class StochasticLotSizingFast {
       //solveSampleInstance(instance, seed);
       
       //runBatchPoisson("results_poisson.csv");
-      tabulateBatchPoisson("batch_poisson.json", Storage.MONGODB);
+      tabulateBatchPoisson("batch_poisson.json", Storage.JSON);
    }
 }
 
 enum Storage {
-   CSV, MONGODB
+   CSV, JSON
 }
 
 enum Instances {
