@@ -580,6 +580,8 @@ class Gn {
    private double p;
    private double[] d;
    private double[] Gn;
+   private double s;
+   private double S;
    
    public Gn(Instance instance, Solution solution, int safeMin, int safeMax) {
       this.K = instance.fixedOrderingCost;
@@ -588,6 +590,8 @@ class Gn {
       this.p = instance.penaltyCost;
       this.d = Arrays.stream(instance.demand).mapToDouble(d -> d.getMean()).toArray();
       this.Gn = Arrays.copyOfRange(solution.Gn[0], safeMin - instance.minInventory, safeMax - instance.minInventory);
+      this.s = solution.find_s(instance, safeMin)[0];
+      this.S = solution.find_S(instance, safeMin)[0];
    }
    
    public static String getJSON(Object object) {
