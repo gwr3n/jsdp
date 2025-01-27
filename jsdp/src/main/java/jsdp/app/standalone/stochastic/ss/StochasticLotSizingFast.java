@@ -376,7 +376,6 @@ public class StochasticLotSizingFast {
       //Instances instance = Instances.SAMPLE_POISSON;
       //solveSampleInstance(instance, seed);
       
-      //runBatchPoisson("results_poisson.csv");
       tabulateBatchPoisson("batch_poisson.json", Storage.JSON);
    }
 }
