@@ -10,6 +10,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Random;
+import java.util.stream.DoubleStream;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -315,23 +316,25 @@ public class StochasticLotSizingFast {
       int safeMax = 400;
       
       int periods = 25;
-      double[] fixedOrderingCost = {50,75,100,125,150,175,200};
+      double[] fixedOrderingCost = DoubleStream.iterate(0, n -> n + 25).limit(10).toArray();
       double[] proportionalOrderingCost = {0};
       double holdingCost = 1;
-      double[] penaltyCost = {2,4,6,8,10};
+      double[] penaltyCost = DoubleStream.iterate(2, n -> n + 2).limit(10).toArray();
       
       long seed = 4321;
       Random rnd = new Random(seed);
-      double[][] meanDemand = new double[1000][];
+      double[][] meanDemand = new double[5000][];
       for(int i = 0; i < meanDemand.length; i++) {
-         double level = rnd.nextInt(100);
-         double scale = 5; 
+         double level = rnd.nextInt(50);
+         double scale = 10; 
          double[] epsilon = rnd.doubles(0, 1).limit(periods).toArray(); 
          double [] Xt = new double[periods];
          Xt[0] = level + NormalDist.inverseF01(epsilon[0])*scale;
          for(int k = 1; k < periods; k++)
             Xt[k] = Xt[k-1] + NormalDist.inverseF01(epsilon[k])*scale;
-         meanDemand[i] = Arrays.stream(Xt).map(k -> Math.max(k,0)).toArray();
+         meanDemand[i] = Arrays.stream(Xt)
+                               .map(k -> Math.max(k,0.1))
+                               .map(k -> Math.min(k,100)).toArray();
       }
       
       int instances = fixedOrderingCost.length*proportionalOrderingCost.length*penaltyCost.length*meanDemand.length;
