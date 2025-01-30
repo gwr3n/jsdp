@@ -315,7 +315,7 @@ public class StochasticLotSizingFast {
       int safeMin = -20;
       int safeMax = 400;
       
-      int periods = 31;
+      int periods = 25;
       double[] fixedOrderingCost = DoubleStream.iterate(0, n -> n + 25).limit(10).toArray();
       double[] proportionalOrderingCost = {0};
       double holdingCost = 1;
