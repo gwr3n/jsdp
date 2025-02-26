@@ -317,13 +317,13 @@ public class StochasticLotSizingFast {
       
       int periods = 25;
       double[] fixedOrderingCost = DoubleStream.iterate(0, n -> n + 25).limit(10).toArray();
-      double[] proportionalOrderingCost = {0};
+      double[] proportionalOrderingCost = {0, 1};
       double holdingCost = 1;
       double[] penaltyCost = DoubleStream.iterate(2, n -> n + 2).limit(10).toArray();
       
       long seed = 4321;
       Random rnd = new Random(seed);
-      double[][] meanDemand = new double[5000][];
+      double[][] meanDemand = new double[10000][];
       for(int i = 0; i < meanDemand.length; i++) {
          double level = rnd.nextInt(50);
          double scale = 10; 
