@@ -326,7 +326,7 @@ public class StochasticLotSizingFast {
       double[][] meanDemand = new double[10000][];
       for(int i = 0; i < meanDemand.length; i++) {
          double level = rnd.nextInt(50);
-         double scale = rnd.nextInt(30); 
+         double scale = rnd.nextDouble()*30; 
          double[] epsilon = rnd.doubles(0, 1).limit(periods).toArray(); 
          double [] Xt = new double[periods];
          Xt[0] = level + NormalDist.inverseF01(epsilon[0])*scale;
