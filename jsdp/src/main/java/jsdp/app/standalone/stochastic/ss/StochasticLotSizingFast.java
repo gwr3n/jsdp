@@ -330,7 +330,7 @@ public class StochasticLotSizingFast {
       Random rnd = new Random(seed);
       double[][] meanDemand = new double[10000][];
       for(int i = 0; i < meanDemand.length; i++) {
-         double level = rnd.nextInt(50);
+         double level = rnd.nextInt(100);
          double scale = rnd.nextDouble()*30; 
          double[] epsilon = rnd.doubles(0, 1).limit(periods).toArray(); 
          double [] Xt = new double[periods];
