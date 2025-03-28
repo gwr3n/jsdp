@@ -183,7 +183,10 @@ public class StochasticLotSizingFast {
       return centerAndRadius;
    }
 
-   public static double[] solveInstance(Instance instance, int initialInventory) {
+   public static double[] solveInstance(Instance instance, int initialInventory, long seed) {
+      
+      Random rnd = new Random();
+      rnd.setSeed(seed);
       
       //System.out.println("***************** Print instance ***************");
       //System.out.println(instance.toString());
@@ -213,7 +216,6 @@ public class StochasticLotSizingFast {
    
    public static void solveSampleInstance(Instances problemInstance, long seed) {
       
-      /** Random instances **/
       Random rnd = new Random();
       rnd.setSeed(seed);
       
