@@ -182,7 +182,10 @@ public class StochasticLotSizingFast {
       }
       return centerAndRadius;
    }
-
+   
+   /**
+    * Solve an instance and returns optimal and simulated ETC
+    */
    public static double[] solveInstance(Instance instance, int initialInventory, long seed) {
       
       Random rnd = new Random();
@@ -214,6 +217,9 @@ public class StochasticLotSizingFast {
       return etcOut;
    }
    
+   /**
+    * Solve an instance and prints the solution
+    */
    public static void solveSampleInstance(Instances problemInstance, long seed) {
       
       Random rnd = new Random();
@@ -312,7 +318,7 @@ public class StochasticLotSizingFast {
       }
    }
 
-   public static void tabulateBatchPoisson(String fileName, Storage store){
+   public static void tabulateBatchPoisson(String fileName, Storage store, boolean parallel){
       double tail = 0.0001;
       int minInventory = -500;
       int maxInventory = 500;
@@ -350,90 +356,94 @@ public class StochasticLotSizingFast {
       for(double oc : fixedOrderingCost) {
          for(double u : proportionalOrderingCost) {
             for(double p : penaltyCost) {
-               for (int d = 0; d < meanDemand.length; d += batchSize) {
-                  List<String> results = new ArrayList<>();
-                  int end = Math.min(d + batchSize, meanDemand.length);
-                  
-                  for (int i = d; i < end; i++) {
-                     final int index = i;
-                     executor.submit(() -> {
-                         Distribution[] demand = Arrays.stream(meanDemand[index]).mapToObj(k -> new PoissonDist(k)).toArray(Distribution[]::new);
-                         Instance instance = new Instance(oc, u, holdingCost, p, demand, tail, minInventory, maxInventory);
-                         int initialInventory = 0;
-
-                         String result;
-                         switch (store) {
-                             case CSV: {
-                                 boolean compact = false;
-                                 result = tabulateInstanceCSV(instance, initialInventory, safeMin, safeMax, compact);
-                             }
-                             break;
-                             case JSON:
-                             default: {
-                                 result = tabulateInstanceJSON(instance, initialInventory, safeMin, safeMax);
-                                 result += ",";
-                             }
-                         }
-                         synchronized (results) {
-                             results.add(result);
-                         }                         
-                     });
-                 }
-                  
-                 // Wait for all tasks to complete
-                 executor.shutdown();
-                 try {
-                     executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-                 } catch (InterruptedException e) {
-                     e.printStackTrace();
-                 }
-                  
-                 count += results.size();
-                 System.out.println(count + "/" + instances);
-                 
-                 if(store == Storage.JSON && count == instances) {
-                    int lastIndex = results.size() - 1;
-                    String lastString = results.get(lastIndex);
-                    lastString = lastString.substring(0, lastString.length() - 1);
-                    results.set(lastIndex, lastString);
-                 }
-                  
-                 for (String result : results) {
-                    writeToFile(fileName, result);
-                 }
-                 
-                 // Reinitialize the executor for the next batch
-                 executor = Executors.newFixedThreadPool(batchSize);
-               }
-               
-               /*
-                * Sequential
-                * 
-               
-               for(int d = 0; d < meanDemand.length; d++) {
-                  
-                  Distribution[] demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new PoissonDist(k)).toArray(Distribution[]::new);
-                  
-                  Instance instance = new Instance(oc, u, holdingCost, p, demand, tail, minInventory, maxInventory);
-                  
-                  int initialInventory = 0;
-                  
-                  switch(store) {
-                     case CSV: {
-                        boolean compact = false;
-                        String result = tabulateInstanceCSV(instance, initialInventory, safeMin, safeMax, compact);
-                        writeToFile(fileName, result);
-                     }
-                     break;
-                     case JSON: 
-                     default: {
-                        String result = tabulateInstanceJSON(instance, initialInventory, safeMin, safeMax);
-                        writeToFile(fileName, result + ((count == instances - 1) ? "" : ","));
-                     }
+               if(parallel) {
+                  /**
+                   * Parallel
+                   */
+                  for (int d = 0; d < meanDemand.length; d += batchSize) {
+                     List<String> results = new ArrayList<>();
+                     int end = Math.min(d + batchSize, meanDemand.length);
+                     
+                     for (int i = d; i < end; i++) {
+                        final int index = i;
+                        executor.submit(() -> {
+                            Distribution[] demand = Arrays.stream(meanDemand[index]).mapToObj(k -> new PoissonDist(k)).toArray(Distribution[]::new);
+                            Instance instance = new Instance(oc, u, holdingCost, p, demand, tail, minInventory, maxInventory);
+                            int initialInventory = 0;
+   
+                            String result;
+                            switch (store) {
+                                case CSV: {
+                                    boolean compact = false;
+                                    result = tabulateInstanceCSV(instance, initialInventory, safeMin, safeMax, compact);
+                                }
+                                break;
+                                case JSON:
+                                default: {
+                                    result = tabulateInstanceJSON(instance, initialInventory, safeMin, safeMax);
+                                    result += ",";
+                                }
+                            }
+                            synchronized (results) {
+                                results.add(result);
+                            }                         
+                        });
+                    }
+                     
+                    // Wait for all tasks to complete
+                    executor.shutdown();
+                    try {
+                        executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                     
+                    count += results.size();
+                    System.out.println(count + "/" + instances);
+                    
+                    if(store == Storage.JSON && count == instances) {
+                       int lastIndex = results.size() - 1;
+                       String lastString = results.get(lastIndex);
+                       lastString = lastString.substring(0, lastString.length() - 1);
+                       results.set(lastIndex, lastString);
+                    }
+                     
+                    for (String result : results) {
+                       writeToFile(fileName, result);
+                    }
+                    
+                    // Reinitialize the executor for the next batch
+                    executor = Executors.newFixedThreadPool(batchSize);
                   }
-                        
-                  System.out.println((++count)+"/"+instances);
-               }*/
+               }else {
+                  /**
+                   * Sequential
+                   */
+                  for(int d = 0; d < meanDemand.length; d++) {
+                     
+                     Distribution[] demand = Arrays.stream(meanDemand[d]).mapToObj(k -> new PoissonDist(k)).toArray(Distribution[]::new);
+                     
+                     Instance instance = new Instance(oc, u, holdingCost, p, demand, tail, minInventory, maxInventory);
+                     
+                     int initialInventory = 0;
+                     
+                     switch(store) {
+                        case CSV: {
+                           boolean compact = false;
+                           String result = tabulateInstanceCSV(instance, initialInventory, safeMin, safeMax, compact);
+                           writeToFile(fileName, result);
+                        }
+                        break;
+                        case JSON: 
+                        default: {
+                           String result = tabulateInstanceJSON(instance, initialInventory, safeMin, safeMax);
+                           writeToFile(fileName, result + ((count == instances - 1) ? "" : ","));
+                        }
+                     }
+                           
+                     System.out.println((++count)+"/"+instances);
+                  }
+               }
             }
          }
       }
@@ -446,7 +456,8 @@ public class StochasticLotSizingFast {
       //Instances instance = Instances.SAMPLE_POISSON;
       //solveSampleInstance(instance, seed);
       
-      tabulateBatchPoisson("batch_poisson.json", Storage.JSON);
+      boolean parallel = true;
+      tabulateBatchPoisson("batch_poisson.json", Storage.JSON, parallel);
    }
 }
 
