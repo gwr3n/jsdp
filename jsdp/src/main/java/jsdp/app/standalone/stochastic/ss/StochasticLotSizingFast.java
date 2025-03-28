@@ -136,8 +136,7 @@ public class StochasticLotSizingFast {
          int[] S, 
          int[] s, 
          double confidence,
-         double error,
-         boolean verifyOptimal){
+         double error){
       Distribution[] demand = instance.demand;
       double orderCost = instance.fixedOrderingCost;
       double holdingCost = instance.holdingCost;
@@ -204,8 +203,7 @@ public class StochasticLotSizingFast {
       double error = 0.0001;
       int[] S = solution.find_S(instance, instance.minInventory);
       int[] s = solution.find_s(instance, instance.minInventory);
-      boolean verifyOptimal = true;
-      double simulatedsSETC = simulate_sS(instance, solution, initialInventory, S, s, confidence, error, verifyOptimal)[0];
+      double simulatedsSETC = simulate_sS(instance, solution, initialInventory, S, s, confidence, error)[0];
       
       double[] etcOut = new double[2];
       etcOut[0] = sdpETC;
@@ -244,10 +242,9 @@ public class StochasticLotSizingFast {
       double error = 0.0001;
       double[] results = null;
       try {
-         boolean verifyOptimal = true;
          int[] S = solution.find_S(instance, instance.minInventory);
          int[] s = solution.find_s(instance, instance.minInventory);
-         results = simulate_sS(instance, solution, initialInventory, S, s, confidence, error, verifyOptimal);
+         results = simulate_sS(instance, solution, initialInventory, S, s, confidence, error);
          System.out.println(
                "Optimal policy cost: "+ df.format(optimalPolicyCost)+
                "\nSimulated cost: "+ df.format(results[0])+
