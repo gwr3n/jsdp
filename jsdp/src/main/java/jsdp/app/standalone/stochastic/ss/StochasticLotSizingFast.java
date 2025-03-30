@@ -16,6 +16,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -228,8 +229,10 @@ public class StochasticLotSizingFast {
       Instance instance; 
       switch(problemInstance) {
          case SAMPLE_POISSON:
-         default:
             instance = InstancePortfolio.generateSamplePoissonInstance();
+         case SAMPLE_NORMAL:
+         default:
+            instance = InstancePortfolio.generateSampleNormalInstance();
             break;
       }
       
@@ -452,12 +455,12 @@ public class StochasticLotSizingFast {
    
    public static void main(String[] args) {
       
-      //long seed = 4321;
-      //Instances instance = Instances.SAMPLE_POISSON;
-      //solveSampleInstance(instance, seed);
+      long seed = 4321;
+      Instances instance = Instances.SAMPLE_NORMAL;
+      solveSampleInstance(instance, seed);
       
-      boolean parallel = true;
-      tabulateBatchPoisson("batch_poisson.json", Storage.JSON, parallel);
+      //boolean parallel = true;
+      //tabulateBatchPoisson("batch_poisson.json", Storage.JSON, parallel);
    }
 }
 
@@ -466,7 +469,8 @@ enum Storage {
 }
 
 enum Instances {
-   SAMPLE_POISSON
+   SAMPLE_POISSON,
+   SAMPLE_NORMAL
 }
 
 class InstancePortfolio{
@@ -519,6 +523,41 @@ class InstancePortfolio{
       double penaltyCost = 10;
       double[] meanDemand = {20, 40, 60, 40};
       Distribution[] demand = Arrays.stream(meanDemand).mapToObj(d -> new PoissonDist(d)).toArray(Distribution[]::new);
+   
+      Instance instance = new Instance(
+            fixedOrderingCost,
+            unitCost,
+            holdingCost,
+            penaltyCost,
+            demand,
+            tail,
+            minInventory,
+            maxInventory
+            );
+      
+      System.out.println(instance.toString());
+      
+      return instance;
+   }
+   
+   public static Instance generateSampleNormalInstance() {
+      /** SDP boundary conditions **/
+      double tail = 0.0001;
+      int minInventory = -1000;
+      int maxInventory = 1000;
+      
+      /*** Problem instance ***/
+      double fixedOrderingCost = 100;
+      double unitCost = 1;
+      double holdingCost = 1;
+      double penaltyCost = 10;
+      double[] meanDemand = {20, 40, 60, 40};
+      double cv = 0.2;
+      double[] stdDemand = Arrays.stream(meanDemand).map(d -> cv*d).toArray();
+      Distribution[] demand = IntStream.iterate(0, i -> i + 1)
+                                       .limit(meanDemand.length)
+                                       .mapToObj(i -> new NormalDist(meanDemand[i],stdDemand[i]))
+                                       .toArray(Distribution[]::new);
    
       Instance instance = new Instance(
             fixedOrderingCost,
