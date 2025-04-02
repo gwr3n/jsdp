@@ -300,9 +300,15 @@ public class StochasticLotSizingFast {
       return out;
    }
    
-   public static String tabulateInstanceJSON(Instance instance, int initialInventory, int safeMin, int safeMax) {
-      Solution solution = sdp(instance);      
-      return Gn.getJSON(new Gn(instance, solution, safeMin, safeMax));
+   public static String tabulateInstanceJSON(Instance instance, int initialInventory, int safeMin, int safeMax, FunctionalEquation fe) {
+      Solution solution = sdp(instance);    
+      switch (fe) {
+         case Gn:
+            return Gn.getJSON(new Gn(instance, solution, safeMin, safeMax));
+         case GnMatrix:
+         default:
+            return GnMatrix.getJSON(new GnMatrix(instance, solution, safeMin, safeMax));
+      }         
    }
    
    public static void writeToFile(String fileName, String str){
@@ -321,7 +327,7 @@ public class StochasticLotSizingFast {
       }
    }
 
-   public static void tabulateBatchPoisson(String fileName, Storage store, boolean parallel){
+   public static void tabulateBatchPoisson(String fileName, Storage store, boolean parallel, FunctionalEquation fe){
       double tail = 0.0001;
       int minInventory = -500;
       int maxInventory = 500;
@@ -336,7 +342,7 @@ public class StochasticLotSizingFast {
       
       long seed = 4321;
       Random rnd = new Random(seed);
-      double[][] meanDemand = new double[10000][];
+      double[][] meanDemand = new double[10][];
       for(int i = 0; i < meanDemand.length; i++) {
          double level = rnd.nextInt(100);
          double scale = rnd.nextDouble()*30; 
@@ -383,7 +389,7 @@ public class StochasticLotSizingFast {
                                 break;
                                 case JSON:
                                 default: {
-                                    result = tabulateInstanceJSON(instance, initialInventory, safeMin, safeMax);
+                                    result = tabulateInstanceJSON(instance, initialInventory, safeMin, safeMax, fe);
                                     result += ",";
                                 }
                             }
@@ -439,7 +445,7 @@ public class StochasticLotSizingFast {
                         break;
                         case JSON: 
                         default: {
-                           String result = tabulateInstanceJSON(instance, initialInventory, safeMin, safeMax);
+                           String result = tabulateInstanceJSON(instance, initialInventory, safeMin, safeMax, fe);
                            writeToFile(fileName, result + ((count == instances - 1) ? "" : ","));
                         }
                      }
@@ -455,12 +461,12 @@ public class StochasticLotSizingFast {
    
    public static void main(String[] args) {
       
-      long seed = 4321;
-      Instances instance = Instances.SAMPLE_NORMAL;
-      solveSampleInstance(instance, seed);
+      //long seed = 4321;
+      //Instances instance = Instances.SAMPLE_NORMAL;
+      //solveSampleInstance(instance, seed);
       
-      //boolean parallel = true;
-      //tabulateBatchPoisson("batch_poisson.json", Storage.JSON, parallel);
+      boolean parallel = true;
+      tabulateBatchPoisson("batch_poisson.json", Storage.JSON, parallel, FunctionalEquation.Gn);
    }
 }
 
@@ -691,6 +697,11 @@ class Solution {
    }
 }
 
+enum FunctionalEquation {
+   Gn,
+   GnMatrix
+}
+
 @SuppressWarnings("unused")
 class Gn {
    private double K;
@@ -720,5 +731,35 @@ class Gn {
    }
 }
 
+@SuppressWarnings("unused")
+class GnMatrix {
+   private double K;
+   private double h;
+   private double v;
+   private double p;
+   private double[] d;
+   private double[][] Gn;
+   private double s;
+   private double S;
+   
+   public GnMatrix(Instance instance, Solution solution, int safeMin, int safeMax) {
+      this.K = instance.fixedOrderingCost;
+      this.h = instance.holdingCost;
+      this.v = instance.unitCost;
+      this.p = instance.penaltyCost;
+      this.d = Arrays.stream(instance.demand).mapToDouble(d -> d.getMean()).toArray();
+      this.Gn = new double[instance.demand.length][];
+      for(int i = 0; i < instance.demand.length; i++)
+         this.Gn[i] = Arrays.copyOfRange(solution.Gn[i], safeMin - instance.minInventory, safeMax - instance.minInventory);
+      this.s = solution.find_s(instance, safeMin)[0];
+      this.S = solution.find_S(instance, safeMin)[0];
+   }
+   
+   public static String getJSON(Object object) {
+      GsonBuilder gsonBuilder = new GsonBuilder();
+      Gson gson = gsonBuilder.create();
+      return gson.toJson(object);
+   }
+}
 
 
