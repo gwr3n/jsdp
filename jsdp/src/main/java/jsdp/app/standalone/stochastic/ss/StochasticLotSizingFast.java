@@ -342,7 +342,7 @@ public class StochasticLotSizingFast {
       
       long seed = 4321;
       Random rnd = new Random(seed);
-      double[][] meanDemand = new double[10][];
+      double[][] meanDemand = new double[100][]; // 100 different demand patterns
       for(int i = 0; i < meanDemand.length; i++) {
          double level = rnd.nextInt(100);
          double scale = rnd.nextDouble()*30; 
@@ -466,7 +466,7 @@ public class StochasticLotSizingFast {
       //solveSampleInstance(instance, seed);
       
       boolean parallel = true;
-      tabulateBatchPoisson("batch_poisson.json", Storage.JSON, parallel, FunctionalEquation.Gn);
+      tabulateBatchPoisson("batch_poisson.json", Storage.JSON, parallel, FunctionalEquation.GnMatrix); // Alternatively, FunctionalEquation.Gn
    }
 }
 
