@@ -908,8 +908,8 @@ public class StochasticLotSizingFast {
    public static void main(String[] args) {
       Instances instance = Instances.SAMPLE_POISSON;
       //solveSampleInstance(instance, METHOD.SDP);
-      solveSampleInstance(instance, METHOD.CD);
-      //solveSampleInstanceFast(instance);
+      //solveSampleInstance(instance, METHOD.CD);
+      solveSampleInstanceFast(instance);
       
       /*Instance inst = InstancePortfolio.generateSampleNormalInstance();
       int initialInventory = 0;
@@ -947,6 +947,7 @@ class InstancePortfolio{
       int maxDemand = (int)Math.round(dist.inverseF(1-tail));
       double[] demandProbabilities = new double[maxDemand + 1];
       for(int i = 0; i <= maxDemand; i++) {
+         // Continuity correction for non-integer demands +/- 0.5
          demandProbabilities [i] = (dist.cdf(i+0.5)-dist.cdf(i-0.5))/(dist.cdf(maxDemand+0.5)-dist.cdf(-0.5));
       }
       assert(Arrays.stream(demandProbabilities).sum() == 1);
