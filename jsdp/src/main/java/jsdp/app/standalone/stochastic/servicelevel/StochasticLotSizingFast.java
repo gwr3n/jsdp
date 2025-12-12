@@ -120,35 +120,91 @@ public class StochasticLotSizingFast {
       return new Solution(optimalAction, Gn, Cn, instance.maxQuantity);
    }
    
+   /* 
+    * Newton/secant-like step, using a simple finite-difference derivative estimate 
+    * per period from the previous iteration. It falls back to a small default step 
+    * on the first iteration or if the derivative is ill-conditioned, and it keeps 
+    * updates nonnegative and mildly damped for stability.
+    * 
+    * Error: err_t = results[t] - (1 - alpha)
+    * Derivative estimate: d_t = (err_t - prev_err[t]) / (p_vector[t] - prev_p[t])
+    * Newton step: delta_t = - err_t / d_t (secant when only past sample)
+    * Damping and clipping: limit |delta_t|, ensure p_vector[t] >= 0
+    */
+   
    public static Solution coordinateDescent(Instance instance, int initialInventory, int safeMin) {
       p_vector = new double[instance.getStages()];
-      Arrays.fill(p_vector, instance.holdingCost*instance.alpha/(1.0-instance.alpha));
-      double default_step = 1;
-      
+      Arrays.fill(p_vector, instance.holdingCost * instance.alpha / (1.0 - instance.alpha));
+
+      // Newton-like parameters
+      double fallback_step = 0.5;     // used when derivative not available/unstable
+      double max_step = 5.0;          // cap on |delta| for stability
+      double damping = 0.75;          // mild damping factor
+
+      double[] prev_p = new double[instance.getStages()];
+      double[] prev_err = new double[instance.getStages()];
+      Arrays.fill(prev_p, Double.NaN);
+      Arrays.fill(prev_err, Double.NaN);
+
       boolean end = false;
       Solution solution = null;
-      while(!end) {
+      while (!end) {
          solution = sdp_lagrangian(instance);
-         
+
          double confidence = 0.95;
          double error = 0.0001;
          double[] results = null;
          try {
-            results = simulate_sS(instance, solution, initialInventory, solution.find_S(instance, safeMin), solution.find_s(instance, safeMin), confidence, error, OUTPUT.SERVICE_LEVELS);
-         }catch(Exception e) {
+            results = simulate_sS(instance, solution, initialInventory,
+                  solution.find_S(instance, safeMin),
+                  solution.find_s(instance, safeMin),
+                  confidence, error, OUTPUT.SERVICE_LEVELS);
+         } catch (Exception e) {
             System.out.println("This instance cannot be simulated.");
          }
-         
+
          end = true;
          Arrays.stream(results).forEach(i -> System.out.print(i + "\t"));
          System.out.println();
-         for(int i = instance.getStages() - 1; i >= 0; i--) {
-            if(results[i] > 1 - instance.alpha) {
-               p_vector[i] += default_step;
+
+         double target = 1.0 - instance.alpha;
+         for (int i = instance.getStages() - 1; i >= 0; i--) {
+            double err = results[i] - target;
+
+            if (err > 0) {
+               double delta;
+
+               // Secant derivative estimate if previous iteration exists
+               if (!Double.isNaN(prev_p[i]) && !Double.isNaN(prev_err[i])) {
+                  double dp = p_vector[i] - prev_p[i];
+                  double de = err - prev_err[i];
+                  double deriv = de / dp;
+
+                  if (Double.isFinite(deriv) && Math.abs(deriv) > 1e-8) {
+                     delta = -err / deriv;           // Newton-like step
+                  } else {
+                     delta = fallback_step;          // ill-conditioned derivative
+                  }
+               } else {
+                  delta = fallback_step;              // first iteration fallback
+               }
+
+               // Damping and clipping
+               delta = Math.copySign(Math.min(Math.abs(delta), max_step), delta);
+               delta *= damping;
+
+               p_vector[i] = Math.max(0.0, p_vector[i] + delta);
                end = false;
                break;
             }
          }
+
+         // store history for secant
+         for (int i = 0; i < instance.getStages(); i++) {
+            prev_p[i] = p_vector[i];
+            prev_err[i] = results[i] - target;
+         }
+
          Arrays.stream(p_vector).forEach(i -> System.out.print(i + "\t"));
          System.out.println();
       }
@@ -192,46 +248,100 @@ public class StochasticLotSizingFast {
       return new Solution(optimalAction, Gn, Cn, instance.maxQuantity);
    }
    
+   /*
+    * Newton/secant-like step, using a simple finite-difference derivative estimate
+    * per period from the previous iteration. It falls back to a small default step
+    * on the first iteration or if the derivative is ill-conditioned, and it keeps
+    * updates nonnegative and mildly damped for stability.
+    * 
+    * Error: err_t = results[t] - (1 - alpha)
+    * Derivative estimate: d_t = (err_t - prev_err[t]) / (p_vector[t] - prev_p[t])
+    * Newton step: delta_t = - err_t / d_t (secant when only past sample)
+    * Damping and clipping: limit |delta_t|, ensure p_vector[t] >= 0
+    */
    public static double[][] coordinateDescentFast(Instance instance, int initialInventory, int safeMin) {
       DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.ENGLISH);
-      DecimalFormat df = new DecimalFormat("#.000",otherSymbols);
-      
+      DecimalFormat df = new DecimalFormat("#.000", otherSymbols);
+
       p_vector = new double[instance.getStages()];
-      Arrays.fill(p_vector, instance.holdingCost*instance.alpha/(1.0-instance.alpha));
-      double default_step = 1;
-      
+      Arrays.fill(p_vector, instance.holdingCost * instance.alpha / (1.0 - instance.alpha));
+
+      // Newton-like parameters
+      double fallback_step = 0.5;     // used when derivative not available/unstable
+      double max_step = 5.0;          // cap on |delta| for stability
+      double damping = 0.75;          // mild damping factor
+
+      double[] prev_p = new double[instance.getStages()];
+      double[] prev_err = new double[instance.getStages()];
+      Arrays.fill(prev_p, Double.NaN);
+      Arrays.fill(prev_err, Double.NaN);
+
       boolean end = false;
       double[][] sS = null;
-      while(!end) {
-         if(instance.demand[0] instanceof PoissonDist)
+      while (!end) {
+         if (instance.demand[0] instanceof PoissonDist)
             sS = sS_fast_Poisson(instance);
-         else if(instance.demand[0] instanceof NormalDist)
+         else if (instance.demand[0] instanceof NormalDist)
             sS = sS_fast_Normal(instance);
          else {
             System.err.println("Distribution not supported");
             System.exit(-1);
          }
-         //printPolicy(Arrays.stream(sS).map(S -> S[1]).mapToInt(S -> S.intValue()).toArray(), Arrays.stream(sS).map(s -> s[0]).mapToInt(s -> s.intValue()).toArray());
-         
+
          double confidence = 0.95;
          double error = 0.0001;
          double[] results = null;
          try {
-            results = simulate_sS(instance, null, initialInventory, Arrays.stream(sS).map(S -> S[1]).mapToInt(S -> S.intValue()).toArray(), Arrays.stream(sS).map(s -> s[0]).mapToInt(s -> s.intValue()).toArray(), confidence, error, OUTPUT.SERVICE_LEVELS);
+            results = simulate_sS(instance, null, initialInventory,
+                  Arrays.stream(sS).map(S -> S[1]).mapToInt(S -> S.intValue()).toArray(),
+                  Arrays.stream(sS).map(s -> s[0]).mapToInt(s -> s.intValue()).toArray(),
+                  confidence, error, OUTPUT.SERVICE_LEVELS);
             Arrays.stream(results).forEach(i -> System.out.print(df.format(i) + "\t"));
             System.out.println();
-         }catch(Exception e) {
+         } catch (Exception e) {
             System.out.println("This instance cannot be simulated.");
+            break;
          }
-         
+
+         // Newton-like update using noisy feedback
          end = true;
-         for(int i = instance.getStages() - 1; i >= 0; i--) {
-            if(results[i] > 1 - instance.alpha) {
-               p_vector[i] += default_step;
+         double target = 1.0 - instance.alpha;
+         for (int i = instance.getStages() - 1; i >= 0; i--) {
+            double err = results[i] - target;
+            if (err > 0) {
+               double delta;
+
+               // Secant derivative estimate if previous iteration exists
+               if (!Double.isNaN(prev_p[i]) && !Double.isNaN(prev_err[i])) {
+                  double dp = p_vector[i] - prev_p[i];
+                  double de = err - prev_err[i];
+                  double deriv = de / dp;
+
+                  if (Double.isFinite(deriv) && Math.abs(deriv) > 1e-8) {
+                     delta = -err / deriv;           // Newton-like step
+                  } else {
+                     delta = fallback_step;          // ill-conditioned derivative
+                  }
+               } else {
+                  delta = fallback_step;              // first iteration fallback
+               }
+
+               // Damping and clipping
+               delta = Math.copySign(Math.min(Math.abs(delta), max_step), delta);
+               delta *= damping;
+
+               p_vector[i] = Math.max(0.0, p_vector[i] + delta);
                end = false;
                break;
             }
          }
+
+         // store history for secant
+         for (int i = 0; i < instance.getStages(); i++) {
+            prev_p[i] = p_vector[i];
+            prev_err[i] = results[i] - target;
+         }
+
          Arrays.stream(p_vector).forEach(i -> System.out.print(df.format(i) + "\t"));
          System.out.println();
       }
@@ -798,8 +908,8 @@ public class StochasticLotSizingFast {
    public static void main(String[] args) {
       Instances instance = Instances.SAMPLE_POISSON;
       //solveSampleInstance(instance, METHOD.SDP);
-      //solveSampleInstance(instance, METHOD.CD);
-      solveSampleInstanceFast(instance);
+      solveSampleInstance(instance, METHOD.CD);
+      //solveSampleInstanceFast(instance);
       
       /*Instance inst = InstancePortfolio.generateSampleNormalInstance();
       int initialInventory = 0;
