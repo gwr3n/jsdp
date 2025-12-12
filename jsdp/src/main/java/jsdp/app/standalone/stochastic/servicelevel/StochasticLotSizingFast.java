@@ -122,7 +122,7 @@ public class StochasticLotSizingFast {
    
    public static Solution coordinateDescent(Instance instance, int initialInventory, int safeMin) {
       p_vector = new double[instance.getStages()];
-      Arrays.fill(p_vector, instance.holdingCost/(1.0-instance.alpha));
+      Arrays.fill(p_vector, instance.holdingCost*instance.alpha/(1.0-instance.alpha));
       double default_step = 1;
       
       boolean end = false;
@@ -197,7 +197,7 @@ public class StochasticLotSizingFast {
       DecimalFormat df = new DecimalFormat("#.000",otherSymbols);
       
       p_vector = new double[instance.getStages()];
-      Arrays.fill(p_vector, instance.holdingCost/(1.0-instance.alpha));
+      Arrays.fill(p_vector, instance.holdingCost*instance.alpha/(1.0-instance.alpha));
       double default_step = 1;
       
       boolean end = false;
@@ -638,16 +638,17 @@ public class StochasticLotSizingFast {
          double replicationCost = 0;
          double inventory = initialStock;
          for(int t = 0; t < demand.length; t++){
+            double stageCost = 0;
             if(inventory <= s[t]){
-               replicationCost += orderCost;
-               replicationCost += Math.max(0, S[t]-inventory)*unitCost;
+               stageCost += orderCost;
+               stageCost += Math.max(0, S[t]-inventory)*unitCost;
                inventory = S[t]-demandRealizations[t];
-               replicationCost += Math.max(inventory, 0)*holdingCost;
+               stageCost += Math.max(inventory, 0)*holdingCost;
             }else{
                inventory = inventory-demandRealizations[t];
-               replicationCost += Math.max(inventory, 0)*holdingCost;
+               stageCost += Math.max(inventory, 0)*holdingCost;
             }
-            replicationCost *= discountFactor;
+            replicationCost += stageCost * Math.pow(discountFactor, t);
             stockPTally[t].add(Math.max(inventory, 0));
             stockNTally[t].add(Math.max(-inventory, 0));
             stockoutTally[t].add(inventory < 0 ? 1 : 0);
@@ -795,10 +796,10 @@ public class StochasticLotSizingFast {
    }
    
    public static void main(String[] args) {
-      //Instances instance = Instances.SAMPLE_NORMAL;
+      Instances instance = Instances.SAMPLE_POISSON;
       //solveSampleInstance(instance, METHOD.SDP);
       //solveSampleInstance(instance, METHOD.CD);
-      //solveSampleInstanceFast(instance);
+      solveSampleInstanceFast(instance);
       
       /*Instance inst = InstancePortfolio.generateSampleNormalInstance();
       int initialInventory = 0;
@@ -806,7 +807,7 @@ public class StochasticLotSizingFast {
       System.out.println();
       Arrays.stream(solveInstance(inst, initialInventory, safeMin, METHOD.SDP)).forEach(i -> System.out.print(i + "\t"));*/
       
-      runBatchPoisson("results_poisson.csv");
+      //runBatchPoisson("results_poisson.csv");
       //runBatchNormal("results_normal.csv");
    }
    
