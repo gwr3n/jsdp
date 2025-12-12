@@ -133,6 +133,9 @@ public class StochasticLotSizingFast {
     */
    
    public static Solution coordinateDescent(Instance instance, int initialInventory, int safeMin) {
+      DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.ENGLISH);
+      DecimalFormat df = new DecimalFormat("#.000", otherSymbols);
+      
       p_vector = new double[instance.getStages()];
       Arrays.fill(p_vector, instance.holdingCost * instance.alpha / (1.0 - instance.alpha));
 
@@ -150,6 +153,9 @@ public class StochasticLotSizingFast {
       Solution solution = null;
       while (!end) {
          solution = sdp_lagrangian(instance);
+         
+         System.out.println("S: " + Arrays.toString(solution.find_S(instance, safeMin)));
+         System.out.println("s: " + Arrays.toString(solution.find_s(instance, safeMin)));
 
          double confidence = 0.95;
          double error = 0.0001;
@@ -164,7 +170,8 @@ public class StochasticLotSizingFast {
          }
 
          end = true;
-         Arrays.stream(results).forEach(i -> System.out.print(i + "\t"));
+         System.out.print("Serv. lev.: \t");
+         Arrays.stream(results).forEach(i -> System.out.print(df.format(i) + "\t"));
          System.out.println();
 
          double target = 1.0 - instance.alpha;
@@ -204,8 +211,9 @@ public class StochasticLotSizingFast {
             prev_p[i] = p_vector[i];
             prev_err[i] = results[i] - target;
          }
-
-         Arrays.stream(p_vector).forEach(i -> System.out.print(i + "\t"));
+         
+         System.out.print("p_vector: \t");
+         Arrays.stream(p_vector).forEach(i -> System.out.print(df.format(i) + "\t"));
          System.out.println();
       }
       return solution;
@@ -287,6 +295,9 @@ public class StochasticLotSizingFast {
             System.err.println("Distribution not supported");
             System.exit(-1);
          }
+         
+         System.out.println("S: " + Arrays.toString(Arrays.stream(sS).map(S -> S[1]).mapToInt(S -> S.intValue()).toArray()));
+         System.out.println("s: " + Arrays.toString(Arrays.stream(sS).map(S -> S[0]).mapToInt(S -> S.intValue()).toArray()));
 
          double confidence = 0.95;
          double error = 0.0001;
@@ -296,6 +307,7 @@ public class StochasticLotSizingFast {
                   Arrays.stream(sS).map(S -> S[1]).mapToInt(S -> S.intValue()).toArray(),
                   Arrays.stream(sS).map(s -> s[0]).mapToInt(s -> s.intValue()).toArray(),
                   confidence, error, OUTPUT.SERVICE_LEVELS);
+            System.out.print("Serv. lev.: \t");
             Arrays.stream(results).forEach(i -> System.out.print(df.format(i) + "\t"));
             System.out.println();
          } catch (Exception e) {
@@ -329,7 +341,8 @@ public class StochasticLotSizingFast {
                // Damping and clipping
                delta = Math.copySign(Math.min(Math.abs(delta), max_step), delta);
                delta *= damping;
-
+               
+               System.out.print("p_vector: \t");
                p_vector[i] = Math.max(0.0, p_vector[i] + delta);
                end = false;
                break;
@@ -341,7 +354,7 @@ public class StochasticLotSizingFast {
             prev_p[i] = p_vector[i];
             prev_err[i] = results[i] - target;
          }
-
+         
          Arrays.stream(p_vector).forEach(i -> System.out.print(df.format(i) + "\t"));
          System.out.println();
       }
@@ -908,8 +921,8 @@ public class StochasticLotSizingFast {
    public static void main(String[] args) {
       Instances instance = Instances.SAMPLE_POISSON;
       //solveSampleInstance(instance, METHOD.SDP);
-      //solveSampleInstance(instance, METHOD.CD);
-      solveSampleInstanceFast(instance);
+      solveSampleInstance(instance, METHOD.CD);
+      //solveSampleInstanceFast(instance);
       
       /*Instance inst = InstancePortfolio.generateSampleNormalInstance();
       int initialInventory = 0;
