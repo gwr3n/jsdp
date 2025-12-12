@@ -79,7 +79,10 @@ public class StochasticLotSizingFast {
       return action;
    }
    
-   public static Solution sdp(Instance instance) {
+   private static Solution sdp(Instance instance) {
+      if(USE_FAST) {
+         return sdp_fast(instance);
+      }
       
       double demandProbabilities [][] = InstancePortfolio.computeDemandProbability(instance);
       
@@ -120,6 +123,113 @@ public class StochasticLotSizingFast {
       return new Solution(optimalAction, Gn, Cn, instance.maxQuantity);
    }
    
+   private static int[] precomputeServiceQuantiles(Instance instance) {
+      int T = instance.getStages();
+      int[] q = new int[T];
+      for (int t = 0; t < T; t++) {
+         // demandProbabilities already normalized on support up to tail; inverseF may be expensive
+         // Cache the quantile used to prune actions
+         q[t] = (int) Math.ceil(instance.demand[t].inverseF(instance.alpha));
+      }
+      return q;
+   }
+
+   private static class PrefixStats {
+      final double[] p;    // pmf
+      final double[] P;    // prefix prob
+      final double[] E;    // prefix expected demand
+      PrefixStats(double[] p) {
+         this.p = p;
+         int n = p.length;
+         this.P = new double[n];
+         this.E = new double[n];
+         double ps = 0.0, es = 0.0;
+         for (int d = 0; d < n; d++) {
+            ps += p[d];
+            es += d * p[d];
+            P[d] = ps;
+            E[d] = es;
+         }
+      }
+      // clamp index to support
+      int cap(int x) { 
+         if (x < 0) return 0; 
+         int m = p.length - 1; 
+         return Math.min(x, m); 
+      }
+   }
+
+   @SuppressWarnings("unused")
+   private static Solution sdp_fast(Instance instance) {
+      double[][] demandProbabilities = InstancePortfolio.computeDemandProbability(instance);
+      int T = instance.getStages();
+
+      // Precompute prefix stats per period
+      PrefixStats[] stats = new PrefixStats[T];
+      for (int t = 0; t < T; t++) stats[t] = new PrefixStats(demandProbabilities[t]);
+
+      // Cache service level quantiles to prune actions
+      int[] quantile = precomputeServiceQuantiles(instance);
+
+      int[][] optimalAction = new int[T][instance.stateSpaceSize()];
+      double[][] Gn = new double[T][instance.stateSpaceSize()];
+      double[][] Cn = new double[T][instance.stateSpaceSize()];
+
+      for (int t = T - 1; t >= 0; t--) {
+         PrefixStats st = stats[t];
+         int maxD = st.p.length - 1;
+         double df = (t == T - 1) ? 0.0 : instance.discountFactor;
+
+         for (int i = 0; i < instance.stateSpaceSize(); i++) {
+            int I = instance.inventory(i);
+            double[] totalCost = new double[instance.maxQuantity + 1];
+
+            for (int a = 0; a <= instance.maxQuantity; a++) {
+               int X = I + a;
+
+               // prune actions that cannot reach service quantile
+               if (X < quantile[t]) {
+                  totalCost[a] = Double.MAX_VALUE;
+                  continue;
+               }
+
+               // ordering cost
+               double cost = (a > 0) ? instance.fixedOrderingCost + instance.unitCost * a : 0.0;
+
+               // immediate holding cost via prefix sums over feasible demands
+               int xCap = st.cap(X);
+               double P_le_X = st.P[xCap];
+               double E_le_X = st.E[xCap];
+               cost += instance.holdingCost * (X * P_le_X - E_le_X);
+
+               // future cost: only demands that keep next inventory within bounds
+               if (t < T - 1) {
+                  // feasible demand range d \in [loD, hiD]
+                  int loD = Math.max(0, X - instance.maxInventory);
+                  int hiD = Math.min(maxD, X - instance.minInventory);
+                  // accumulate quickly over feasible d
+                  double fCost = 0.0;
+                  for (int d = loD; d <= hiD; d++) {
+                     int nextInv = X - d;
+                     fCost += st.p[d] * Cn[t + 1][instance.index(nextInv)];
+                  }
+                  // normalize by feasible probability mass (to match original behavior)
+                  double mass = (loD <= hiD) ? (st.P[hiD] - (loD > 0 ? st.P[loD - 1] : 0.0)) : 0.0;
+                  if (mass > 0.0) cost += df * fCost / mass;
+                  else cost = Double.MAX_VALUE; // no feasible transition
+               }
+
+               totalCost[a] = cost;
+            }
+
+            Gn[t][i] = totalCost[0];
+            Cn[t][i] = getOptimalCost(totalCost);
+            optimalAction[t][i] = getOptimalAction(totalCost);
+         }
+      }
+      return new Solution(optimalAction, Gn, Cn, instance.maxQuantity);
+   }
+   
    /* 
     * Newton/secant-like step, using a simple finite-difference derivative estimate 
     * per period from the previous iteration. It falls back to a small default step 
@@ -141,7 +251,7 @@ public class StochasticLotSizingFast {
 
       // Newton-like parameters
       double fallback_step = 0.5;     // used when derivative not available/unstable
-      double max_step = 5.0;          // cap on |delta| for stability
+      double max_step = 2.0;          // cap on |delta| for stability
       double damping = 0.75;          // mild damping factor
 
       double[] prev_p = new double[instance.getStages()];
@@ -199,17 +309,15 @@ public class StochasticLotSizingFast {
                // Damping and clipping
                delta = Math.copySign(Math.min(Math.abs(delta), max_step), delta);
                delta *= damping;
+               
+               // store history for secant
+               prev_p[i] = p_vector[i];
+               prev_err[i] = results[i] - target;
 
                p_vector[i] = Math.max(0.0, p_vector[i] + delta);
                end = false;
                break;
             }
-         }
-
-         // store history for secant
-         for (int i = 0; i < instance.getStages(); i++) {
-            prev_p[i] = p_vector[i];
-            prev_err[i] = results[i] - target;
          }
          
          System.out.print("p_vector: \t");
@@ -220,6 +328,9 @@ public class StochasticLotSizingFast {
    }
    
    private static Solution sdp_lagrangian(Instance instance) {
+      if(USE_FAST) {
+         return sdp_lagrangian_fast(instance);
+      }  
       
       double demandProbabilities [][] = InstancePortfolio.computeDemandProbability(instance);
       
@@ -256,6 +367,82 @@ public class StochasticLotSizingFast {
       return new Solution(optimalAction, Gn, Cn, instance.maxQuantity);
    }
    
+   @SuppressWarnings("unused")
+   private static Solution sdp_lagrangian_fast(Instance instance) {
+      double[][] demandProbabilities = InstancePortfolio.computeDemandProbability(instance);
+      int T = instance.getStages();
+
+      // Prefix stats per period (pmf, prefix prob, prefix expectation)
+      PrefixStats[] stats = new PrefixStats[T];
+      for (int t = 0; t < T; t++) stats[t] = new PrefixStats(demandProbabilities[t]);
+
+      int[][] optimalAction = new int[T][instance.stateSpaceSize()];
+      double[][] Gn = new double[T][instance.stateSpaceSize()];
+      double[][] Cn = new double[T][instance.stateSpaceSize()];
+
+      for (int t = T - 1; t >= 0; t--) {
+         PrefixStats st = stats[t];
+         int maxD = st.p.length - 1;
+         double df = (t == T - 1) ? 0.0 : instance.discountFactor;
+
+         // Totals over full support (P_all≈1)
+         double P_all = st.P[maxD];
+         double E_all = st.E[maxD];
+
+         for (int i = 0; i < instance.stateSpaceSize(); i++) {
+            int I = instance.inventory(i);
+            double[] totalCost = new double[instance.maxQuantity + 1];
+
+            for (int a = 0; a <= instance.maxQuantity; a++) {
+               int X = I + a;
+
+               // Ordering cost
+               double cost = (a > 0) ? instance.fixedOrderingCost + instance.unitCost * a : 0.0;
+
+               // Immediate cost via prefix sums:
+               // E[(X-D)+] = X * P(D<=X) - E[D | D<=X]
+               // E[(D-X)+] = E[D] - E[D | D<=X] - X * (1 - P(D<=X))
+               int xCap = st.cap(X);
+               double P_le_X = st.P[xCap];
+               double E_le_X = st.E[xCap];
+
+               double expectedHolding = X * P_le_X - E_le_X;
+               double expectedShortage = (E_all - E_le_X) - X * (P_all - P_le_X);
+
+               cost += instance.holdingCost * expectedHolding
+                     + p_vector[t] * expectedShortage;
+
+               // Future cost only over feasible demand window; normalize by feasible mass
+               if (t < T - 1) {
+                  int loD = Math.max(0, X - instance.maxInventory);
+                  int hiD = Math.min(maxD, X - instance.minInventory);
+
+                  double fCost = 0.0;
+                  for (int d = loD; d <= hiD; d++) {
+                     int nextInv = X - d;
+                     fCost += st.p[d] * Cn[t + 1][instance.index(nextInv)];
+                  }
+
+                  double mass = (loD <= hiD) ? (st.P[hiD] - (loD > 0 ? st.P[loD - 1] : 0.0)) : 0.0;
+                  if (mass > 0.0) {
+                     cost += df * fCost / mass;
+                  } else {
+                     cost = Double.MAX_VALUE; // matches original behavior when no feasible transitions
+                  }
+               }
+
+               totalCost[a] = cost;
+            }
+
+            Gn[t][i] = totalCost[0];
+            Cn[t][i] = getOptimalCost(totalCost);
+            optimalAction[t][i] = getOptimalAction(totalCost);
+         }
+      }
+      return new Solution(optimalAction, Gn, Cn, instance.maxQuantity);
+   }
+
+   
    /*
     * Newton/secant-like step, using a simple finite-difference derivative estimate
     * per period from the previous iteration. It falls back to a small default step
@@ -276,7 +463,7 @@ public class StochasticLotSizingFast {
 
       // Newton-like parameters
       double fallback_step = 0.5;     // used when derivative not available/unstable
-      double max_step = 5.0;          // cap on |delta| for stability
+      double max_step = 2.0;         // cap on |delta| for stability
       double damping = 0.75;          // mild damping factor
 
       double[] prev_p = new double[instance.getStages()];
@@ -342,19 +529,17 @@ public class StochasticLotSizingFast {
                delta = Math.copySign(Math.min(Math.abs(delta), max_step), delta);
                delta *= damping;
                
-               System.out.print("p_vector: \t");
+               // store history for secant
+               prev_p[i] = p_vector[i];
+               prev_err[i] = results[i] - target;
+               
                p_vector[i] = Math.max(0.0, p_vector[i] + delta);
                end = false;
                break;
             }
          }
-
-         // store history for secant
-         for (int i = 0; i < instance.getStages(); i++) {
-            prev_p[i] = p_vector[i];
-            prev_err[i] = results[i] - target;
-         }
          
+         System.out.print("p_vector: \t");
          Arrays.stream(p_vector).forEach(i -> System.out.print(df.format(i) + "\t"));
          System.out.println();
       }
@@ -755,7 +940,7 @@ public class StochasticLotSizingFast {
       SampleFactory.resetStartStream();
       
       double[] centerAndRadius = new double[2];
-      for(int i = 0; i < minRuns || (centerAndRadius[1]>=centerAndRadius[0]*error && i < maxRuns); i++){
+      for(int i = 0; i < minRuns || (i < maxRuns && centerAndRadius[1]>=centerAndRadius[0]*error); i++){
          double[] demandRealizations = SampleFactory.getNextSample(demand);
          
          double replicationCost = 0;
@@ -918,11 +1103,13 @@ public class StochasticLotSizingFast {
       }
    }
    
+   static boolean USE_FAST = true; 
+   
    public static void main(String[] args) {
       Instances instance = Instances.SAMPLE_POISSON;
       //solveSampleInstance(instance, METHOD.SDP);
-      solveSampleInstance(instance, METHOD.CD);
-      //solveSampleInstanceFast(instance);
+      //solveSampleInstance(instance, METHOD.CD);
+      solveSampleInstanceFast(instance);
       
       /*Instance inst = InstancePortfolio.generateSampleNormalInstance();
       int initialInventory = 0;
