@@ -95,14 +95,14 @@ public class SampleFactory {
 	}
 	
 	/**
-	 * Returns a random shuffle of {@code sample}.
+	 * Returns an unbiased Fisher–Yates shuffle of {@code sample}.
 	 * 
 	 * @param sample the original sample.
 	 * @return a random shuffle of {@code sample}.
 	 */
 	private static double[] shuffle(double[] sample){
-		for(int i = 0; i < sample.length; i++){
-			int j = UniformIntGen.nextInt(stream, 0, sample.length - 1);
+		for(int i = 0; i < sample.length - 1; i++){
+			int j = UniformIntGen.nextInt(stream, i, sample.length - 1);
 			double temp = sample[i];
 			sample[i] = sample[j];
 			sample[j] = temp;
