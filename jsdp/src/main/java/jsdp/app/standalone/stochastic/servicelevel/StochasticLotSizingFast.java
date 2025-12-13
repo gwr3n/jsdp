@@ -940,8 +940,8 @@ public class StochasticLotSizingFast {
       SampleFactory.resetStartStream();
       
       double[] centerAndRadius = new double[2];
-      for(int i = 0; i < minRuns || (i < maxRuns && centerAndRadius[1]>=centerAndRadius[0]*error); i++){
-         double[] demandRealizations = SampleFactory.getNextSample(demand);
+      for(int i = 0; i < maxRuns; i++){
+         double[] demandRealizations = SampleFactory.getNextLHSample(demand);
          
          double replicationCost = 0;
          double inventory = initialStock;
@@ -962,7 +962,25 @@ public class StochasticLotSizingFast {
             stockoutTally[t].add(inventory < 0 ? 1 : 0);
          }
          costTally.add(replicationCost);
-         if(i >= minRuns) costTally.confidenceIntervalNormal(confidence, centerAndRadius);
+         if(i >= minRuns) {
+            if(outputType == OUTPUT.SERVICE_LEVELS) {
+               boolean allWithinError = true;
+               for(int t = 0; t < demand.length; t++) {
+                  stockoutTally[t].confidenceIntervalNormal(confidence, centerAndRadius);
+                  if(centerAndRadius[1]>centerAndRadius[0]*error) {
+                     allWithinError = false;
+                     break;
+                  }
+               }
+               if(allWithinError) 
+                  break;
+            }
+            else if(outputType == OUTPUT.COST) {
+               costTally.confidenceIntervalNormal(confidence, centerAndRadius);
+               if(centerAndRadius[1]<=centerAndRadius[0]*error)
+                  break;
+            }
+         }
       }
       switch(outputType) {
          case SERVICE_LEVELS:
