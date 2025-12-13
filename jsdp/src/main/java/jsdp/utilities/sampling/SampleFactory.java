@@ -39,6 +39,11 @@ public class SampleFactory {
 	
 	private static RandomStream stream = new MRG32k3aL();
 	
+   // Factory parameters and state
+   public static int M = 1000; // batch size for LHS
+   private static double[][] currentLHSBatch = null; // shape: [d][M]
+   private static int nextBatchIndex = 0;
+	
 	/**
 	 * Reinitializes the stream to the beginning of its next substream.
 	 */
@@ -65,6 +70,29 @@ public class SampleFactory {
 		                      i -> distributions[i].inverseF(uniform.nextDouble()))
 		                .toArray();
 	}
+	
+	/**
+    * Implements LHS factory: returns one sample vector at a time from an internal LHS batch.
+    * Regenerates a new batch of size M when exhausted or when dimension changes.
+    * @param distributions array of distributions to be sampled
+    * @return a Simple Random Sample for the distributions in {@code distributions} using LHS batching
+    */
+   public static double[] getNextLHSample(Distribution[] distributions){
+      // Regenerate when no batch, exhausted, or dimension changed
+      if (currentLHSBatch == null
+          || nextBatchIndex >= M
+          || currentLHSBatch.length != distributions.length) {
+         currentLHSBatch = getNextLHSample(distributions, M);
+         nextBatchIndex = 0;
+      }
+      // Extract column nextBatchIndex across all dimensions
+      double[] sample = new double[distributions.length];
+      for (int d = 0; d < distributions.length; d++) {
+         sample[d] = currentLHSBatch[d][nextBatchIndex];
+      }
+      nextBatchIndex++;
+      return sample;
+   }
 	
 	/**
 	 * Implements Latin Hypercube Sampling as originally introduced in 
