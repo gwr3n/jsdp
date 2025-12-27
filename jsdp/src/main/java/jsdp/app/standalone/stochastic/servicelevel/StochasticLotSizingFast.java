@@ -185,7 +185,6 @@ public class StochasticLotSizingFast {
       }
    }
 
-   @SuppressWarnings("unused")
    private static Solution sdp_fast(Instance instance) {
       double[][] demandProbabilities = InstancePortfolio.computeDemandProbability(instance);
       int T = instance.getStages();
@@ -409,7 +408,6 @@ public class StochasticLotSizingFast {
       return new Solution(optimalAction, Gn, Cn, instance.maxQuantity);
    }
    
-   @SuppressWarnings("unused")
    private static Solution sdp_lagrangian_fast(Instance instance) {
       double[][] demandProbabilities = InstancePortfolio.computeDemandProbability(instance);
       int T = instance.getStages();
@@ -1099,6 +1097,7 @@ public class StochasticLotSizingFast {
          double[] demandRealizations = SampleFactory.getNextLHSample(demand);
 
          double inventory = initialStock;
+         @SuppressWarnings("unused")
          double replicationCost = 0.0; // kept to preserve logic parity; not returned here
 
          for (int t = 0; t < demand.length; t++) {
