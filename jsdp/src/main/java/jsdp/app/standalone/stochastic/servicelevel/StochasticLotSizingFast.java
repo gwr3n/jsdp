@@ -245,83 +245,99 @@ public class StochasticLotSizingFast {
    public static Solution coordinateDescent(Instance instance, int initialInventory, int safeMin) {
       DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.ENGLISH);
       DecimalFormat df = new DecimalFormat("#.000", otherSymbols);
-      
+
       p_vector = new double[instance.getStages()];
       Arrays.fill(p_vector, instance.holdingCost * instance.alpha / (1.0 - instance.alpha));
 
       // Newton-like parameters
-      double fallback_step = 0.5;     // used when derivative not available/unstable
-      double max_step = 2.0;          // cap on |delta| for stability
-      double damping = 0.75;          // mild damping factor
+      double fallback_step = 0.5;
+      double max_step = 5.0;
+      double damping = 0.75;
 
       double[] prev_p = new double[instance.getStages()];
       double[] prev_err = new double[instance.getStages()];
       Arrays.fill(prev_p, Double.NaN);
       Arrays.fill(prev_err, Double.NaN);
 
+      // CI-aware parameters
+      double confidence = 0.95;
+      double epsAbs = (1.0 - instance.alpha)*0.05; // absolute CI half-width target for stockout probs (one order of magnitude less than target service level)
+      double margin = epsAbs;                      // hysteresis tied to achievable precision
+      double target = 1.0 - instance.alpha;
+
       boolean end = false;
       Solution solution = null;
+
       while (!end) {
          solution = sdp_lagrangian(instance);
-         
+
          System.out.println("S: " + Arrays.toString(solution.find_S(instance, safeMin)));
          System.out.println("s: " + Arrays.toString(solution.find_s(instance, safeMin)));
 
-         double confidence = 0.95;
-         double error = 0.0001;
-         double[] results = null;
+         StockoutCI ci;
          try {
-            results = simulate_sS(instance, solution, initialInventory,
+            ci = simulate_sS_stockoutCI(
+                  instance,
+                  initialInventory,
                   solution.find_S(instance, safeMin),
                   solution.find_s(instance, safeMin),
-                  confidence, error, OUTPUT.SERVICE_LEVELS);
+                  confidence,
+                  epsAbs);
          } catch (Exception e) {
             System.out.println("This instance cannot be simulated.");
+            break;
          }
 
          end = true;
-         System.out.print("Serv. lev.: \t");
-         Arrays.stream(results).forEach(i -> System.out.print(df.format(i) + "\t"));
+
+         System.out.print("Stockout mean:\t");
+         Arrays.stream(ci.mean).forEach(v -> System.out.print(df.format(v) + "\t"));
          System.out.println();
 
-         double target = 1.0 - instance.alpha;
-         for (int i = instance.getStages() - 1; i >= 0; i--) {
-            double err = results[i] - target;
+         System.out.print("Stockout L:\t");
+         Arrays.stream(ci.L).forEach(v -> System.out.print(df.format(v) + "\t"));
+         System.out.println();
 
-            if (err > 0) {
+         System.out.print("Stockout U:\t");
+         Arrays.stream(ci.U).forEach(v -> System.out.print(df.format(v) + "\t"));
+         System.out.println();
+         
+         System.out.println("Runs: " + ci.runsUsed);
+
+         for (int t = instance.getStages() - 1; t >= 0; t--) {
+            // CI-aware “violation” test
+            if (ci.U[t] > target + margin) {
+               double err = ci.mean[t] - target;
                double delta;
 
-               // Secant derivative estimate if previous iteration exists
-               if (!Double.isNaN(prev_p[i]) && !Double.isNaN(prev_err[i])) {
-                  double dp = p_vector[i] - prev_p[i];
-                  double de = err - prev_err[i];
+               if (!Double.isNaN(prev_p[t]) && !Double.isNaN(prev_err[t])) {
+                  double dp = p_vector[t] - prev_p[t];
+                  double de = err - prev_err[t];
                   double deriv = de / dp;
 
                   if (Double.isFinite(deriv) && Math.abs(deriv) > 1e-8) {
-                     delta = -err / deriv;           // Newton-like step
+                     delta = -err / deriv;
                   } else {
-                     delta = fallback_step;          // ill-conditioned derivative
+                     delta = fallback_step;
                   }
                } else {
-                  delta = fallback_step;              // first iteration fallback
+                  delta = fallback_step;
                }
 
-               // Damping and clipping
                delta = Math.copySign(Math.min(Math.abs(delta), max_step), delta);
                delta *= damping;
-               
-               // store history for secant
-               prev_p[i] = p_vector[i];
-               prev_err[i] = results[i] - target;
 
-               p_vector[i] = Math.max(0.0, p_vector[i] + delta);
+               prev_p[t] = p_vector[t];
+               prev_err[t] = err;
+
+               p_vector[t] = Math.max(0.0, p_vector[t] + delta);
                end = false;
                break;
             }
          }
-         
-         System.out.print("p_vector: \t");
-         Arrays.stream(p_vector).forEach(i -> System.out.print(df.format(i) + "\t"));
+
+         System.out.print("p_vector:\t");
+         Arrays.stream(p_vector).forEach(v -> System.out.print(df.format(v) + "\t"));
          System.out.println();
       }
       return solution;
@@ -461,18 +477,24 @@ public class StochasticLotSizingFast {
       p_vector = new double[instance.getStages()];
       Arrays.fill(p_vector, instance.holdingCost * instance.alpha / (1.0 - instance.alpha));
 
-      // Newton-like parameters
-      double fallback_step = 0.5;     // used when derivative not available/unstable
-      double max_step = 2.0;         // cap on |delta| for stability
-      double damping = 0.75;          // mild damping factor
+      double fallback_step = 0.5;
+      double max_step = 5.0;
+      double damping = 0.75;
 
       double[] prev_p = new double[instance.getStages()];
       double[] prev_err = new double[instance.getStages()];
       Arrays.fill(prev_p, Double.NaN);
       Arrays.fill(prev_err, Double.NaN);
 
+      // CI-aware parameters
+      double confidence = 0.95;
+      double epsAbs = (1.0 - instance.alpha)*0.05; // absolute CI half-width target for stockout probs (two order of magnitude less than target service level)
+      double margin = epsAbs;                      // hysteresis tied to achievable precision
+      double target = 1.0 - instance.alpha;
+
       boolean end = false;
       double[][] sS = null;
+
       while (!end) {
          if (instance.demand[0] instanceof PoissonDist)
             sS = sS_fast_Poisson(instance);
@@ -482,67 +504,73 @@ public class StochasticLotSizingFast {
             System.err.println("Distribution not supported");
             System.exit(-1);
          }
-         
-         System.out.println("S: " + Arrays.toString(Arrays.stream(sS).map(S -> S[1]).mapToInt(S -> S.intValue()).toArray()));
-         System.out.println("s: " + Arrays.toString(Arrays.stream(sS).map(S -> S[0]).mapToInt(S -> S.intValue()).toArray()));
 
-         double confidence = 0.95;
-         double error = 0.0001;
-         double[] results = null;
+         int[] S = Arrays.stream(sS).map(Sr -> Sr[1]).mapToInt(v -> v.intValue()).toArray();
+         int[] s = Arrays.stream(sS).map(sr -> sr[0]).mapToInt(v -> v.intValue()).toArray();
+
+         System.out.println("S: " + Arrays.toString(S));
+         System.out.println("s: " + Arrays.toString(s));
+
+         StockoutCI ci;
          try {
-            results = simulate_sS(instance, null, initialInventory,
-                  Arrays.stream(sS).map(S -> S[1]).mapToInt(S -> S.intValue()).toArray(),
-                  Arrays.stream(sS).map(s -> s[0]).mapToInt(s -> s.intValue()).toArray(),
-                  confidence, error, OUTPUT.SERVICE_LEVELS);
-            System.out.print("Serv. lev.: \t");
-            Arrays.stream(results).forEach(i -> System.out.print(df.format(i) + "\t"));
-            System.out.println();
+            ci = simulate_sS_stockoutCI(instance, initialInventory, S, s, confidence, epsAbs);
          } catch (Exception e) {
             System.out.println("This instance cannot be simulated.");
             break;
          }
 
-         // Newton-like update using noisy feedback
+         System.out.print("Stockout mean:\t");
+         Arrays.stream(ci.mean).forEach(v -> System.out.print(df.format(v) + "\t"));
+         System.out.println();
+         
+         System.out.print("Stockout L:\t");
+         Arrays.stream(ci.L).forEach(v -> System.out.print(df.format(v) + "\t"));
+         System.out.println();
+
+         System.out.print("Stockout U:\t");
+         Arrays.stream(ci.U).forEach(v -> System.out.print(df.format(v) + "\t"));
+         System.out.println();
+         
+         System.out.println("Runs: " + ci.runsUsed);
+
          end = true;
-         double target = 1.0 - instance.alpha;
-         for (int i = instance.getStages() - 1; i >= 0; i--) {
-            double err = results[i] - target;
-            if (err > 0) {
+
+         for (int t = instance.getStages() - 1; t >= 0; t--) {
+            if (ci.U[t] > target + margin) {
+               double err = ci.mean[t] - target;
                double delta;
 
-               // Secant derivative estimate if previous iteration exists
-               if (!Double.isNaN(prev_p[i]) && !Double.isNaN(prev_err[i])) {
-                  double dp = p_vector[i] - prev_p[i];
-                  double de = err - prev_err[i];
+               if (!Double.isNaN(prev_p[t]) && !Double.isNaN(prev_err[t])) {
+                  double dp = p_vector[t] - prev_p[t];
+                  double de = err - prev_err[t];
                   double deriv = de / dp;
 
                   if (Double.isFinite(deriv) && Math.abs(deriv) > 1e-8) {
-                     delta = -err / deriv;           // Newton-like step
+                     delta = -err / deriv;
                   } else {
-                     delta = fallback_step;          // ill-conditioned derivative
+                     delta = fallback_step;
                   }
                } else {
-                  delta = fallback_step;              // first iteration fallback
+                  delta = fallback_step;
                }
 
-               // Damping and clipping
                delta = Math.copySign(Math.min(Math.abs(delta), max_step), delta);
                delta *= damping;
-               
-               // store history for secant
-               prev_p[i] = p_vector[i];
-               prev_err[i] = results[i] - target;
-               
-               p_vector[i] = Math.max(0.0, p_vector[i] + delta);
+
+               prev_p[t] = p_vector[t];
+               prev_err[t] = err;
+
+               p_vector[t] = Math.max(0.0, p_vector[t] + delta);
                end = false;
                break;
             }
          }
-         
-         System.out.print("p_vector: \t");
-         Arrays.stream(p_vector).forEach(i -> System.out.print(df.format(i) + "\t"));
+
+         System.out.print("p_vector:\t");
+         Arrays.stream(p_vector).forEach(v -> System.out.print(df.format(v) + "\t"));
          System.out.println();
       }
+
       return sS;
    }
    
@@ -992,6 +1020,104 @@ public class StochasticLotSizingFast {
    }
    
    /**
+    * Container for per-period stockout probability estimates and confidence intervals.
+    * L/U are bounds for stockout probability.
+    */
+   private static final class StockoutCI {
+      final double[] mean;
+      final double[] L;
+      final double[] U;
+      final int runsUsed;
+
+      StockoutCI(int T, int runsUsed) {
+         this.mean = new double[T];
+         this.L = new double[T];
+         this.U = new double[T];
+         this.runsUsed = runsUsed;
+      }
+   }
+
+   /**
+    * CI-aware simulation for service levels (stockout probabilities).
+    *
+    * Uses Normal CI from SSJ Tally, and stops when ALL periods have CI radius <= epsAbs.
+    * This is an absolute precision rule (recommended for small probabilities).
+    */
+   private static StockoutCI simulate_sS_stockoutCI(
+         Instance instance,
+         int initialStock,
+         int[] S,
+         int[] s,
+         double confidence,
+         double epsAbs) {
+
+      Distribution[] demand = instance.demand;
+      double orderCost = instance.fixedOrderingCost;
+      double holdingCost = instance.holdingCost;
+      double unitCost = instance.unitCost;
+      double discountFactor = instance.discountFactor;
+
+      Tally[] stockoutTally = new Tally[demand.length];
+      for (int t = 0; t < demand.length; t++) stockoutTally[t] = new Tally();
+
+      int minRuns = 1000;
+      int maxRuns = 1000000;
+
+      SampleFactory.resetStartStream();
+
+      double[] centerAndRadius = new double[2];
+      int runsUsed = 0;
+
+      for (int i = 0; i < maxRuns; i++) {
+         runsUsed = i + 1;
+         double[] demandRealizations = SampleFactory.getNextLHSample(demand);
+
+         double inventory = initialStock;
+         double replicationCost = 0.0; // kept to preserve logic parity; not returned here
+
+         for (int t = 0; t < demand.length; t++) {
+            double stageCost = 0.0;
+            if (inventory <= s[t]) {
+               stageCost += orderCost;
+               stageCost += Math.max(0, S[t] - inventory) * unitCost;
+               inventory = S[t] - demandRealizations[t];
+               stageCost += Math.max(inventory, 0) * holdingCost;
+            } else {
+               inventory = inventory - demandRealizations[t];
+               stageCost += Math.max(inventory, 0) * holdingCost;
+            }
+            replicationCost += stageCost * Math.pow(discountFactor, t);
+
+            stockoutTally[t].add(inventory < 0 ? 1.0 : 0.0);
+         }
+
+         if (i >= minRuns) {
+            boolean allWithin = true;
+            for (int t = 0; t < demand.length; t++) {
+               stockoutTally[t].confidenceIntervalNormal(confidence, centerAndRadius);
+               double radius = centerAndRadius[1];
+               if (!(radius <= epsAbs)) {
+                  allWithin = false;
+                  break;
+               }
+            }
+            if (allWithin) break;
+         }
+      }
+
+      StockoutCI out = new StockoutCI(demand.length, runsUsed);
+      for (int t = 0; t < demand.length; t++) {
+         stockoutTally[t].confidenceIntervalNormal(confidence, centerAndRadius);
+         double m = stockoutTally[t].average();
+         double r = centerAndRadius[1];
+         out.mean[t] = m;
+         out.L[t] = Math.max(0.0, m - r);
+         out.U[t] = Math.min(1.0, m + r);
+      }
+      return out;
+   }
+   
+   /**
     * Test bed
     */
    
@@ -1124,7 +1250,7 @@ public class StochasticLotSizingFast {
    static boolean USE_FAST = true; 
    
    public static void main(String[] args) {
-      Instances instance = Instances.SAMPLE_POISSON;
+      Instances instance = Instances.SAMPLE_NORMAL;
       //solveSampleInstance(instance, METHOD.SDP);
       //solveSampleInstance(instance, METHOD.CD);
       solveSampleInstanceFast(instance);
@@ -1223,11 +1349,11 @@ class InstancePortfolio{
       int maxInventory = 2000;
       
       /*** Problem instance ***/
-      double fixedOrderingCost = 100;
+      double fixedOrderingCost = 300;
       double unitCost = 0;
       double holdingCost = 1;
       double alpha = 0.9;
-      double[] meanDemand = {20,40,60,40};
+      double[] meanDemand = {20,40,60,40,20,40,60,40,20,40};
       double cv = 0.25;
       Distribution[] demand = Arrays.stream(meanDemand).mapToObj(d -> new NormalDist(d, cv*d)).toArray(Distribution[]::new);
       int maxQuantity = 1000;
