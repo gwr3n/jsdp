@@ -33,19 +33,24 @@ import java.util.function.Function;
 import java.util.stream.DoubleStream;
 
 /**
- * This problem is taken from W. L. Winston, Operations Research: Applications and Algorithms (7th Edition), Duxbury Press, 2003,
+ * This problem is taken from W. L. Winston, Operations Research: Applications
+ * and Algorithms (7th Edition), Duxbury Press, 2003,
  * chap. 19, example 3.
  * 
- * A gambler has ${@code initialWealth}. She is allowed to play a game of chance over a given {@code betHorizon}, and her goal is to
- * maximize her probability of ending up with a least ${@code targetWealth}. 
+ * A gambler has ${@code initialWealth}. She is allowed to play a game of chance
+ * over a given {@code betHorizon}, and her goal is to
+ * maximize her probability of ending up with a least ${@code targetWealth}.
  * 
- * If the gambler bets $b on a play of the game, then with probability p, she wins the game and increases her capital position by $b; 
- * with probability (1-p), she loses the game and decreases her capital by $b. 
+ * If the gambler bets $b on a play of the game, then with probability p, she
+ * wins the game and increases her capital position by $b;
+ * with probability (1-p), she loses the game and decreases her capital by $b.
  * 
- * On any play of the game, the gambler may not bet more money than she has available.
+ * On any play of the game, the gambler may not bet more money than she has
+ * available.
  * 
- * Determine a betting strategy that will maximize the gambler's probability of attaining a wealth of at least ${@code targetWealth} 
- * by the end of the betting horizon. 
+ * Determine a betting strategy that will maximize the gambler's probability of
+ * attaining a wealth of at least ${@code targetWealth}
+ * by the end of the betting horizon.
  * 
  * @author Roberto Rossi
  *
@@ -57,142 +62,147 @@ public class GamblersRuin {
    double[][] pmf;
 
    public GamblersRuin(double targetWealth,
-                       int betHorizon,
-                       double[][] pmf) {
+         int betHorizon,
+         double[][] pmf) {
       this.targetWealth = targetWealth;
       this.betHorizon = betHorizon;
       this.pmf = pmf;
    }
-   
-   class State{
+
+   class State {
       int period;
       double money;
 
-      public State(int period, double money){
+      public State(int period, double money) {
          this.period = period;
          this.money = money;
       }
 
-      public double[] getFeasibleActions(){
+      public double[] getFeasibleActions() {
          return actionGenerator.apply(this);
       }
-      
+
       @Override
-      public int hashCode(){
+      public int hashCode() {
          String hash = "";
          hash = (hash + period) + "_" + money;
          return hash.hashCode();
       }
 
       @Override
-      public boolean equals(Object o){
-         if(o instanceof State)
-            return  ((State) o).period == this.period &&
-                    ((State) o).money == this.money;
+      public boolean equals(Object o) {
+         if (o instanceof State)
+            return ((State) o).period == this.period &&
+                  ((State) o).money == this.money;
          else
             return false;
       }
 
       @Override
-      public String toString(){
+      public String toString() {
          return this.period + " " + this.money;
       }
    }
-   
+
    Function<State, double[]> actionGenerator;
-   
+
    @FunctionalInterface
-   interface StateTransitionFunction <S, A, R> { 
-      public S apply (S s, A a, R r);
+   interface StateTransitionFunction<S, A, R> {
+      public S apply(S s, A a, R r);
    }
-   
+
    public StateTransitionFunction<State, Double, Double> stateTransition;
 
    @FunctionalInterface
-   interface ImmediateValueFunction <S, A, R, V> { 
-      public V apply (S s, A a, R r);
+   interface ImmediateValueFunction<S, A, R, V> {
+      public V apply(S s, A a, R r);
    }
 
    public ImmediateValueFunction<State, Double, Double, Double> immediateValueFunction;
-         
+
    Map<State, Double> cacheActions = new HashMap<>();
    Map<State, Double> cacheValueFunction = new HashMap<>();
-   double f(State state){
-      return cacheValueFunction.computeIfAbsent(state, s -> {
-         double val= Arrays.stream(s.getFeasibleActions())
-                           .map(bet -> Arrays.stream(pmf)
-                                             .mapToDouble(p -> p[1]*immediateValueFunction.apply(s, bet, p[0])+
-                                                               (s.period < this.betHorizon ?
-                                                               p[1]*f(stateTransition.apply(s, bet, p[0])) : 0))
-                                             .sum())
-                           .max()
-                           .getAsDouble();
-         double bestBet = Arrays.stream(s.getFeasibleActions())
-                                .filter(bet -> Arrays.stream(pmf)
-                                                     .mapToDouble(p -> p[1]*immediateValueFunction.apply(s, bet, p[0])+
-                                                                       (s.period < this.betHorizon ?
-                                                                       p[1]*f(stateTransition.apply(s, bet, p[0])) : 0))
-                                                     .sum() == val)
-                                .findAny()
-                                .getAsDouble();
-         cacheActions.putIfAbsent(s, bestBet);
-         return val;
-      });
+
+   double f(State state) {
+      if (cacheValueFunction.containsKey(state)) {
+         return cacheValueFunction.get(state);
+      }
+      double val = Arrays.stream(state.getFeasibleActions())
+            .map(bet -> Arrays.stream(pmf)
+                  .mapToDouble(p -> p[1] * immediateValueFunction.apply(state, bet, p[0]) +
+                        (state.period < this.betHorizon ? p[1] * f(stateTransition.apply(state, bet, p[0])) : 0))
+                  .sum())
+            .max()
+            .getAsDouble();
+      double bestBet = Arrays.stream(state.getFeasibleActions())
+            .filter(bet -> Arrays.stream(pmf)
+                  .mapToDouble(p -> p[1] * immediateValueFunction.apply(state, bet, p[0]) +
+                        (state.period < this.betHorizon ? p[1] * f(stateTransition.apply(state, bet, p[0])) : 0))
+                  .sum() == val)
+            .findAny()
+            .getAsDouble();
+      cacheActions.putIfAbsent(state, bestBet);
+      cacheValueFunction.put(state, val);
+      return val;
    }
-   
-   public static void main(String [] args){
-      int bettingHorizon = 4;    //Planning horizon length
-      double targetWealth = 6;   //Target wealth
-  
+
+   public static void main(String[] args) {
+      int bettingHorizon = 4; // Planning horizon length
+      double targetWealth = 6; // Target wealth
+
       /**
-       * Probability mass function: with probability 0.6 we lose the bet amount (multiplier is 0)
+       * Probability mass function: with probability 0.6 we lose the bet amount
+       * (multiplier is 0)
        * with probability 0.4 we double the bet amount (multiplier is 2)
        */
-      double pmf[][] = {{0,0.6},{2,0.4}}; 
+      double pmf[][] = { { 0, 0.6 }, { 2, 0.4 } };
 
       GamblersRuin ruin = new GamblersRuin(targetWealth, bettingHorizon, pmf);
-      
+
       /**
        * This function returns the set of actions associated with a given state
        */
-      ruin.actionGenerator = state ->{
+      ruin.actionGenerator = state -> {
          return DoubleStream.iterate(0, bet -> bet + 1)
-                            .limit((int) Math.ceil(Math.min(targetWealth/2, state.money + 1)))
-                            .toArray();
+               .limit((int) Math.ceil(Math.min(targetWealth / 2, state.money + 1)))
+               .toArray();
       };
-      
+
       /**
-       * State transition function; given a state, an action and a random outcome, the function
+       * State transition function; given a state, an action and a random outcome, the
+       * function
        * returns the future state
        */
-      ruin.stateTransition = (state, action, randomOutcome) -> 
-         ruin.new State(state.period + 1, state.money - action + action*randomOutcome);
-      
+      ruin.stateTransition = (state, action, randomOutcome) -> ruin.new State(state.period + 1,
+            state.money - action + action * randomOutcome);
+
       /**
        * Immediate value function for a given state
        */
       ruin.immediateValueFunction = (state, action, randomOutcome) -> {
-            if(state.period == ruin.betHorizon)
-               return state.money - action + action*randomOutcome >= ruin.targetWealth ? 1.0 : 0.0;    
-            else
-               return 0.0;   
-         };
-      
+         if (state.period == ruin.betHorizon)
+            return state.money - action + action * randomOutcome >= ruin.targetWealth ? 1.0 : 0.0;
+         else
+            return 0.0;
+      };
+
       /**
        * Initial problem conditions
        */
       int initialPeriod = 1;
       double initialWealth = 2;
       State initialState = ruin.new State(initialPeriod, initialWealth);
-      
+
       /**
-       * Run forward recursion and determine the probability of achieving the target wealth when
+       * Run forward recursion and determine the probability of achieving the target
+       * wealth when
        * one follows an optimal policy
        */
-      System.out.println("f_1(2)="+ruin.f(initialState));
+      System.out.println("f_1(2)=" + ruin.f(initialState));
       /**
-       * Recover optimal action for period 2 when initial wealth at the beginning of period 2 is $1.
+       * Recover optimal action for period 2 when initial wealth at the beginning of
+       * period 2 is $1.
        */
-      System.out.println("b_2(1)="+ruin.cacheActions.get(ruin.new State(2, 1)));
+      System.out.println("b_2(1)=" + ruin.cacheActions.get(ruin.new State(2, 1)));
    }
 }

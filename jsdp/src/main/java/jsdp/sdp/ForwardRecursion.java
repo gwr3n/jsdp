@@ -32,156 +32,165 @@ import org.apache.logging.log4j.LogManager;
 import jsdp.utilities.monitoring.MonitoringInterfaceForward;;
 
 /**
- * Implements a forward recursion algorithm to solve a stochastic dynamic program.
+ * Implements a forward recursion algorithm to solve a stochastic dynamic
+ * program.
  * 
  * @author Roberto Rossi
  *
  */
-public abstract class ForwardRecursion extends Recursion{
+public abstract class ForwardRecursion extends Recursion {
 	static final Logger logger = LogManager.getLogger(ForwardRecursion.class.getName());
-	
+
 	/**
 	 * States reused by memoization
 	 */
 	private long reusedStates = 0;
-	
+
 	/**
 	 * States generated
 	 */
-   private long generatedStates = 0;
-	
-   /**
-    * First period action counter
-    */
-   private long actionCounter = 0;
-   
-   /**
-    * First period total actions
-    */
-   private long totalActions = 0;
-   
-   /**
-    * Action frequency array
-    */
-   private long[] actionFrequencies = null;
-   
-   /**
-    * Refresh variable for action frequency array
-    */
-   private long lastCountDisplay = System.currentTimeMillis();
-   
-   /**
-    * Monitor
-    */
-   private  MonitoringInterfaceForward monitor;
-   
-   public MonitoringInterfaceForward getMonitoringInterfaceForward(){
-      return this.monitor;
-   }
-   
+	private long generatedStates = 0;
+
 	/**
-	 * Creates an instance of {@code ForwardRecursion} with the given optimization direction.
+	 * First period action counter
+	 */
+	private long actionCounter = 0;
+
+	/**
+	 * First period total actions
+	 */
+	private long totalActions = 0;
+
+	/**
+	 * Action frequency array
+	 */
+	private long[] actionFrequencies = null;
+
+	/**
+	 * Refresh variable for action frequency array
+	 */
+	private long lastCountDisplay = System.currentTimeMillis();
+
+	/**
+	 * Monitor
+	 */
+	private MonitoringInterfaceForward monitor;
+
+	public MonitoringInterfaceForward getMonitoringInterfaceForward() {
+		return this.monitor;
+	}
+
+	/**
+	 * Creates an instance of {@code ForwardRecursion} with the given optimization
+	 * direction.
 	 * 
 	 * @param direction the direction of optimization.
 	 */
-	public ForwardRecursion(OptimisationDirection direction){
+	public ForwardRecursion(OptimisationDirection direction) {
 		super(direction);
 	}
-	
+
 	/**
 	 * Monitors state generation
 	 * 
 	 * @param state the initial state.
 	 */
-	private synchronized void stateMonitoring(State state){
-	   if(this.valueRepository.optimalValueHashTable.containsKey(state))
-         reusedStates++;
-      else
-         generatedStates++;
-      monitor.setStates(generatedStates, reusedStates, actionCounter, totalActions, actionFrequencies);
+	private synchronized void stateMonitoring(State state) {
+		if (this.valueRepository.optimalValueHashTable.containsKey(state))
+			reusedStates++;
+		else
+			generatedStates++;
+		monitor.setStates(generatedStates, reusedStates, actionCounter, totalActions, actionFrequencies);
 	}
-	
-	public double runForwardRecursionMonitoring(State state){
-	   this.monitor = new MonitoringInterfaceForward(this);
-	   this.monitor.startMonitoring();
-	   double expectedValue = runForwardRecursion(state);
-	   this.monitor.terminate();
-	   this.monitor.dispose();
-	   return expectedValue;
+
+	public double runForwardRecursionMonitoring(State state) {
+		this.monitor = new MonitoringInterfaceForward(this);
+		this.monitor.startMonitoring();
+		double expectedValue = runForwardRecursion(state);
+		this.monitor.terminate();
+		this.monitor.dispose();
+		return expectedValue;
 	}
-	
+
 	/**
 	 * Count an action
 	 */
 	private void countAction() {
-	   actionCounter++;
+		actionCounter++;
 	}
-	
+
 	/**
 	 * Count frequencies of actions (1000 millisec refresh)
 	 * 
 	 * @param a the action
 	 */
 	private void countActionFrequency(Action a) {
-	   if(actionFrequencies == null)
-	      actionFrequencies = new long[this.horizonLength];
-	   actionFrequencies[a.getState().getPeriod()]++;
-	   long currentTime = System.currentTimeMillis();
-	   if(currentTime - lastCountDisplay > 1000) {
-	      lastCountDisplay = currentTime;
-	      actionFrequencies = new long[this.horizonLength];
-	   }
+		if (actionFrequencies == null)
+			actionFrequencies = new long[this.horizonLength];
+		actionFrequencies[a.getState().getPeriod()]++;
+		long currentTime = System.currentTimeMillis();
+		if (currentTime - lastCountDisplay > 1000) {
+			lastCountDisplay = currentTime;
+			actionFrequencies = new long[this.horizonLength];
+		}
 	}
-	
+
 	/**
-	 * Runs the forward recursion algorithm for the given stochastic dynamic program and
+	 * Runs the forward recursion algorithm for the given stochastic dynamic program
+	 * and
 	 * computes the expected value function starting from state {@code state}.
 	 * 
 	 * @param state the initial state.
 	 * @return the expected value of running the system from state {@code state}.
 	 */
-	public double runForwardRecursion(State state){
-	   if(stateMonitoring) 
-	      stateMonitoring(state);
-	   
-		return this.valueRepository.optimalValueHashTable.computeIfAbsent(state, y -> {
-		   BestActionRepository repository = new BestActionRepository(direction);
-		   
-		   if(state.getPeriod() == 0) {
-		      totalActions = y.getFeasibleActions()
-                            .parallelStream()
-                            .count();
-		   }
-		   
-		   y.getFeasibleActions().stream().forEach(action -> {
-		         double normalisationFactor = this.getTransitionProbability()
-		                                          .generateFinalStates(y, action)
-		                                          .parallelStream()
-		                                          .filter(c -> this.getTransitionProbability().getTransitionProbability(y, action, c) > 0)
-		                                          .mapToDouble(finalState -> transitionProbability.getTransitionProbability(y, action, finalState))
-		                                          .sum();
-				   double currentCost = this.getTransitionProbability()
-				                            .generateFinalStates(y, action)
-				                            .stream()
-				                            .filter(c -> this.getTransitionProbability().getTransitionProbability(y, action, c) > 0)
-				                            .mapToDouble(c -> ( this.getValueRepository().getImmediateValue(y, action, c)+
-						 				                              (y.getPeriod() < horizonLength - 1 ? runForwardRecursion(c) : 0) )*
-				                                                this.getValueRepository().getDiscountFactor()*
-						 						 	                     this.getTransitionProbability().getTransitionProbability(y, action, c))
-				                            .sum();
-					if(normalisationFactor != 0)
-                  currentCost /= normalisationFactor;
-					
-					repository.update(action, currentCost);
-					
-					if(state.period == 0) 
-					   this.countAction();
-					this.countActionFrequency(action);
-				});
-				this.getValueRepository().setOptimalExpectedValue(y, repository.getBestValue());
-				this.getValueRepository().setOptimalAction(y, repository.getBestAction());
-				logger.trace(repository.getBestAction()+"\tCost: "+repository.getBestValue());
-				return repository.getBestValue();
+	public double runForwardRecursion(State state) {
+		if (stateMonitoring)
+			stateMonitoring(state);
+
+		if (this.valueRepository.optimalValueHashTable.containsKey(state)) {
+			return this.valueRepository.optimalValueHashTable.get(state);
+		}
+
+		State y = state;
+		BestActionRepository repository = new BestActionRepository(direction);
+
+		if (state.getPeriod() == 0) {
+			totalActions = y.getFeasibleActions()
+					.parallelStream()
+					.count();
+		}
+
+		y.getFeasibleActions().stream().forEach(action -> {
+			double normalisationFactor = this.getTransitionProbability()
+					.generateFinalStates(y, action)
+					.parallelStream()
+					.filter(c -> this.getTransitionProbability().getTransitionProbability(y, action, c) > 0)
+					.mapToDouble(finalState -> transitionProbability.getTransitionProbability(y, action, finalState))
+					.sum();
+			double currentCost = this.getTransitionProbability()
+					.generateFinalStates(y, action)
+					.stream()
+					.filter(c -> this.getTransitionProbability().getTransitionProbability(y, action, c) > 0)
+					.mapToDouble(c -> (this.getValueRepository().getImmediateValue(y, action, c) +
+							(y.getPeriod() < horizonLength - 1 ? runForwardRecursion(c) : 0)) *
+							this.getValueRepository().getDiscountFactor() *
+							this.getTransitionProbability().getTransitionProbability(y, action, c))
+					.sum();
+			if (normalisationFactor != 0)
+				currentCost /= normalisationFactor;
+
+			repository.update(action, currentCost);
+
+			if (state.period == 0)
+				this.countAction();
+			this.countActionFrequency(action);
 		});
+		this.getValueRepository().setOptimalExpectedValue(y, repository.getBestValue());
+		this.getValueRepository().setOptimalAction(y, repository.getBestAction());
+		logger.trace(repository.getBestAction() + "\tCost: " + repository.getBestValue());
+
+		double bestValue = repository.getBestValue();
+		this.valueRepository.optimalValueHashTable.put(state, bestValue);
+		return bestValue;
 	}
 }

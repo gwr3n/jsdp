@@ -21,62 +21,60 @@ public class BowserRoutingBatch {
    static double[][] distance;
    static double[][][] machineLocation;
    static int fuelStockOutPenaltyCost;
-   
-   public static void writeToFile(String fileName, String str){
+
+   public static void writeToFile(String fileName, String str) {
       File results = new File(fileName);
       try {
          FileOutputStream fos = new FileOutputStream(results, true);
          OutputStreamWriter osw = new OutputStreamWriter(fos);
-         osw.write(str+"\n");
+         osw.write(str + "\n");
          osw.close();
       } catch (FileNotFoundException e) {
-         // TODO Auto-generated catch block
          e.printStackTrace();
       } catch (IOException e) {
-         // TODO Auto-generated catch block
          e.printStackTrace();
       }
    }
-   
-   public static void main(String args[]){
+
+   public static void main(String args[]) {
       /**
        * Fixed parameters
        */
-      T = 5;   //time horizon
-      M = 3;   //machines
-      N = 5;   //nodes
+      T = 5; // time horizon
+      M = 3; // machines
+      N = 5; // nodes
       bowserInitialTankLevel = 0;
       maxBowserTankLevel = 20;
       minRefuelingQty = 1;
-      tankCapacity = new int[]{6,6,6};
-      
+      tankCapacity = new int[] { 6, 6, 6 };
+
       /**
        * Variable parameters
        */
       int topologies = 6;
-      int[][] initialTankLevelArray = {{0,0,0},{3,0,5},{5,5,5}};
-      int[][][] fuelConsumptionArray = new int[][][]{
-         {{3,3,3,3,3},
-          {3,3,3,3,3},
-          {3,3,3,3,3}
-          },
-         {{2,2,2,2,2},
-          {1,1,1,1,1},
-          {3,3,3,3,3}
-          },
-         {{1,2,3,4,5},
-          {5,4,3,2,1},
-          {3,3,1,1,2}
-          }
+      int[][] initialTankLevelArray = { { 0, 0, 0 }, { 3, 0, 5 }, { 5, 5, 5 } };
+      int[][][] fuelConsumptionArray = new int[][][] {
+            { { 3, 3, 3, 3, 3 },
+                  { 3, 3, 3, 3, 3 },
+                  { 3, 3, 3, 3, 3 }
+            },
+            { { 2, 2, 2, 2, 2 },
+                  { 1, 1, 1, 1, 1 },
+                  { 3, 3, 3, 3, 3 }
+            },
+            { { 1, 2, 3, 4, 5 },
+                  { 5, 4, 3, 2, 1 },
+                  { 3, 3, 1, 1, 2 }
+            }
       };
-      int[] fuelStockOutPenaltyCosts = {50,100};
-      
-      writeToFile("./"+BowserRoutingBatch.class.getSimpleName() + "_results.csv", BowserRouting.getHeadersString());
-      
-      for(int topology = 0; topology < topologies; topology++){
-         for(int initialTankLevelIndex = 0; initialTankLevelIndex < initialTankLevelArray.length; initialTankLevelIndex++){
-            for(int fuelConsumptionIndex = 0; fuelConsumptionIndex < fuelConsumptionArray.length; fuelConsumptionIndex++){
-               for(int fuelStockOutPenaltyCostIndex = 0; fuelStockOutPenaltyCostIndex < fuelStockOutPenaltyCosts.length; fuelStockOutPenaltyCostIndex++){
+      int[] fuelStockOutPenaltyCosts = { 50, 100 };
+
+      writeToFile("./" + BowserRoutingBatch.class.getSimpleName() + "_results.csv", BowserRouting.getHeadersString());
+
+      for (int topology = 0; topology < topologies; topology++) {
+         for (int initialTankLevelIndex = 0; initialTankLevelIndex < initialTankLevelArray.length; initialTankLevelIndex++) {
+            for (int fuelConsumptionIndex = 0; fuelConsumptionIndex < fuelConsumptionArray.length; fuelConsumptionIndex++) {
+               for (int fuelStockOutPenaltyCostIndex = 0; fuelStockOutPenaltyCostIndex < fuelStockOutPenaltyCosts.length; fuelStockOutPenaltyCostIndex++) {
                   /**
                    * Instance
                    */
@@ -87,8 +85,8 @@ public class BowserRoutingBatch {
                   distance = Topology.getTopology(topology).getDistance().clone();
                   machineLocation = Location.getMachineLocation(topology).getMachineLocation().clone();
                   fuelStockOutPenaltyCost = fuelStockOutPenaltyCosts[fuelStockOutPenaltyCostIndex];
-                  
-                  BowserRouting bowserRouting = new BowserRouting(T, M, N, 
+
+                  BowserRouting bowserRouting = new BowserRouting(T, M, N,
                         bowserInitialTankLevel,
                         maxBowserTankLevel,
                         minRefuelingQty,
@@ -100,7 +98,8 @@ public class BowserRoutingBatch {
                         machineLocation,
                         fuelStockOutPenaltyCost);
                   bowserRouting.runInstance();
-                  writeToFile("./"+BowserRoutingBatch.class.getSimpleName() + "_results.csv", bowserRouting.toString());
+                  writeToFile("./" + BowserRoutingBatch.class.getSimpleName() + "_results.csv",
+                        bowserRouting.toString());
                }
             }
          }

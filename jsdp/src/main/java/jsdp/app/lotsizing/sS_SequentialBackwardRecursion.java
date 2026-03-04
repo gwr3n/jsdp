@@ -36,42 +36,51 @@ import jsdp.sdp.Action;
 
 import umontreal.ssj.probdist.Distribution;
 
-
-
 /**
- * A special purpose implementation of a backward recursion algorithm that exploits K-convexity 
+ * A special purpose implementation of a backward recursion algorithm that
+ * exploits K-convexity
  * to quickly process states.
  * 
  * @deprecated
- * Sample-based approaches and parallelised implementation (i.e. {@code BackwardRecursion}) are more efficient.
- *  
+ *             Sample-based approaches and parallelised implementation (i.e.
+ *             {@code BackwardRecursion}) are more efficient.
+ * 
  * @author Roberto Rossi
  *
  */
 @Deprecated
 public class sS_SequentialBackwardRecursion extends sS_BackwardRecursion {
+   @Deprecated
    static final Logger logger = LogManager.getLogger(sS_BackwardRecursion.class.getName());
 
+   @Deprecated
    protected double proportionalOrderingCost;
-   
+
    /**
-    * Creates an instance of a backward recursion algorithm that exploits K-convexity to quickly process states.
+    * Creates an instance of a backward recursion algorithm that exploits
+    * K-convexity to quickly process states.
     * 
-    * @param demand the distribution of random demand in each period, an array of {@code Distribution}.
-    * @param minDemand the support lower bound
-    * @param maxDemand the support upper bound
-    * @param fixedOrderingCost the fixed ordering cost.
+    * @param demand                   the distribution of random demand in each
+    *                                 period, an array of {@code Distribution}.
+    * @param minDemand                the support lower bound
+    * @param maxDemand                the support upper bound
+    * @param fixedOrderingCost        the fixed ordering cost.
     * @param proportionalOrderingCost the proportional (per unit) ordering cost.
-    * @param holdingCost the proportional (per unit) holding cost; this is paid for each item brought from one period to the next.
-    * @param penaltyCost the proportional (per unit) penalty cost; this is paid for each item short at the end of each period.
+    * @param holdingCost              the proportional (per unit) holding cost;
+    *                                 this is paid for each item brought from one
+    *                                 period to the next.
+    * @param penaltyCost              the proportional (per unit) penalty cost;
+    *                                 this is paid for each item short at the end
+    *                                 of each period.
     */
+   @Deprecated
    public sS_SequentialBackwardRecursion(Distribution[] demand,
-                                         double minDemand,
-                                         double maxDemand,
-                                         double fixedOrderingCost, 
-                                         double proportionalOrderingCost, 
-                                         double holdingCost,
-                                         double penaltyCost){
+         double minDemand,
+         double maxDemand,
+         double fixedOrderingCost,
+         double proportionalOrderingCost,
+         double holdingCost,
+         double penaltyCost) {
       super(demand,
             minDemand,
             maxDemand,
@@ -84,45 +93,50 @@ public class sS_SequentialBackwardRecursion extends sS_BackwardRecursion {
       this.proportionalOrderingCost = proportionalOrderingCost;
    }
 
+   @Deprecated
    @Override
-   protected void recurse(int period){
+   protected void recurse(int period) {
       /**
        * Initially the algorithm proceeds as a classic backward recursion procedure,
        * by processing states sequentially in reverse order (largest to smalles).
        */
-      for(int i = sS_State.getMaxIntState(); i >= sS_State.getMinIntState(); i--){
+      for (int i = sS_State.getMaxIntState(); i >= sS_State.getMinIntState(); i--) {
          sS_StateDescriptor stateDescriptor = new sS_StateDescriptor(period, i);
-         sS_State state = (sS_State) ((sS_StateSpace)this.getStateSpace()[period]).getState(stateDescriptor);
+         sS_State state = (sS_State) ((sS_StateSpace) this.getStateSpace()[period]).getState(stateDescriptor);
          Action bestAction = null;
          double bestCost = Double.MAX_VALUE;
-         Enumeration<Action> actions = Collections.enumeration(state.getFeasibleActions()); 
-         while(actions.hasMoreElements()){
+         Enumeration<Action> actions = Collections.enumeration(state.getFeasibleActions());
+         while (actions.hasMoreElements()) {
             Action currentAction = actions.nextElement();
-            double currentCost = this.getValueRepository().getExpectedValue(state, currentAction, this.getTransitionProbability());
-            if(currentCost < bestCost){
+            double currentCost = this.getValueRepository().getExpectedValue(state, currentAction,
+                  this.getTransitionProbability());
+            if (currentCost < bestCost) {
                bestCost = currentCost;
                bestAction = currentAction;
             }
          }
          this.getValueRepository().setOptimalExpectedValue(state, bestCost);
          this.getValueRepository().setOptimalAction(state, bestAction);
-         logger.trace("Period["+period+"]\tInventory: "+i+"\tOrder: "+sS_Action.actionToOrderQuantity(((sS_Action)bestAction).intAction)+"\tCost: "+bestCost);
+         logger.trace("Period[" + period + "]\tInventory: " + i + "\tOrder: "
+               + sS_Action.actionToOrderQuantity(((sS_Action) bestAction).intAction) + "\tCost: " + bestCost);
 
          /**
           * As soon as we find a state for which it is optimal to place an order,
-          * we exploit K-convexity to set the value of the optimal order quantity 
+          * we exploit K-convexity to set the value of the optimal order quantity
           * and associated expected total cost for all remaining states.
           */
-         if(((sS_Action)bestAction).getIntAction() > 0){
-            int initialAction = ((sS_Action)bestAction).getIntAction();
-            while(--i >= sS_State.getMinIntState()){
+         if (((sS_Action) bestAction).getIntAction() > 0) {
+            int initialAction = ((sS_Action) bestAction).getIntAction();
+            while (--i >= sS_State.getMinIntState()) {
                stateDescriptor = new sS_StateDescriptor(period, i);
-               state = (sS_State) ((sS_StateSpace)this.getStateSpace()[period]).getState(stateDescriptor);
-               double orderingCostIncrement = sS_Action.actionToOrderQuantity(((sS_Action)bestAction).intAction+1-initialAction)*this.proportionalOrderingCost;
-               this.getValueRepository().setOptimalExpectedValue(state, bestCost+orderingCostIncrement);
-               bestAction = new sS_Action(state, ((sS_Action)bestAction).intAction+1); 
+               state = (sS_State) ((sS_StateSpace) this.getStateSpace()[period]).getState(stateDescriptor);
+               double orderingCostIncrement = sS_Action.actionToOrderQuantity(
+                     ((sS_Action) bestAction).intAction + 1 - initialAction) * this.proportionalOrderingCost;
+               this.getValueRepository().setOptimalExpectedValue(state, bestCost + orderingCostIncrement);
+               bestAction = new sS_Action(state, ((sS_Action) bestAction).intAction + 1);
                this.getValueRepository().setOptimalAction(state, bestAction);
-               logger.trace("Period["+period+"]\tInventory: "+i+"\tOrder: "+sS_Action.actionToOrderQuantity(((sS_Action)bestAction).intAction)+"\tCost: "+bestCost);
+               logger.trace("Period[" + period + "]\tInventory: " + i + "\tOrder: "
+                     + sS_Action.actionToOrderQuantity(((sS_Action) bestAction).intAction) + "\tCost: " + bestCost);
             }
          }
       }

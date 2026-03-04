@@ -17,20 +17,19 @@ import com.sun.management.OperatingSystemMXBean;
  *
  */
 
-@SuppressWarnings("restriction")
-public abstract class MonitoringInterface extends JFrame implements Runnable{
+public abstract class MonitoringInterface extends JFrame implements Runnable {
 
    private static final long serialVersionUID = 1L;
-   
+
    protected JTextArea text = new JTextArea();
-   
+
    protected OperatingSystemMXBean osMBean;
    protected long nanoBefore;
    protected long nanoAfter;
    protected long cpuBefore;
    protected long cpuAfter;
    protected boolean terminate = false;
-   
+
    protected long generatedStates;
 
    public MonitoringInterface() throws HeadlessException {
@@ -39,14 +38,14 @@ public abstract class MonitoringInterface extends JFrame implements Runnable{
       frame.addWindowListener(new java.awt.event.WindowAdapter() {
          @Override
          public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-             if (JOptionPane.showConfirmDialog(frame, 
-                 "Are you sure to close this window?", "Really Closing?", 
-                 JOptionPane.YES_NO_OPTION,
-                 JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION){
-                 System.exit(0);
-             }
+            if (JOptionPane.showConfirmDialog(frame,
+                  "Are you sure to close this window?", "Really Closing?",
+                  JOptionPane.YES_NO_OPTION,
+                  JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+               System.exit(0);
+            }
          }
-     });
+      });
    }
 
    /**
@@ -64,14 +63,14 @@ public abstract class MonitoringInterface extends JFrame implements Runnable{
    public void startMonitoring() {
       try {
          osMBean = ManagementFactory.newPlatformMXBeanProxy(
-               ManagementFactory.getPlatformMBeanServer(), ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME, OperatingSystemMXBean.class);
+               ManagementFactory.getPlatformMBeanServer(), ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME,
+               OperatingSystemMXBean.class);
          nanoBefore = System.nanoTime();
          cpuBefore = osMBean.getProcessCpuTime();
       } catch (IOException e) {
-         // TODO Auto-generated catch block
          e.printStackTrace();
       }
-      
+
       Thread runner = new Thread(this);
       runner.start();
    }
@@ -82,38 +81,39 @@ public abstract class MonitoringInterface extends JFrame implements Runnable{
    public void terminate() {
       this.terminate = true;
    }
-   
+
    /**
     * Get the current resolution time (in seconds)
     * 
     * @return the current resolution time (in seconds)
     */
-   public int getTime(){
-      return (int) Math.ceil(((this.nanoAfter-this.nanoBefore)*Math.pow(10, -9)));
+   public int getTime() {
+      return (int) Math.ceil(((this.nanoAfter - this.nanoBefore) * Math.pow(10, -9)));
    }
-   
+
    /**
     * Get the % usage for the available cores
     * 
     * @return the % usage for the available cores
     */
-   public long getPercentCPU(){
+   public long getPercentCPU() {
       long percent;
       if (this.nanoAfter > this.nanoBefore)
-         percent = ((this.cpuAfter-this.cpuBefore)*100L)/(this.nanoAfter-this.nanoBefore);
-      else percent = 0; 
+         percent = ((this.cpuAfter - this.cpuBefore) * 100L) / (this.nanoAfter - this.nanoBefore);
+      else
+         percent = 0;
       return percent;
    }
-   
+
    /**
     * Get the number of generated states
     * 
     * @return the number of generated states
     */
-   public long getGeneratedStates(){
+   public long getGeneratedStates() {
       return this.generatedStates;
    }
-   
+
    /**
     * Get the number of processed states per second
     * 

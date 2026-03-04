@@ -39,94 +39,94 @@ import umontreal.ssj.probdist.DiscreteDistributionInt;
 import umontreal.ssj.probdist.Distribution;
 
 /**
- * {@code DiscreteDistributionFactory} converts a {@code ContinuousDistribution} 
- * or a {@code DiscreteDistributionInt} from the {@code umontreal.ssj.probdist} 
+ * {@code DiscreteDistributionFactory} converts a {@code ContinuousDistribution}
+ * or a {@code DiscreteDistributionInt} from the {@code umontreal.ssj.probdist}
  * package to a {@code DiscreteDistribution}.
- *  
+ * 
  * @author Roberto Rossi
  *
  */
 public class DiscreteDistributionFactory {
-   static final Logger logger = LogManager.getLogger(DiscreteDistributionFactory.class.getName());
-   
+	static final Logger logger = LogManager.getLogger(DiscreteDistributionFactory.class.getName());
+
 	/**
 	 * A method to discretize and truncate a {@code Distribution}.
 	 * 
-	 * @param distribution original {@code DiscreteDistributionInt} to be discretized and truncated
-	 * @param supportLB support lower bound
-	 * @param supportUB support upper bound
-	 * @param stepSize discretization step
+	 * @param distribution original {@code DiscreteDistributionInt} to be
+	 *                     discretized and truncated
+	 * @param supportLB    support lower bound
+	 * @param supportUB    support upper bound
+	 * @param stepSize     discretization step
 	 * @return a discretized and truncated {@code DiscreteDistribution}
 	 */
-	public static DiscreteDistribution getTruncatedDiscreteDistribution(Distribution distribution, 
-																		                 double supportLB, 
-																		                 double supportUB, 
-																		                 double stepSize){
-		if(distribution instanceof DiscreteDistributionInt){
-			if(stepSize != 1) 
+	public static DiscreteDistribution getTruncatedDiscreteDistribution(Distribution distribution,
+			double supportLB,
+			double supportUB,
+			double stepSize) {
+		if (distribution instanceof DiscreteDistributionInt) {
+			if (stepSize != 1)
 				throw new NullPointerException("Factor must be 1 for Poisson");
 			return truncatedDiscreteDistributionInt((DiscreteDistributionInt) distribution, supportLB, supportUB);
-		}else if(distribution instanceof ContinuousDistribution){
-			return discretizeTruncatedContinuousDistribution((ContinuousDistribution) distribution, supportLB, supportUB, stepSize);
-		}else if(distribution instanceof DiscreteDistribution){
-		   if(stepSize != 1) 
-            throw new NullPointerException("Factor must be 1 for DiscreteDistribution");
-		   logger.trace("Note that trucation has not been implemented here!");
-		   return (DiscreteDistribution) distribution;
-		}else{
+		} else if (distribution instanceof ContinuousDistribution) {
+			return discretizeTruncatedContinuousDistribution((ContinuousDistribution) distribution, supportLB,
+					supportUB, stepSize);
+		} else if (distribution instanceof DiscreteDistribution) {
+			if (stepSize != 1)
+				throw new NullPointerException("Factor must be 1 for DiscreteDistribution");
+			logger.trace("Note that trucation has not been implemented here!");
+			return (DiscreteDistribution) distribution;
+		} else {
 			throw new NullPointerException("Unknown distribution");
 		}
 	}
-	
+
 	/**
 	 * A method to discretize a {@code DiscreteDistributionInt}.
 	 * 
-	 * @param distribution original {@code DiscreteDistributionInt} to be discretized
-	 * @param supportLB support lower bound
-	 * @param supportUB support upper bound
+	 * @param distribution original {@code DiscreteDistributionInt} to be
+	 *                     discretized
+	 * @param supportLB    support lower bound
+	 * @param supportUB    support upper bound
 	 * @return a discretized {@code DiscreteDistribution}
 	 * 
-	 * TODO: make sure that supportLB % stepSize is 0!
 	 */
-	private static DiscreteDistribution truncatedDiscreteDistributionInt(DiscreteDistributionInt distribution, 
-																	     double supportLB, 
-																	     double supportUB){
+	private static DiscreteDistribution truncatedDiscreteDistributionInt(DiscreteDistributionInt distribution,
+			double supportLB,
+			double supportUB) {
 		int[] demandValues = IntStream.iterate(supportLB >= 0 ? (int) Math.round(supportLB) : 0, n -> n + 1)
-									         .limit((supportUB >= 0 ? (int) Math.round(supportUB) : 0) + 1)
-									         .toArray();
+				.limit((supportUB >= 0 ? (int) Math.round(supportUB) : 0) + 1)
+				.toArray();
 		double[] demandProbabilities = Arrays.stream(demandValues)
-											          .mapToDouble(d -> distribution.prob(d)/
-													 		          (distribution.cdf(supportUB)-distribution.cdf(supportLB-1)))
-											          .toArray();
-		
-		return new DiscreteDistribution(demandValues, 
-										demandProbabilities, 
-										demandValues.length);
+				.mapToDouble(d -> distribution.prob(d) /
+						(distribution.cdf(supportUB) - distribution.cdf(supportLB - 1)))
+				.toArray();
+
+		return new DiscreteDistribution(demandValues,
+				demandProbabilities,
+				demandValues.length);
 	}
-	
+
 	/**
 	 * A method to discretize a {@code ContinuousDistribution}.
 	 * 
 	 * @param distribution original {@code ContinuousDistribution} to be discretized
-	 * @param supportLB support lower bound
-	 * @param supportUB support upper bound
-	 * @param stepSize discretization step
+	 * @param supportLB    support lower bound
+	 * @param supportUB    support upper bound
+	 * @param stepSize     discretization step
 	 * @return a discretized {@code DiscreteDistribution}
 	 * 
-	 * TODO: make sure that supportLB % stepSize is 0! (I believe this is sorted)
 	 */
-	private static DiscreteDistribution discretizeTruncatedContinuousDistribution(ContinuousDistribution distribution, 
-																		 double supportLB,
-																		 double supportUB, 
-																		 double stepSize){
+	private static DiscreteDistribution discretizeTruncatedContinuousDistribution(ContinuousDistribution distribution,
+			double supportLB,
+			double supportUB,
+			double stepSize) {
 		double[] demandValues = DoubleStream.iterate(supportLB, n -> n + stepSize)
-											         .limit((int) Math.ceil((supportUB - supportLB)/stepSize) + 1)
-											         .toArray();
+				.limit((int) Math.ceil((supportUB - supportLB) / stepSize) + 1)
+				.toArray();
 		double[] demandProbabilities = Arrays.stream(demandValues)
-											          .map(d -> (distribution.cdf(d+0.5*stepSize) - distribution.cdf(d-0.5*stepSize))/
-											                    (distribution.cdf(supportUB+0.5*stepSize)-distribution.cdf(supportLB-0.5*stepSize)))
-											          .toArray();
+				.map(d -> (distribution.cdf(d + 0.5 * stepSize) - distribution.cdf(d - 0.5 * stepSize)) /
+						(distribution.cdf(supportUB + 0.5 * stepSize) - distribution.cdf(supportLB - 0.5 * stepSize)))
+				.toArray();
 		return new DiscreteDistribution(demandValues, demandProbabilities, demandValues.length);
 	}
 }
-
