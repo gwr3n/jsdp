@@ -323,7 +323,8 @@ public class CapacitatedStochasticLotSizingFast {
     * Some optimal policy structure. European Journal of Operational Research
     * 126(3):603-613.
     * 
-    * K+g(x+a)-g(x)-a(g(y+b)-g(y))/b>=0, where y<=x, 0<a<=B, 0<b<=a.
+    * K+g(x+a)-g(x)-a(g(y+b)-g(y))/b&gt;=0, where y&lt;=x, 0&lt;a&lt;=B,
+    * 0&lt;b&lt;=a.
     */
    public static boolean testKBConvexity(Instance instance, Solution solution, int min, int max, FUNCTION f) {
       boolean flag = true;
@@ -551,7 +552,7 @@ public class CapacitatedStochasticLotSizingFast {
    /**
     * Test CKiii, this is a new unpublished property
     * 
-    * K+Gn(y)-Cn(y-B)<=K+Gn(x+a)-Cn(x), where y<=x and a>0.
+    * K+Gn(y)-Cn(y-B)&lt;=K+Gn(x+a)-Cn(x), where y&lt;=x and a&gt;0.
     */
    public static boolean testKBConvexity_iii(Instance instance, Solution solution, int min, int max) {
       boolean flag = true;
@@ -607,7 +608,8 @@ public class CapacitatedStochasticLotSizingFast {
    }
 
    /**
-    * Tests if there exists a threshold sm such that one should order for x<=sm and
+    * Tests if there exists a threshold sm such that one should order for x&lt;=sm
+    * and
     * not order otherwise.
     */
    public static boolean testAlwaysOrder(Instance instance, Solution solution, int min, int max) {
