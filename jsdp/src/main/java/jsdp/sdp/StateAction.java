@@ -34,29 +34,36 @@ import java.io.Serializable;
  * @author Roberto Rossi
  *
  */
-public class StateAction implements Serializable{
-   
+public class StateAction implements Serializable {
+
    private static final long serialVersionUID = 1L;
-   
+
    State initialState;
    Action action;
-   
+
    /**
-    * Creates an instance of {@code StateAction} from state {@code initialState} and action {@code action}. 
+    * Creates an instance of {@code StateAction} from state {@code initialState}
+    * and action {@code action}.
     * 
     * @param initialState the target state.
-    * @param action the target action.
+    * @param action       the target action.
     */
-   public StateAction(State initialState, Action action){
+   public StateAction(State initialState, Action action) {
       this.initialState = initialState;
-      this.action = action; 
+      this.action = action;
    }
-   
-   public boolean equals(StateAction stateAction){
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj)
+         return true;
+      if (obj == null || getClass() != obj.getClass())
+         return false;
+      StateAction stateAction = (StateAction) obj;
       return this.initialState.equals(stateAction.initialState) && this.action.equals(stateAction.action);
    }
-   
-   public int hashCode(){
+
+   public int hashCode() {
       String hash = "";
       hash = hash + initialState.hashCode() + action.hashCode();
       return hash.hashCode();

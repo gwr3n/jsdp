@@ -94,7 +94,8 @@ public class DiscreteDistributionFactory {
 			double supportLB,
 			double supportUB) {
 		int[] demandValues = IntStream.iterate(supportLB >= 0 ? (int) Math.round(supportLB) : 0, n -> n + 1)
-				.limit((supportUB >= 0 ? (int) Math.round(supportUB) : 0) + 1)
+				.limit((supportUB >= 0 ? (int) Math.round(supportUB) : 0)
+						- (supportLB >= 0 ? (int) Math.round(supportLB) : 0) + 1)
 				.toArray();
 		double[] demandProbabilities = Arrays.stream(demandValues)
 				.mapToDouble(d -> distribution.prob(d) /
