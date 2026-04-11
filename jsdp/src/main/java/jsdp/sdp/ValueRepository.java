@@ -45,7 +45,10 @@ import jsdp.utilities.hash.MapDBHashTable.Storage;
 public class ValueRepository {
    protected Map<StateAction, Double> valueHashTable;
    protected Map<State, Double> optimalValueHashTable;
+   protected Map<Integer, Map<State, Double>> optimalValueHashTableByPeriod;
    protected Map<State, Action> optimalActionHashTable;
+
+   protected HashType hashType;
 
    protected double discountFactor;
 
@@ -66,6 +69,7 @@ public class ValueRepository {
          HashType hash) {
       this.setImmediateValue(immediateValueFunction);
       this.discountFactor = discountFactor;
+      this.hashType = hash;
       switch (hash) {
          case HASHTABLE:
             this.valueHashTable = new Hashtable<StateAction, Double>();
@@ -114,6 +118,9 @@ public class ValueRepository {
          default:
             throw new NullPointerException("HashType not available");
       }
+      if (hash == HashType.CONCURRENT_HASHMAP) {
+         this.optimalValueHashTableByPeriod = Collections.synchronizedMap(new ConcurrentHashMap<Integer, Map<State, Double>>());
+      }
    }
 
    /**
@@ -135,6 +142,7 @@ public class ValueRepository {
          int stateSpaceSizeLowerBound, float loadFactor, HashType hash) {
       this.setImmediateValue(immediateValueFunction);
       this.discountFactor = discountFactor;
+      this.hashType = hash;
       switch (hash) {
          case HASHTABLE:
             this.valueHashTable = new Hashtable<StateAction, Double>(stateSpaceSizeLowerBound, loadFactor);
@@ -189,6 +197,9 @@ public class ValueRepository {
          default:
             throw new NullPointerException("HashType not available");
       }
+      if (hash == HashType.CONCURRENT_HASHMAP) {
+         this.optimalValueHashTableByPeriod = Collections.synchronizedMap(new ConcurrentHashMap<Integer, Map<State, Double>>());
+      }
    }
 
    protected ValueRepository() {
@@ -201,6 +212,20 @@ public class ValueRepository {
     */
    public Map<State, Double> getOptimalValueHashTable() {
       return this.optimalValueHashTable;
+   }
+
+   private Map<State, Double> getPeriodValueHashTable(State state) {
+      if (this.hashType != HashType.CONCURRENT_HASHMAP) {
+         return this.optimalValueHashTable;
+      }
+      int period = state.getPeriod();
+      return this.optimalValueHashTableByPeriod.computeIfAbsent(
+            Integer.valueOf(period),
+            p -> Collections.synchronizedMap(new ConcurrentHashMap<State, Double>()));
+   }
+
+   public boolean containsOptimalExpectedValue(State state) {
+      return this.getPeriodValueHashTable(state).containsKey(state);
    }
 
    /**
@@ -292,7 +317,9 @@ public class ValueRepository {
     * @param expectedValue the optimal expected total cost.
     */
    public void setOptimalExpectedValue(State state, double expectedValue) {
-      this.optimalValueHashTable.put(state, Double.valueOf(expectedValue));
+      Double boxedValue = Double.valueOf(expectedValue);
+      this.getPeriodValueHashTable(state).put(state, boxedValue);
+      this.optimalValueHashTable.put(state, boxedValue);
    }
 
    /**
@@ -302,7 +329,7 @@ public class ValueRepository {
     * @return the optimal expected value.
     */
    public double getOptimalExpectedValue(State state) {
-      return this.optimalValueHashTable.get(state).doubleValue();
+      return this.getPeriodValueHashTable(state).get(state).doubleValue();
    }
 
    /**

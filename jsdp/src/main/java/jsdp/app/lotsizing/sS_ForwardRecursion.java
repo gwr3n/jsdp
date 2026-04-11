@@ -96,8 +96,8 @@ public class sS_ForwardRecursion extends ForwardRecursion {
 
 	@Override
 	public double runForwardRecursion(State state) {
-		if (this.valueRepository.getOptimalValueHashTable().containsKey(state)) {
-			return this.valueRepository.getOptimalValueHashTable().get(state);
+		if (this.valueRepository.containsOptimalExpectedValue(state)) {
+			return this.valueRepository.getOptimalExpectedValue(state);
 		}
 
 		State y = state;
@@ -124,9 +124,7 @@ public class sS_ForwardRecursion extends ForwardRecursion {
 		this.getValueRepository().setOptimalAction(y, repository.getBestAction());
 		logger.trace(repository.getBestAction() + "\tCost: " + repository.getBestValue());
 
-		double bestValue = repository.getBestValue();
-		this.valueRepository.getOptimalValueHashTable().put(state, bestValue);
-		return bestValue;
+		return repository.getBestValue();
 	}
 
 	public double[][] getOptimalPolicy(double initialInventory) {

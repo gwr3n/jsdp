@@ -140,4 +140,32 @@ public class ValueRepositoryTest {
         // expected value
         assertEquals(Double.valueOf(152.5), repository.getValueHashTable().get(new StateAction(initialState, action)));
     }
+
+    @Test
+    public void testContainsOptimalExpectedValue() {
+        MockState state = new MockState(1, "S1");
+        assertEquals(false, repository.containsOptimalExpectedValue(state));
+
+        repository.setOptimalExpectedValue(state, 77.0);
+        assertEquals(true, repository.containsOptimalExpectedValue(state));
+    }
+
+    @Test
+    public void testConcurrentHashMapOptimalValuesAreStoredByPeriod() {
+        ValueRepository concurrentRepository =
+                new ValueRepository(mockImmediateValueFunction, 0.95, HashType.CONCURRENT_HASHMAP);
+
+        MockState period0State = new MockState(0, "S");
+        MockState period1State = new MockState(1, "S");
+
+        concurrentRepository.setOptimalExpectedValue(period0State, 11.0);
+        concurrentRepository.setOptimalExpectedValue(period1State, 22.0);
+
+        assertEquals(11.0, concurrentRepository.getOptimalExpectedValue(period0State), 1e-6);
+        assertEquals(22.0, concurrentRepository.getOptimalExpectedValue(period1State), 1e-6);
+        assertEquals(true, concurrentRepository.containsOptimalExpectedValue(period0State));
+        assertEquals(true, concurrentRepository.containsOptimalExpectedValue(period1State));
+
+        assertEquals(2, concurrentRepository.optimalValueHashTableByPeriod.size());
+    }
 }

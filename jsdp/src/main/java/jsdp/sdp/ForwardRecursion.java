@@ -96,7 +96,7 @@ public abstract class ForwardRecursion extends Recursion {
 	 * @param state the initial state.
 	 */
 	private synchronized void stateMonitoring(State state) {
-		if (this.valueRepository.optimalValueHashTable.containsKey(state))
+		if (this.valueRepository.containsOptimalExpectedValue(state))
 			reusedStates++;
 		else
 			generatedStates++;
@@ -147,8 +147,8 @@ public abstract class ForwardRecursion extends Recursion {
 		if (stateMonitoring)
 			stateMonitoring(state);
 
-		if (this.valueRepository.optimalValueHashTable.containsKey(state)) {
-			return this.valueRepository.optimalValueHashTable.get(state);
+		if (this.valueRepository.containsOptimalExpectedValue(state)) {
+			return this.valueRepository.getOptimalExpectedValue(state);
 		}
 
 		State y = state;
@@ -189,8 +189,6 @@ public abstract class ForwardRecursion extends Recursion {
 		this.getValueRepository().setOptimalAction(y, repository.getBestAction());
 		logger.trace(repository.getBestAction() + "\tCost: " + repository.getBestValue());
 
-		double bestValue = repository.getBestValue();
-		this.valueRepository.optimalValueHashTable.put(state, bestValue);
-		return bestValue;
+		return repository.getBestValue();
 	}
 }
