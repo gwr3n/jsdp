@@ -159,4 +159,42 @@ public class NormalSampleTest {
 					Math.abs(distribution.getMean()-empLHS[i].getMean()) <= Math.abs(distribution.getMean()-empSRS[i].getMean()));
 
 	}
+
+	@Test
+	public void testConstructorIsInstantiable() {
+		assertNotNull(new SampleFactory());
+	}
+
+	@Test
+	public void testGetNextLHSSampleBatchingRefreshesOnNull() {
+		// Use a tiny batch size to force a batch refresh within the test
+		int origM = SampleFactory.M;
+		SampleFactory.M = 2;
+		try {
+			Distribution[] d1 = {new NormalDist(0, 1)};
+			SampleFactory.resetStartStream();
+
+			// First call: currentLHSBatch is null → generates new batch
+			double[] s1 = SampleFactory.getNextLHSample(d1);
+			assertNotNull(s1);
+			assertEquals(1, s1.length);
+
+			// Second call: uses existing batch (index 1 of batch-size-2)
+			double[] s2 = SampleFactory.getNextLHSample(d1);
+			assertNotNull(s2);
+
+			// Third call: batch exhausted (nextBatchIndex=2 >= M=2) → batch regenerated
+			double[] s3 = SampleFactory.getNextLHSample(d1);
+			assertNotNull(s3);
+
+			// Call with a different dimensionality: triggers dimension-change refresh
+			Distribution[] d2 = {new NormalDist(0, 1), new NormalDist(5, 2)};
+			double[] s4 = SampleFactory.getNextLHSample(d2);
+			assertNotNull(s4);
+			assertEquals(2, s4.length);
+		} finally {
+			SampleFactory.M = origM;
+		}
+	}
 }
+

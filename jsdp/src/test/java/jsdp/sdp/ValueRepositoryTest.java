@@ -1,10 +1,15 @@
 package jsdp.sdp;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -64,6 +69,25 @@ public class ValueRepositoryTest {
 
     private ImmediateValueFunction<State, Action, Double> mockImmediateValueFunction;
     private ValueRepository repository;
+
+    @AfterClass
+    public static void cleanUpTablesDirectory() throws Exception {
+        File tablesDir = new File("tables");
+        if (tablesDir.exists() && tablesDir.listFiles() != null) {
+            for (File f : tablesDir.listFiles()) {
+                String name = f.getName();
+                if (name.startsWith("valueHashTable")
+                        || name.startsWith("optimalValueHashTable")
+                        || name.startsWith("optimalActionHashTable")) {
+                    Files.deleteIfExists(f.toPath());
+                }
+            }
+            String[] remaining = tablesDir.list();
+            if (remaining != null && remaining.length == 0) {
+                tablesDir.delete();
+            }
+        }
+    }
 
     @Before
     public void setUp() {
@@ -167,5 +191,98 @@ public class ValueRepositoryTest {
         assertEquals(true, concurrentRepository.containsOptimalExpectedValue(period1State));
 
         assertEquals(2, concurrentRepository.optimalValueHashTableByPeriod.size());
+    }
+
+    @Test
+    public void testConstructorsAndAccessorsAcrossHashTypes() {
+        MockState state = new MockState(0, "S0");
+        MockState finalState = new MockState(1, "S1");
+        MockAction action = new MockAction(state, "A");
+
+        for (HashType hashType : HashType.values()) {
+            ValueRepository repositoryByType = new ValueRepository(mockImmediateValueFunction, 0.9, hashType);
+            repositoryByType.setOptimalExpectedValue(state, 12.0);
+            repositoryByType.setOptimalAction(state, action);
+
+            assertEquals(12.0, repositoryByType.getOptimalExpectedValue(state), 1e-9);
+            assertEquals(action, repositoryByType.getOptimalAction(state));
+            assertTrue(repositoryByType.containsOptimalExpectedValue(state));
+            assertEquals(0.9, repositoryByType.getDiscountFactor(), 1e-9);
+            assertEquals(10.0, repositoryByType.getImmediateValue(state, action, finalState), 1e-9);
+            assertEquals(Double.valueOf(12.0), repositoryByType.getOptimalValueHashTable().get(state));
+         }
+    }
+
+    @Test
+    public void testSizedConstructorAndImmediateValueOverride() {
+        ValueRepository sizedRepository =
+                new ValueRepository(mockImmediateValueFunction, 0.95, 64, 0.75f, HashType.THASHMAP);
+
+        MockState state = new MockState(0, "S0");
+        MockAction action = new MockAction(state, "A0");
+        MockState finalState = new MockState(1, "S1");
+
+        sizedRepository.setImmediateValue((initialState, a, fin) -> 42.0);
+        sizedRepository.setOptimalExpectedValue(finalState, 5.0);
+
+        assertEquals(42.0, sizedRepository.getImmediateValue(state, action, finalState), 1e-9);
+        assertEquals(5.0, sizedRepository.getOptimalExpectedValue(finalState), 1e-9);
+    }
+
+    @Test
+    public void testExpectedValueCacheHitPath() {
+        MockState initialState = new MockState(0, "S0");
+        MockState finalState = new MockState(1, "S1");
+        MockAction action = new MockAction(initialState, "A0");
+
+        repository.setOptimalExpectedValue(finalState, 20.0);
+
+        TransitionProbability deterministicProbability = new TransitionProbability() {
+            @Override
+            public double getTransitionProbability(State ini, Action a, State fin) {
+                return fin.equals(finalState) ? 1.0 : 0.0;
+            }
+
+            @Override
+            public ArrayList<State> generateFinalStates(State ini, Action a) {
+                ArrayList<State> states = new ArrayList<>();
+                states.add(finalState);
+                return states;
+            }
+
+            @Override
+            public ArrayList<State> getFinalStates(State ini, Action a) {
+                ArrayList<State> states = new ArrayList<>();
+                states.add(finalState);
+                return states;
+            }
+        };
+
+        double first = repository.getExpectedValue(initialState, action, deterministicProbability);
+        int cacheSize = repository.getValueHashTable().size();
+        double second = repository.getExpectedValue(initialState, action, deterministicProbability);
+
+        assertEquals(first, second, 1e-9);
+        assertEquals(cacheSize, repository.getValueHashTable().size());
+    }
+
+    @Test
+    public void testSizedConstructorAcrossAllHashTypes() {
+        MockState state = new MockState(2, "S2");
+        MockAction action = new MockAction(state, "A2");
+
+        for (HashType hashType : HashType.values()) {
+            ValueRepository sizedRepository =
+                    new ValueRepository(mockImmediateValueFunction, 0.8, 32, 0.75f, hashType);
+            sizedRepository.setOptimalExpectedValue(state, 9.0);
+            sizedRepository.setOptimalAction(state, action);
+
+            assertEquals(9.0, sizedRepository.getOptimalExpectedValue(state), 1e-9);
+            assertEquals(action, sizedRepository.getOptimalAction(state));
+            assertTrue(sizedRepository.containsOptimalExpectedValue(state));
+            assertNotNull(sizedRepository.getOptimalActionHashTable());
+            assertNotNull(sizedRepository.getOptimalValueHashTable());
+            assertNotNull(sizedRepository.getValueHashTable());
+        }
     }
 }

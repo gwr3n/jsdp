@@ -61,6 +61,7 @@ public class StateActionTest {
         }
     }
 
+    @SuppressWarnings("unlikely-arg-type")
     @Test
     public void testEqualsAndHashCode() {
         MockState state1 = new MockState(1, "S1");
@@ -83,5 +84,32 @@ public class StateActionTest {
         // Test hashCode consistency
         assertEquals(sa1.hashCode(), sa1Duplicate.hashCode());
         assertNotEquals(sa1.hashCode(), sa2.hashCode());
+
+        // Additional equals branches
+        assertTrue(sa1.equals(sa1));
+        assertFalse(sa1.equals(null));
+        assertFalse(sa1.equals("not-a-state-action"));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testEqualsWithNullInitialStateThrows() {
+        MockState state1 = new MockState(1, "S1");
+        MockAction action1 = new MockAction(state1, "A1");
+
+        StateAction invalid = new StateAction(null, action1);
+        StateAction other = new StateAction(state1, action1);
+
+        invalid.equals(other);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testEqualsWithNullActionThrows() {
+        MockState state1 = new MockState(1, "S1");
+        MockAction action1 = new MockAction(state1, "A1");
+
+        StateAction invalid = new StateAction(state1, null);
+        StateAction other = new StateAction(state1, action1);
+
+        invalid.equals(other);
     }
 }

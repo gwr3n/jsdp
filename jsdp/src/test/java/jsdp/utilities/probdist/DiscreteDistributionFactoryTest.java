@@ -6,10 +6,28 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import umontreal.ssj.probdist.DiscreteDistribution;
+import umontreal.ssj.probdist.Distribution;
 import umontreal.ssj.probdist.NormalDist;
 import umontreal.ssj.probdist.PoissonDist;
 
 public class DiscreteDistributionFactoryTest {
+
+    /** Minimal Distribution implementation that is none of the three recognised subtypes. */
+    private static class UnknownDistribution implements Distribution {
+        @Override public double cdf(double x) { return 0; }
+        @Override public double barF(double x) { return 1; }
+        @Override public double inverseF(double u) { return 0; }
+        @Override public double getMean() { return 0; }
+        @Override public double getVariance() { return 0; }
+        @Override public double getStandardDeviation() { return 0; }
+        @Override public double[] getParams() { return new double[0]; }
+        @Override public String toString() { return "unknown"; }
+    }
+
+    @Test
+    public void testConstructorIsInstantiable() {
+        assertNotNull(new DiscreteDistributionFactory());
+    }
 
     @Test
     public void testGetTruncatedDiscreteDistributionFromDiscrete() {
@@ -51,5 +69,35 @@ public class DiscreteDistributionFactoryTest {
 
         assertEquals(5.0, discretized.getValue(0), 1e-6);
         assertEquals(15.0, discretized.getValue(10), 1e-6);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testDiscreteDistributionIntWithWrongStepSizeThrows() {
+        PoissonDist poisson = new PoissonDist(3.0);
+        DiscreteDistributionFactory.getTruncatedDiscreteDistribution(poisson, 0, 6, 2.0);
+    }
+
+    @Test
+    public void testDiscreteDistributionPassthrough() {
+        // A DiscreteDistribution (over doubles) should be returned as-is with stepSize=1
+        double[] vals = {1.0, 2.0, 3.0};
+        double[] probs = {1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0};
+        DiscreteDistribution dd = new DiscreteDistribution(vals, probs, 3);
+        DiscreteDistribution result = DiscreteDistributionFactory.getTruncatedDiscreteDistribution(dd, 1.0, 3.0, 1.0);
+        assertNotNull(result);
+        assertEquals(3, result.getN());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testDiscreteDistributionWithWrongStepSizeThrows() {
+        double[] vals = {1.0, 2.0, 3.0};
+        double[] probs = {1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0};
+        DiscreteDistribution dd = new DiscreteDistribution(vals, probs, 3);
+        DiscreteDistributionFactory.getTruncatedDiscreteDistribution(dd, 1.0, 3.0, 2.0);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testUnknownDistributionThrows() {
+        DiscreteDistributionFactory.getTruncatedDiscreteDistribution(new UnknownDistribution(), 0, 5, 1.0);
     }
 }
