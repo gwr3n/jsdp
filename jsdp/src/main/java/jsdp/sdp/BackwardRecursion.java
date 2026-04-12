@@ -66,6 +66,19 @@ public abstract class BackwardRecursion extends Recursion {
    }
 
    /**
+    * Updates monitoring counters when monitoring is enabled.
+    *
+    * @param generated number of generated states
+    * @param processed number of processed states
+    * @param stage current stage
+    */
+   protected void updateMonitoring(long generated, long processed, int stage) {
+      if (stateMonitoring && monitor != null) {
+         monitor.setStates(generated, processed, stage);
+      }
+   }
+
+   /**
     * Creates an instance of {@code BackwardRecursion} with the given optimization
     * direction.
     * 

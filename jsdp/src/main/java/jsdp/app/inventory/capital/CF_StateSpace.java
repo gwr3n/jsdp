@@ -28,14 +28,14 @@ public class CF_StateSpace extends StateSpace<CF_StateDescriptor> {
    }
    
    public boolean exists(CF_StateDescriptor descriptor){
-      return states.get(descriptor) != null;
+      return stateStore.get(descriptor) != null;
    }
    
    public State getState(CF_StateDescriptor descriptor){
-      State value = states.get(descriptor);
+      State value = stateStore.get(descriptor);
       if(value == null){
          State state = new CF_State(descriptor);
-         this.states.put(descriptor, state);
+         this.stateStore.put(descriptor, state);
          return state;
       }else
          return (CF_State) value;

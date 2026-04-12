@@ -83,18 +83,18 @@ public class BackwardRecursionTest {
 
         @Override
         public State getState(Integer descriptor) {
-            State existing = this.states.get(descriptor);
+            State existing = this.stateStore.get(descriptor);
             if (existing != null) {
                 return existing;
             }
             MockState created = new MockState(this.period, descriptor.intValue());
-            this.states.put(descriptor, created);
+            this.stateStore.put(descriptor, created);
             return created;
         }
 
         @Override
         public Iterator<State> iterator() {
-            return this.states.values().iterator();
+            return this.stateStore.entrySet().stream().map(e -> e.getValue()).iterator();
         }
     }
 

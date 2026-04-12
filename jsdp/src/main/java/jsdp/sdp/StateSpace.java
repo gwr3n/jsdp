@@ -27,16 +27,11 @@
 package jsdp.sdp;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
-import gnu.trove.map.hash.THashMap;
-import jsdp.utilities.hash.MapDBHashTable;
-import jsdp.utilities.hash.MapDBHashTable.Storage;
+import org.apache.spark.api.java.JavaSparkContext;
 
 /**
  * An abstract container that stores all generated {@code State}.
@@ -48,7 +43,7 @@ import jsdp.utilities.hash.MapDBHashTable.Storage;
 public abstract class StateSpace<SD> implements Iterable<State>{
 	
 	protected int period;
-	protected Map<SD,State> states;
+	protected StateStore<SD> stateStore;
 	
    protected static Function<State, ArrayList<Action>> buildActionList;
    protected static Function<State, Action> idempotentAction;
@@ -70,34 +65,7 @@ public abstract class StateSpace<SD> implements Iterable<State>{
 	 */
 	public StateSpace(int period, HashType hash){
 		this.period = period;
-		switch(hash){
-		case HASHTABLE:
-		   this.states = new Hashtable<SD,State>();
-		   break;
-		case CONCURRENT_HASHMAP:
-		   this.states = Collections.synchronizedMap(new ConcurrentHashMap<SD,State>());
-		   break;
-		case THASHMAP:
-		   this.states = Collections.synchronizedMap(new THashMap<SD,State>());
-		   break;
-		case MAPDB_HEAP:
-         this.states = new MapDBHashTable<SD,State>("states", Storage.HEAP);
-         break; 
-      case MAPDB_HEAP_SHARDED:
-         this.states = new MapDBHashTable<SD,State>("states", Storage.HEAP_SHARDED);
-         break; 
-		case MAPDB_MEMORY:
-         this.states = new MapDBHashTable<SD,State>("states", Storage.MEMORY);
-         break; 
-		case MAPDB_MEMORY_SHARDED:
-         this.states = new MapDBHashTable<SD,State>("states", Storage.MEMORY_SHARDED);
-         break; 
-		case MAPDB_DISK:
-         this.states = new MapDBHashTable<SD,State>("states", Storage.DISK);
-         break;      
-      default: 
-         throw new NullPointerException("HashType not available");
-		}
+		this.stateStore = new DefaultMapStateStore<>(hash);
 	}
 	
    /**
@@ -111,33 +79,39 @@ public abstract class StateSpace<SD> implements Iterable<State>{
     */
    public StateSpace(int period, HashType hash, int stateSpaceSizeLowerBound, float loadFactor){
       this.period = period;
-      switch(hash){
-         case HASHTABLE:
-            states = new Hashtable<SD,State>(stateSpaceSizeLowerBound,loadFactor);
-            break;
-         case CONCURRENT_HASHMAP:
-            states = Collections.synchronizedMap(new ConcurrentHashMap<SD,State>(stateSpaceSizeLowerBound,loadFactor));
-            break;
-         case THASHMAP:
-            states = Collections.synchronizedMap(new THashMap<SD,State>(stateSpaceSizeLowerBound,loadFactor));
-            break;
-         case MAPDB_HEAP:
-            this.states = new MapDBHashTable<SD,State>("states", Storage.HEAP);
-            break; 
-         case MAPDB_HEAP_SHARDED:
-            this.states = new MapDBHashTable<SD,State>("states", Storage.HEAP_SHARDED);
-            break; 
-         case MAPDB_MEMORY:
-            this.states = new MapDBHashTable<SD,State>("states", Storage.MEMORY);
-            break; 
-         case MAPDB_MEMORY_SHARDED:
-            this.states = new MapDBHashTable<SD,State>("states", Storage.MEMORY_SHARDED);
-            break;
-         case MAPDB_DISK:
-            this.states = new MapDBHashTable<SD,State>("states", Storage.DISK);
-            break;    
-         default: 
-            throw new NullPointerException("HashType not available");   
+      this.stateStore = new DefaultMapStateStore<>(hash, stateSpaceSizeLowerBound, loadFactor);
+   }
+
+   /**
+    * Constructs a container for states associated with a given {@code period} using
+    * a custom {@code StateStore} implementation.
+    * Use this constructor to supply alternative storage backends (e.g. Apache Spark RDDs).
+    *
+    * @param period the period associated with this container.
+    * @param store  the backing store implementation.
+    */
+   protected StateSpace(int period, StateStore<SD> store){
+      this.period = period;
+      this.stateStore = store;
+   }
+
+   /**
+    * Constructs a container for states associated with a given {@code period},
+    * routing to {@link SparkStateStore} when {@code hash} is {@link HashType#SPARK_RDD}.
+    * For all other {@code HashType} values the Spark context is ignored and the
+    * standard {@link DefaultMapStateStore} is used.
+    *
+    * @param period the period associated with this container.
+    * @param hash   the storage type; use {@link HashType#SPARK_RDD} for Spark-backed storage.
+    * @param sc     the active {@code JavaSparkContext}; required when {@code hash == SPARK_RDD}.
+    */
+   @SuppressWarnings("unchecked")
+   public StateSpace(int period, HashType hash, JavaSparkContext sc){
+      this.period = period;
+      if(hash == HashType.SPARK_RDD){
+         this.stateStore = (StateStore<SD>) new SparkStateStore<>(sc);
+      } else {
+         this.stateStore = new DefaultMapStateStore<>(hash);
       }
    }
 	
@@ -164,6 +138,6 @@ public abstract class StateSpace<SD> implements Iterable<State>{
 	 * @return the set of state descriptors that are keys in the states {@code Hashtable}.
 	 */
 	public Set<Map.Entry<SD,State>> entrySet(){
-		return states.entrySet();
+		return stateStore.entrySet();
 	}
 }

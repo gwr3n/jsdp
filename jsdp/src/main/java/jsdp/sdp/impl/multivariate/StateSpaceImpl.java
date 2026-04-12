@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.function.Function;
 
+import org.apache.spark.api.java.JavaSparkContext;
+
 import jsdp.sdp.Action;
 import jsdp.sdp.HashType;
 import jsdp.sdp.State;
@@ -94,6 +96,16 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
       StateSpace.idempotentAction = idempotentAction;
       this.setSamplingScheme(samplingScheme, maxSampleSize, reductionFactorPerStage);
    }
+
+   public StateSpaceImpl(int period,
+                         Function<State, ArrayList<Action>> buildActionList,
+                         Function<State, Action> idempotentAction,
+                         HashType hash,
+                         JavaSparkContext sc){
+      super(period, hash, sc);
+      StateSpace.buildActionList = buildActionList;
+      StateSpace.idempotentAction = idempotentAction;
+   }
    
    public void setSamplingScheme(SamplingScheme samplingScheme, int maxSampleSize, double reductionFactorPerStage){
       switch(samplingScheme){
@@ -110,14 +122,14 @@ public class StateSpaceImpl extends StateSpace<StateDescriptorImpl>{
    }
 
    public boolean exists (StateDescriptorImpl descriptor){
-      return states.get(descriptor) != null;
+      return stateStore.get(descriptor) != null;
    }
    
    public State getState(StateDescriptorImpl descriptor){
-      State value = states.get(descriptor);
+      State value = stateStore.get(descriptor);
       if(value == null){
          State state = new StateImpl(descriptor);
-         this.states.put(descriptor, state);
+         this.stateStore.put(descriptor, state);
          return state;
       }else
          return (StateImpl) value;

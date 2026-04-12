@@ -61,14 +61,14 @@ public class sS_StateSpace extends StateSpace<sS_StateDescriptor>{
    }
 
    public boolean exists (sS_StateDescriptor descriptor){
-      return states.get(descriptor) != null;
+      return stateStore.get(descriptor) != null;
    }
    
    public State getState(sS_StateDescriptor descriptor){
-      State value = states.get(descriptor);
+      State value = stateStore.get(descriptor);
       if(value == null){
          State state = new sS_State(descriptor);
-         this.states.put(descriptor, state);
+         this.stateStore.put(descriptor, state);
          return state;
       }else
          return (sS_State) value;

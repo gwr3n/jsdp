@@ -54,14 +54,14 @@ public class BR_StateSpace extends StateSpace<BR_StateDescriptor> {
    }
 
    public boolean exists (BR_StateDescriptor descriptor){
-      return states.get(descriptor) != null;
+      return stateStore.get(descriptor) != null;
    }
    
    public State getState(BR_StateDescriptor descriptor){
-      State value = states.get(descriptor);
+      State value = stateStore.get(descriptor);
       if(value == null){
          State state = new BR_State(descriptor);
-         this.states.put(descriptor, state);
+         this.stateStore.put(descriptor, state);
          return state;
       }else
          return (BR_State) value;

@@ -200,6 +200,7 @@ public class ValueRepositoryTest {
         MockAction action = new MockAction(state, "A");
 
         for (HashType hashType : HashType.values()) {
+            if (hashType == HashType.SPARK_RDD) continue;
             ValueRepository repositoryByType = new ValueRepository(mockImmediateValueFunction, 0.9, hashType);
             repositoryByType.setOptimalExpectedValue(state, 12.0);
             repositoryByType.setOptimalAction(state, action);
@@ -272,6 +273,7 @@ public class ValueRepositoryTest {
         MockAction action = new MockAction(state, "A2");
 
         for (HashType hashType : HashType.values()) {
+            if (hashType == HashType.SPARK_RDD) continue;
             ValueRepository sizedRepository =
                     new ValueRepository(mockImmediateValueFunction, 0.8, 32, 0.75f, hashType);
             sizedRepository.setOptimalExpectedValue(state, 9.0);

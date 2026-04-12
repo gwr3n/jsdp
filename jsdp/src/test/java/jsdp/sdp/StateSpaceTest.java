@@ -9,6 +9,8 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -95,18 +97,81 @@ public class StateSpaceTest {
 
         @Override
         public State getState(Integer descriptor) {
-            State existing = this.states.get(descriptor);
+            State existing = this.stateStore.get(descriptor);
             if (existing != null) {
                 return existing;
             }
             State created = new MockState(this.period, descriptor.intValue());
-            this.states.put(descriptor, created);
+            this.stateStore.put(descriptor, created);
             return created;
         }
 
         @Override
         public Iterator<State> iterator() {
-            return this.states.values().iterator();
+            return this.stateStore.entrySet().stream().map(e -> e.getValue()).iterator();
+        }
+    }
+
+    private static final class InMemoryStateStore implements StateStore<Integer> {
+        private final java.util.HashMap<Integer, State> backing = new java.util.HashMap<>();
+
+        @Override
+        public State get(Integer descriptor) {
+            return backing.get(descriptor);
+        }
+
+        @Override
+        public void put(Integer descriptor, State state) {
+            backing.put(descriptor, state);
+        }
+
+        @Override
+        public Set<Map.Entry<Integer, State>> entrySet() {
+            return backing.entrySet();
+        }
+    }
+
+    private static final class CustomStoreStateSpace extends StateSpace<Integer> {
+        CustomStoreStateSpace(int period, StateStore<Integer> store) {
+            super(period, store);
+        }
+
+        @Override
+        public State getState(Integer descriptor) {
+            State existing = this.stateStore.get(descriptor);
+            if (existing != null) {
+                return existing;
+            }
+            State created = new MockState(this.period, descriptor.intValue());
+            this.stateStore.put(descriptor, created);
+            return created;
+        }
+
+        @Override
+        public Iterator<State> iterator() {
+            return this.stateStore.entrySet().stream().map(e -> e.getValue()).iterator();
+        }
+    }
+
+    private static final class SparkFallbackStateSpace extends StateSpace<Integer> {
+        SparkFallbackStateSpace(int period, HashType hashType) {
+            super(period, hashType, null);
+        }
+
+        @Override
+        public State getState(Integer descriptor) {
+            State existing = this.stateStore.get(descriptor);
+            if (existing != null) {
+                return existing;
+            }
+            State created = new MockState(this.period, descriptor.intValue());
+            this.stateStore.put(descriptor, created);
+            return created;
+        }
+
+        @Override
+        public Iterator<State> iterator() {
+            return this.stateStore.entrySet().stream().map(e -> e.getValue()).iterator();
         }
     }
 
@@ -143,6 +208,7 @@ public class StateSpaceTest {
     @Test
     public void testConstructorsAcrossHashTypes() {
         for (HashType hashType : HashType.values()) {
+            if (hashType == HashType.SPARK_RDD) continue;
             MockStateSpace plain = new MockStateSpace(1, hashType);
             MockStateSpace sized = new MockStateSpace(2, hashType, 64, 0.75f);
 
@@ -161,6 +227,7 @@ public class StateSpaceTest {
     @Test
     public void testEntrySetAndIteratorAcrossHashTypes() {
         for (HashType hashType : HashType.values()) {
+            if (hashType == HashType.SPARK_RDD) continue;
             MockStateSpace stateSpace = new MockStateSpace(4, hashType);
             stateSpace.getState(Integer.valueOf(1));
             stateSpace.getState(Integer.valueOf(2));
@@ -177,5 +244,30 @@ public class StateSpaceTest {
             }
             assertEquals(3, iterated);
         }
+    }
+
+    @Test
+    public void testProtectedCustomStoreConstructor() {
+        InMemoryStateStore customStore = new InMemoryStateStore();
+        CustomStoreStateSpace stateSpace = new CustomStoreStateSpace(5, customStore);
+
+        State a = stateSpace.getState(Integer.valueOf(11));
+        State b = stateSpace.getState(Integer.valueOf(11));
+
+        assertSame(a, b);
+        assertEquals(1, customStore.entrySet().size());
+        assertEquals(1, stateSpace.entrySet().size());
+        assertTrue(stateSpace.iterator().hasNext());
+    }
+
+    @Test
+    public void testSparkConstructorFallsBackForNonSparkHashTypeWhenSparkContextIsNull() {
+        SparkFallbackStateSpace stateSpace = new SparkFallbackStateSpace(6, HashType.HASHTABLE);
+
+        State a = stateSpace.getState(Integer.valueOf(21));
+        State b = stateSpace.getState(Integer.valueOf(21));
+
+        assertSame(a, b);
+        assertEquals(1, stateSpace.entrySet().size());
     }
 }
