@@ -160,10 +160,12 @@ public class SparkStochasticLotSizing {
                StateImpl.getStepSize());
 
          double discountFactor = 1.0;
+         // Enable fast mode to use stage-local caches and reduce Spark job overhead
          SparkValueRepository valueRepository = new SparkValueRepository(
                immediateValueFunction,
                discountFactor,
-               sc);
+               sc,
+               true);
 
          SparkBackwardRecursion recursion = new SparkBackwardRecursion(
                OptimisationDirection.MIN,

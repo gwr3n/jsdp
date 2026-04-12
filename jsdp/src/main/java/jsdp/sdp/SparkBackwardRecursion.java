@@ -61,7 +61,21 @@ public class SparkBackwardRecursion extends BackwardRecursion {
       generateStates();
       for (int i = horizonLength - 1; i >= 0; i--) {
          logger.info("Processing period[" + i + "] (Spark engine)...");
+         // If stores support fast mode, begin stage-local caching
+         if (this.valueRepository instanceof jsdp.sdp.SparkValueRepository) {
+            ((jsdp.sdp.SparkValueRepository) this.valueRepository).beginStage();
+         }
+         StateSpace<?> ss = this.getStateSpace(i);
+         if (ss != null && ss.stateStore instanceof jsdp.sdp.SparkStateStore) {
+            ((jsdp.sdp.SparkStateStore<?>) ss.stateStore).beginStage();
+         }
          recurse(i);
+         if (this.valueRepository instanceof jsdp.sdp.SparkValueRepository) {
+            ((jsdp.sdp.SparkValueRepository) this.valueRepository).endStage();
+         }
+         if (ss != null && ss.stateStore instanceof jsdp.sdp.SparkStateStore) {
+            ((jsdp.sdp.SparkStateStore<?>) ss.stateStore).endStage();
+         }
       }
    }
 
@@ -71,11 +85,32 @@ public class SparkBackwardRecursion extends BackwardRecursion {
       generateStates();
       for (int i = horizonLength - 1; i > period; i--) {
          logger.info("Processing period[" + i + "] (Spark engine)...");
+         if (this.valueRepository instanceof jsdp.sdp.SparkValueRepository) {
+            ((jsdp.sdp.SparkValueRepository) this.valueRepository).beginStage();
+         }
+         StateSpace<?> ss = this.getStateSpace(i);
+         if (ss != null && ss.stateStore instanceof jsdp.sdp.SparkStateStore) {
+            ((jsdp.sdp.SparkStateStore<?>) ss.stateStore).beginStage();
+         }
          recurse(i);
+         if (this.valueRepository instanceof jsdp.sdp.SparkValueRepository) {
+            ((jsdp.sdp.SparkValueRepository) this.valueRepository).endStage();
+         }
+         if (ss != null && ss.stateStore instanceof jsdp.sdp.SparkStateStore) {
+            ((jsdp.sdp.SparkStateStore<?>) ss.stateStore).endStage();
+         }
       }
 
       logger.info("Processing period[" + period + "] (Spark engine)...");
-      this.getStateSpace(period).entrySet().parallelStream().forEach(entry -> {
+      StateSpace<?> ss = this.getStateSpace(period);
+      if (this.valueRepository instanceof jsdp.sdp.SparkValueRepository) {
+         ((jsdp.sdp.SparkValueRepository) this.valueRepository).beginStage();
+      }
+      if (ss != null && ss.stateStore instanceof jsdp.sdp.SparkStateStore) {
+         ((jsdp.sdp.SparkStateStore<?>) ss.stateStore).beginStage();
+      }
+
+      ss.entrySet().parallelStream().forEach(entry -> {
          State state = entry.getValue();
          Action bestAction = state.getNoAction();
          double bestCost = this.getValueRepository().getExpectedValue(state, bestAction, this.getTransitionProbability());
@@ -83,6 +118,13 @@ public class SparkBackwardRecursion extends BackwardRecursion {
          this.getValueRepository().setOptimalAction(state, bestAction);
          updateMonitoring(generatedStates.get(), processedStates.incrementAndGet(), period);
       });
+
+      if (this.valueRepository instanceof jsdp.sdp.SparkValueRepository) {
+         ((jsdp.sdp.SparkValueRepository) this.valueRepository).endStage();
+      }
+      if (ss != null && ss.stateStore instanceof jsdp.sdp.SparkStateStore) {
+         ((jsdp.sdp.SparkStateStore<?>) ss.stateStore).endStage();
+      }
    }
 
    @Override
@@ -97,10 +139,33 @@ public class SparkBackwardRecursion extends BackwardRecursion {
          }
       }
 
-      this.getStateSpace(horizonLength).entrySet().parallelStream().forEach(entry -> {
+      // Materialize any stage-local state entries created during generation
+      for (int i = 0; i <= horizonLength; i++) {
+         StateSpace<?> ss = this.getStateSpace(i);
+         if (ss != null && ss.stateStore instanceof jsdp.sdp.SparkStateStore) {
+            ((jsdp.sdp.SparkStateStore<?>) ss.stateStore).endStage();
+         }
+      }
+
+      StateSpace<?> ss = this.getStateSpace(horizonLength);
+      if (this.valueRepository instanceof jsdp.sdp.SparkValueRepository) {
+         ((jsdp.sdp.SparkValueRepository) this.valueRepository).beginStage();
+      }
+      if (ss != null && ss.stateStore instanceof jsdp.sdp.SparkStateStore) {
+         ((jsdp.sdp.SparkStateStore<?>) ss.stateStore).beginStage();
+      }
+
+      ss.entrySet().parallelStream().forEach(entry -> {
          this.getValueRepository().setOptimalExpectedValue(entry.getValue(), 0);
          updateMonitoring(generatedStates.get(), processedStates.incrementAndGet(), horizonLength);
       });
+
+      if (this.valueRepository instanceof jsdp.sdp.SparkValueRepository) {
+         ((jsdp.sdp.SparkValueRepository) this.valueRepository).endStage();
+      }
+      if (ss != null && ss.stateStore instanceof jsdp.sdp.SparkStateStore) {
+         ((jsdp.sdp.SparkStateStore<?>) ss.stateStore).endStage();
+      }
    }
 
    @Override

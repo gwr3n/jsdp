@@ -109,7 +109,8 @@ public abstract class StateSpace<SD> implements Iterable<State>{
    public StateSpace(int period, HashType hash, JavaSparkContext sc){
       this.period = period;
       if(hash == HashType.SPARK_RDD){
-         this.stateStore = (StateStore<SD>) new SparkStateStore<>(sc);
+         // Construct SparkStateStore with fast-mode enabled by default
+         this.stateStore = (StateStore<SD>) new SparkStateStore<>(sc, true);
       } else {
          this.stateStore = new DefaultMapStateStore<>(hash);
       }

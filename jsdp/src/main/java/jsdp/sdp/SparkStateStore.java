@@ -55,6 +55,9 @@ public class SparkStateStore<SD extends Serializable> implements StateStore<SD> 
 
    private final JavaSparkContext sc;
    private volatile JavaPairRDD<SD, State> rdd;
+   // Fast-mode: stage-local cache to avoid frequent RDD unions/lookups
+   private volatile boolean fastMode = false;
+   private transient java.util.concurrent.ConcurrentMap<SD, State> stageLocal;
 
    /**
     * Constructs an empty {@code SparkStateStore} using the given Spark context.
@@ -68,11 +71,26 @@ public class SparkStateStore<SD extends Serializable> implements StateStore<SD> 
    }
 
    /**
+    * Optional constructor to enable fast mode.
+    */
+   public SparkStateStore(JavaSparkContext sc, boolean fastMode) {
+      this(sc);
+      this.fastMode = fastMode;
+      if (fastMode)
+         this.stageLocal = new java.util.concurrent.ConcurrentHashMap<>();
+   }
+
+   /**
     * {@inheritDoc}
     * Performs a distributed lookup via {@code JavaPairRDD.lookup}.
     */
    @Override
    public State get(SD descriptor) {
+      if (fastMode && stageLocal != null) {
+         State s = stageLocal.get(descriptor);
+         if (s != null)
+            return s;
+      }
       List<State> results = rdd.lookup(descriptor);
       return results.isEmpty() ? null : results.get(0);
    }
@@ -83,6 +101,10 @@ public class SparkStateStore<SD extends Serializable> implements StateStore<SD> 
     */
    @Override
    public void put(SD descriptor, State state) {
+      if (fastMode && stageLocal != null) {
+         stageLocal.put(descriptor, state);
+         return;
+      }
       List<Tuple2<SD, State>> singleton = new ArrayList<>();
       singleton.add(new Tuple2<>(descriptor, state));
       rdd = rdd.union(sc.parallelizePairs(singleton));
@@ -95,6 +117,49 @@ public class SparkStateStore<SD extends Serializable> implements StateStore<SD> 
     */
    @Override
    public Set<Map.Entry<SD, State>> entrySet() {
-      return rdd.collectAsMap().entrySet();
+      // Collect the RDD view to a driver map. The map returned by
+      // `collectAsMap()` may be unmodifiable, so copy it into a mutable
+      // HashMap before merging or returning its entry set.
+      java.util.Map<SD, State> driverMap = rdd.collectAsMap();
+      if (fastMode && stageLocal != null && !stageLocal.isEmpty()) {
+         java.util.Map<SD, State> merged = new java.util.HashMap<>(driverMap);
+         merged.putAll(stageLocal);
+         return merged.entrySet();
+      }
+      return new java.util.HashMap<>(driverMap).entrySet();
+   }
+
+   /**
+    * Enable or disable fast mode. If enabling, initialize the stage-local cache.
+    */
+   public void setFastMode(boolean enabled) {
+      this.fastMode = enabled;
+      if (enabled && this.stageLocal == null)
+         this.stageLocal = new java.util.concurrent.ConcurrentHashMap<>();
+   }
+
+   /**
+    * Begin a recursion stage: initialize/clear the stage-local cache.
+    */
+   public void beginStage() {
+      if (!fastMode)
+         return;
+      if (this.stageLocal == null)
+         this.stageLocal = new java.util.concurrent.ConcurrentHashMap<>();
+      else
+         this.stageLocal.clear();
+   }
+
+   /**
+    * End a recursion stage: materialize stage-local entries into the RDD in a single union.
+    */
+   public void endStage() {
+      if (!fastMode || this.stageLocal == null || this.stageLocal.isEmpty())
+         return;
+      List<Tuple2<SD, State>> entries = new ArrayList<>();
+      for (java.util.Map.Entry<SD, State> e : this.stageLocal.entrySet())
+         entries.add(new Tuple2<>(e.getKey(), e.getValue()));
+      this.rdd = this.rdd.union(sc.parallelizePairs(entries));
+      this.stageLocal.clear();
    }
 }
